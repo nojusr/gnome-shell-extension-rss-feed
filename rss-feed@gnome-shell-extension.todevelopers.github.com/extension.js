@@ -282,17 +282,6 @@ const RssFeedButton = new Lang.Class({
     },
 
     /*
-     *  Lead number with zeros
-     *  num - input number
-     *  size - size of number leadign with zeros
-     */
-    _pad: function (num, size) {
-        let s = num + "";
-        while (s.length < size) s = "0" + s;
-        return s;
-    },
-
-    /*
      *  On HTTP request response download callback
      *  responseData - response data
      *  position - Position in RSS sources list
@@ -331,9 +320,7 @@ const RssFeedButton = new Lang.Class({
         this._refreshExtensionUI();
 
         // update last download time
-        let time = new Date();
-        this._lastUpdateTime.set_label(_("Last update")+': ' + this._pad(time.getHours(), 2)
-            + ':' + this._pad(time.getMinutes(), 2));
+        this._lastUpdateTime.set_label(_("Last update")+': ' + new Date().toLocaleTimeString());
 
         rssParser.clear();
     },
