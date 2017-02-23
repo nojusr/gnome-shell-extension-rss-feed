@@ -78,7 +78,7 @@ const RssFeedSettingsWidget = new GObject.Class({
 		// items visible per page
 		let box2 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
 		box2.set_margin_bottom(6);
-		let label2 = new Gtk.Label({ xalign: 0, label: _("Items per source:") });
+		let label2 = new Gtk.Label({ xalign: 0, label: _("Max items per source:") });
 		box2.pack_start(label2, true, true, 0);
 
 		let spinbtn2 = Gtk.SpinButton.new_with_range(0, MAX_SOURCES_LIMIT, 1);

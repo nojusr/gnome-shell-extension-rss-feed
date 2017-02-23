@@ -423,8 +423,6 @@ const RssFeedButton = new Lang.Class({
         	}        	
 		}		
         
-        //let killNotify;
-
         for (i = 0; i < nItems; i++) 
         {
             let item = rssParser.Items[i];           			
@@ -447,10 +445,6 @@ const RssFeedButton = new Lang.Class({
 				itemCache[itemURL] = menu;
 				itemCache.splice(i, 0, itemURL);
 			}
-			/* else
-				if ( !killNotify ) 
-					killNotify = true;
-			*/
         }
             
 		if ( !feedsCache._initialRefresh )

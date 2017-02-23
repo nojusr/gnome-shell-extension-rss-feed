@@ -8,8 +8,8 @@
             <description>Download interval (in minutes) for all RSS feeds.</description>
         </key>
         <key type="i" name="items-visible">
-            <default>10</default>
-            <summary>Items per source</summary>
+            <default>100</default>
+            <summary>Max items per source</summary>
             <description>Number of items visible per source.</description>
         </key>
         <key type="i" name="fpoll-timeout">
