@@ -36,10 +36,13 @@ const _ = Gettext.gettext;
 const COLUMN_ID = 0;
 const MAX_UPDATE_INTERVAL = 1440;
 const MAX_SOURCES_LIMIT = 1024;
+const MAX_POLL_DELAY = 10000;
 
 const RSS_FEEDS_LIST_KEY = 'rss-feeds-list';
 const UPDATE_INTERVAL_KEY = 'update-interval';
 const ITEMS_VISIBLE_KEY = 'items-visible';
+const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
+const POLL_DELAY_KEY = 'fpoll-timeout';
 
 /*
  *	RssFeedSettingsWidget class for settings widget
@@ -54,7 +57,7 @@ const RssFeedSettingsWidget = new GObject.Class({
 	 *	Initialize new instance of RssFeedSettingsWidget class
 	 */
 	_init : function(params) {
-
+		
 		this.parent(params);
 		this.orientation = Gtk.Orientation.VERTICAL;
 		this.margin = 12;
@@ -75,16 +78,43 @@ const RssFeedSettingsWidget = new GObject.Class({
 		// items visible per page
 		let box2 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
 		box2.set_margin_bottom(6);
-		let label2 = new Gtk.Label({ xalign: 0, label: _("RSS sources per page:") });
+		let label2 = new Gtk.Label({ xalign: 0, label: _("Items per source:") });
 		box2.pack_start(label2, true, true, 0);
 
-		let spinbtn2 = Gtk.SpinButton.new_with_range(1, MAX_SOURCES_LIMIT, 1);
+		let spinbtn2 = Gtk.SpinButton.new_with_range(0, MAX_SOURCES_LIMIT, 1);
 		spinbtn2.set_value(Settings.get_int(ITEMS_VISIBLE_KEY));
 		Settings.bind(ITEMS_VISIBLE_KEY, spinbtn2, 'value', Gio.SettingsBindFlags.DEFAULT);
 
 		box2.add(spinbtn2);
 		this.add(box2);
+		
+		// poll delay
+        let box4 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+        box4.set_margin_bottom(6);
+		let label4 = new Gtk.Label({ xalign: 0, label: _("Poll delay (ms:") });
+		box4.pack_start(label4, true, true, 0);
 
+		let spinbtn4 = Gtk.SpinButton.new_with_range(25, MAX_POLL_DELAY, 1);
+		spinbtn4.set_value(Settings.get_int(POLL_DELAY_KEY));
+		Settings.bind(POLL_DELAY_KEY, spinbtn4, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+		box4.add(spinbtn4);
+		this.add(box4);
+		
+		// show notifications
+		let box3 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		box3.set_margin_bottom(6);
+		let label3 = new Gtk.Label({ xalign: 0, label: _("Show notifications:") });
+		box3.pack_start(label3, true, true, 0);
+		
+		let show = new Gtk.Switch({active: Settings.get_boolean(ENABLE_NOTIFICATIONS_KEY) });
+        show.connect('notify::active', Lang.bind(this, function(b) {
+        	Settings.set_boolean(ENABLE_NOTIFICATIONS_KEY, b.active);
+        }));
+        
+        box3.add(show);
+        this.add(box3);
+        
 		// rss feed sources
 		let scrolledWindow = new Gtk.ScrolledWindow();
 		scrolledWindow.set_border_width(0);

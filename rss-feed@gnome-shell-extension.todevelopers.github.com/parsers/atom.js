@@ -27,6 +27,8 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Base = Me.imports.parsers.base;
 const Log = Me.imports.logger;
 
+const hrefPattern = / href="(.*?)"/;    
+
 /*
  *  Atom 1.0 format parser class
  */
@@ -90,8 +92,14 @@ const AtomParser = new Lang.Class({
             if (itemElements[i].name == 'title') {
                 item.Title = itemElements[i].text;
             }
-            else if (itemElements[i].name == 'link') {
-                item.HttpLink = itemElements[i].attribute('href');
+            else if (itemElements[i].name == 'link') {            	
+            	var text = itemElements[i].attribute('href');            	        	
+            	var res = hrefPattern.exec(text);
+            	            	
+            	if ( res && res.length == 2 )            	
+            		item.HttpLink = res[1];            	
+            	else
+            		item.HttpLink = itemElements[i].attribute('href');         	
             }
             else if (itemElements[i].name == 'description') {
                 item.Description = itemElements[i].text;

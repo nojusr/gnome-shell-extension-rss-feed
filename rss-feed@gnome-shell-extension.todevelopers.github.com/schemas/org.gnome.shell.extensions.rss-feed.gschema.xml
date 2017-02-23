@@ -8,9 +8,19 @@
             <description>Download interval (in minutes) for all RSS feeds.</description>
         </key>
         <key type="i" name="items-visible">
-            <default>5</default>
-            <summary>RSS Sources per page</summary>
-            <description>Number of RSS Sources visible per page.</description>
+            <default>10</default>
+            <summary>Items per source</summary>
+            <description>Number of items visible per source.</description>
+        </key>
+        <key type="i" name="fpoll-timeout">
+            <default>1000</default>
+            <summary>Poll delay (ms)</summary>
+            <description>Throttles RSS source polls to reduce the performance impact on gnome-shell</description>
+        </key>
+         <key type="b" name="enable-notifications">
+            <default>true</default>
+            <summary>Show notifications</summary>
+            <description>Show notifications when new RSS items are found.</description>
         </key>
         <key type="as" name="rss-feeds-list">
             <default>[]</default>
@@ -21,6 +31,6 @@
             <default>false</default>
             <summary>Enable debug</summary>
             <description>Enable extension logs debug messages in Gnome logs provider.</description>
-        </key>
+        </key>       
     </schema>
 </schemalist>

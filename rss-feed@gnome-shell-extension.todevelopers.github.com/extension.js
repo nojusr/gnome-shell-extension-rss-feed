@@ -30,6 +30,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Soup = imports.gi.Soup;
 const St = imports.gi.St;
 const Util = imports.misc.util;
+const Gio = imports.gi.Gio;
 
 const Convenience = Me.imports.convenience;
 const Parser = Me.imports.parsers.factory;
@@ -38,6 +39,8 @@ const Settings = Convenience.getSettings();
 
 const Gettext = imports.gettext.domain('rss-feed');
 const _ = Gettext.gettext;
+
+const MessageTray = imports.ui.messageTray;
 
 const ExtensionGui = {
     RssPopupMenuItem: Me.imports.extensiongui.rsspopupmenuitem.RssPopupMenuItem,
@@ -48,9 +51,13 @@ const RSS_FEEDS_LIST_KEY = 'rss-feeds-list';
 const UPDATE_INTERVAL_KEY = 'update-interval';
 const ITEMS_VISIBLE_KEY = 'items-visible';
 const DEBUG_ENABLED_KEY = 'enable-debug';
+const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
+const POLL_DELAY_KEY = 'fpoll-timeout';
+
+const NOTIFICATION_ICON = 'emblem-web';
 
 /*
- *  Main RSS Feed extension class
+ * Main RSS Feed extension class
  */
 const RssFeedButton = new Lang.Class({
 
@@ -58,13 +65,16 @@ const RssFeedButton = new Lang.Class({
     Extends: PanelMenu.Button,
 
     /*
-     *  Initialize instance of RssFeedButton class
-     */
+	 * Initialize instance of RssFeedButton class
+	 */
     _init: function() {
         this.parent(0.0, "RSS Feed");
 
         this._httpSession = null;
         this._startIndex = 0;
+        this._feedsCache = new Array();
+        this._feedTimers = new Array();
+        this._subMenus = new Array();
 
         // top panel button
         let icon = new St.Icon({
@@ -107,18 +117,18 @@ const RssFeedButton = new Lang.Class({
 
         prevBtn.connect('clicked', Lang.bind(this, this._onPreviousBtnClicked));
         nextBtn.connect('clicked', Lang.bind(this, this._onNextBtnClicked));
-        reloadBtn.connect('clicked', Lang.bind(this, this._realoadRssFeeds));
+        reloadBtn.connect('clicked', Lang.bind(this, this._reloadRssFeeds));
         settingsBtn.connect('clicked', Lang.bind(this, this._onSettingsBtnClicked));
 
         this.menu.addMenuItem(this._buttonMenu);
 
         // loading data on startup
-        this._realoadRssFeeds();
+        this._reloadRssFeeds();
     },
 
     /*
-     *  Frees resources of extension
-     */
+	 * Frees resources of extension
+	 */
     stop: function() {
 
         if (this._httpSession)
@@ -130,11 +140,15 @@ const RssFeedButton = new Lang.Class({
 
         if (this._timeout)
             Mainloop.source_remove(this._timeout);
+
+        let t;
+        while ( t = this._feedTimers.pop() )    	
+        	Mainloop.source_remove(t);        
     },
 
     /*
-     *  Get variables from GSettings
-     */
+	 * Get variables from GSettings
+	 */
     _getSettings: function() {
 
         Log.Debug("Get variables from GSettings");
@@ -145,15 +159,20 @@ const RssFeedButton = new Lang.Class({
         this._itemsVisible = Settings.get_int(ITEMS_VISIBLE_KEY);
         // http sources for rss feeds
         this._rssFeedsSources = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+        // poll delay
+        this._rssPollDelay = Settings.get_int(POLL_DELAY_KEY);
+        // enable notifications
+        this._enableNotifications = Settings.get_boolean(ENABLE_NOTIFICATIONS_KEY);
 
         Log.Debug("Update interval: " + this._updateInterval +
                   " Visible items: " + this._itemsVisible +
-                  " RSS sources: " + this._rssFeedsSources);
+                  " RSS sources: " + this._rssFeedsSources +
+                  " Notification: " + this._enableNotifications);
     },
 
     /*
-     *  On settings button clicked callback
-     */
+	 * On settings button clicked callback
+	 */
     _onSettingsBtnClicked: function() {
 
         this.menu.actor.hide();
@@ -161,39 +180,40 @@ const RssFeedButton = new Lang.Class({
     },
 
     /*
-     *  On previous button clicked callback
-     */
+	 * On previous button clicked callback
+	 */
     _onPreviousBtnClicked: function() {
 
-        this._startIndex -= this._itemsVisible;
-        if (this._startIndex < 0)
-            this._startIndex = 0
-        this._refreshExtensionUI();
+        /*
+		 * this._startIndex -= this._itemsVisible; if (this._startIndex < 0)
+		 * this._startIndex = 0 this._refreshExtensionUI();
+		 */
     },
 
     /*
-     *  On next button clicked callback
-     */
+	 * On next button clicked callback
+	 */
     _onNextBtnClicked: function() {
 
-        if (this._startIndex + this._itemsVisible < this._rssFeedsSources.length)
-        {
-            this._startIndex += this._itemsVisible;
-            this._refreshExtensionUI();
-        }
+        /*
+		 * if (this._startIndex + this._itemsVisible <
+		 * this._rssFeedsSources.length) { this._startIndex +=
+		 * this._itemsVisible; this._refreshExtensionUI(); }
+		 */
     },
 
     /*
-     *  Returns JSON object that represents HTTP (GET method) parameters
-     *  stored in URL
-     *  url - HTTP request URL
-     */
+	 * Returns JSON object that represents HTTP (GET method) parameters stored
+	 * in URL url - HTTP request URL
+	 */
     _getParametersAsJson: function(url) {
 
-        if (url.indexOf('?') == -1)
+    	let l2o = url.indexOf('?');    
+    	
+        if (l2o == -1)
             return "{}";
 
-        let urlParams = url.substr(url.indexOf('?') + 1);
+        let urlParams = url.substr(l2o + 1);
         let params = urlParams.split('&');
 
         let jsonObj = "{";
@@ -210,51 +230,81 @@ const RssFeedButton = new Lang.Class({
     },
 
     /*
-     *  Scheduled reload of RSS feeds from sources set in settings
-     */
-    _realoadRssFeeds: function() {
+	 * Scheduled reload of RSS feeds from sources set in settings
+	 */
+    _reloadRssFeeds: function() {
 
         this._getSettings();
 
         Log.Debug("Reload RSS Feeds");
+        
+        // this._feedsArray = new Array(this._rssFeedsSources.length);
 
-        // array for GUI purposes
-        // TODO check if realocate of this array is necesary after change in sources
-        // TODO try to forget this array and do bussines without it
-        this._feedsArray = new Array(this._rssFeedsSources.length);
-
+        let t;
+        
+        while ( t = this._feedTimers.pop() )    	
+        	Mainloop.source_remove(t);    	
+        
         // remove timeout
         if (this._timeout)
             Mainloop.source_remove(this._timeout);
 
         if (this._rssFeedsSources) {
-
+                	
+        	/* cleanup after removed sources */
+        	if ( this._feedsCache ) {
+        		for (var key in this._feedsCache) { 
+        			let h = false;    				
+                    
+        			for (let j = 0; j < this._rssFeedsSources.length; j++) {
+        				let url = this._rssFeedsSources[j];
+        				let l2o = url.indexOf('?');                        
+                        if (l2o != -1) url = url.substr(0, l2o);
+                        
+        				if (key == url) {
+        					h = true;
+        					break;
+        				}        					
+        			}
+        			
+        			if ( !h ) {
+        				if ( this._feedsCache[key].Menu )
+        					this._feedsCache[key].Menu.destroy();
+        				delete this._feedsCache[key];
+        			}        					
+        		}
+        	}
+        	
             for (let i = 0; i < this._rssFeedsSources.length; i++)
             {
                 let url = this._rssFeedsSources[i];
                 let jsonObj = this._getParametersAsJson(url);
-
-                if (url.indexOf('?') != -1)
-                    url = url.substr(0, url.indexOf('?'));
-
-                this._httpGetRequestAsync(url, JSON.parse(jsonObj), i, Lang.bind(this, this._onDownload));
+                
+                let l2o = url.indexOf('?');                
+                if (l2o != -1) url = url.substr(0, l2o);                               
+                
+                this._feedTimers.push(
+                	Mainloop.timeout_add(i * this._rssPollDelay, Lang.bind(this,function () 
+		                {  		
+		                	this._httpGetRequestAsync(url, JSON.parse(jsonObj), i, Lang.bind(this, this._onDownload));
+		                }))
+                );
             }
         }
 
         // set timeout if enabled
         if (this._updateInterval > 0) {
             Log.Debug("Next scheduled reload after " + this._updateInterval*60 + " seconds");
-            this._timeout = Mainloop.timeout_add_seconds(this._updateInterval*60, Lang.bind(this, this._realoadRssFeeds));
+            this._timeout = Mainloop.timeout_add_seconds(this._updateInterval*60, Lang.bind(this, this._reloadRssFeeds));
         }
     },
 
     /*
-     *  Creates asynchronous HTTP GET request through Soup interface
-     *  url - HTTP request URL without parameters
-     *  params - JSON object of HTTP GET request parameters
-     *  position - Position in RSS sources list
-     *  callback - calls on HTTP GET request response
-     */
+	 * Creates asynchronous HTTP GET request through Soup interface url - HTTP
+	 * request URL without parameters params - JSON object of HTTP GET request
+	 * parameters position - Position in RSS sources list callback - calls on
+	 * HTTP GET request response
+	 */
     _httpGetRequestAsync: function(url, params, position, callback) {
 
         if (this._httpSession == null)
@@ -277,78 +327,215 @@ const RssFeedButton = new Lang.Class({
             " Content Type: " + message.response_headers.get_one("Content-Type"));
 
             if (message.response_body.data)
-                callback(message.response_body.data, position);
+                callback(message.response_body.data, position, url);
         }));
     },
-
+    
+    _clampTitle: function(title) {	
+		if (title.length > 128)
+            title = title.substr(0, 128) + "...";
+		return title;
+    },
+    
     /*
-     *  On HTTP request response download callback
-     *  responseData - response data
-     *  position - Position in RSS sources list
-     */
-    _onDownload: function(responseData, position) {
-
+	 * On HTTP request response download callback responseData - response data
+	 * position - Position in RSS sources list
+	 */
+    _onDownload: function(responseData, position, sourceURL) {
+    	
+    	
         let rssParser = new Parser.createRssParser(responseData);
 
         if (rssParser == null)
             return;
 
         rssParser.parse();
-
-        if (rssParser.Items.length > 0)
+     
+        let nItems = rssParser.Items.length > this._itemsVisible ? this._itemsVisible: rssParser.Items.length;
+        
+        if (!nItems) 
         {
-            let rssFeed = {
-                Publisher: {
-                    Title: ''
-                },
-                Items: []
-            };
-            rssFeed.Publisher.Title = rssParser.Publisher.Title;
-
-            for (let i = 0; i < rssParser.Items.length; i++) {
-                let item = {
-                    Title: '',
-                    HttpLink: ''
-                };
-                item.Title = rssParser.Items[i].Title;
-                item.HttpLink = rssParser.Items[i].HttpLink;
-                rssFeed.Items.push(item);
-            }
-            this._feedsArray[position] = rssFeed;
+        	let feedsCache = this._feedsCache[sourceURL];
+        	
+        	if ( feedsCache )
+        	{	
+        		feedsCache.Menu.label.set_text(
+        				this._clampTitle("[INACTIVE] " + feedsCache.Menu._olabeltext));
+        		
+        		feedsCache._inactive = true;
+        	}
+        	
+    		return;      
+    	}
+        
+        // initialize the cache array
+        if ( !this._feedsCache[sourceURL] ) 
+        {
+        	this._feedsCache[sourceURL] = new Array();
+        	this._feedsCache[sourceURL].Items = new Array();
         }
+        
+        let feedsCache = this._feedsCache[sourceURL];	
+        let itemCache = feedsCache.Items;
+                  
+        let subMenu;
+        
+        // create submenu
+        if ( !feedsCache.Menu ) 
+        {
+	        subMenu = new ExtensionGui.RssPopupSubMenuMenuItem(rssParser.Publisher, nItems);
+	    	this._feedsSection.addMenuItem(subMenu);    	
+	    	feedsCache.Menu = subMenu;
+	    	subMenu._olabeltext = subMenu.label.get_text();
+	    	subMenu._oicount = nItems;
+        } else 
+        	subMenu = feedsCache.Menu;
+              
+        
+        if ( feedsCache._inactive )
+        {    		
+        	subMenu.label.set_text(
+    				this._clampTitle(subMenu._olabeltext));    		
+    		feedsCache._inactive = null;
+        }
+                
+        // clear the cache
+        let i = itemCache.length;
+        
+        while ( i-- )
+		{        	
+        	let cacheItemURL = itemCache[i];
+        	let j = nItems;
+        	let h = false;
+        	
+        	while ( j-- )
+        	{
+        		if ( cacheItemURL == rssParser.Items[j].HttpLink ) {
+        			h = true;
+        			break;
+        		}
+        	}
+        	if ( !h ) 
+        	{
+        		itemCache[cacheItemURL].destroy();       
+        		delete itemCache[cacheItemURL];
+        		itemCache.splice(i, 1);
+        	}        	
+		}		
+        
+        //let killNotify;
 
-        this._refreshExtensionUI();
+        for (i = 0; i < nItems; i++) 
+        {
+            let item = rssParser.Items[i];           			
+			let itemURL = item.HttpLink;
+			
+			if ( !itemCache[itemURL] )
+			{				
+				// trigger notification
+				if ( this._enableNotifications &&
+						feedsCache._initialRefresh) { 
+					let itemTitle = Encoder.htmlDecode(item.Title);
+					this._showNotification(itemTitle, item.HttpLink + '\n\nSource: ' +
+						 	Encoder.htmlDecode(rssParser.Publisher.Title) +
+						 	'\n\n' + itemTitle, item.HttpLink); 
+				}
+		 
+				let menu = new ExtensionGui.RssPopupMenuItem(item);
+	            subMenu.menu.addMenuItem(menu, i); 
 
+				itemCache[itemURL] = menu;
+				itemCache.splice(i, 0, itemURL);
+			}
+			/* else
+				if ( !killNotify ) 
+					killNotify = true;
+			*/
+        }
+            
+		if ( !feedsCache._initialRefresh )
+			feedsCache._initialRefresh = true;
+			
         // update last download time
         this._lastUpdateTime.set_label(_("Last update")+': ' + new Date().toLocaleTimeString());
-
+        
         rssParser.clear();
-    },
 
+    },
+    
+    
     /*
-     *  Reloads feeds section
-     */
+	 * Reloads feeds section
+	 */
+    
+    /*
     _refreshExtensionUI: function() {
 
         this._feedsSection.removeAll();
-
+        
         let counter = 0;
 
         for (let i = this._startIndex; i < this._feedsArray.length; i++) {
 
-            if (this._feedsArray[i] && this._feedsArray[i].Items) {
-
-                let nItems = this._feedsArray[i].Items.length;
-
+            if (this._feedsArray[i] && this._feedsArray[i].Items) 
+            {
+                let nItems = this._feedsArray[i].Items.length;                                
                 let subMenu = new ExtensionGui.RssPopupSubMenuMenuItem(this._feedsArray[i].Publisher, nItems);
+           
+                // for (let j = 0; j < nItems ; j++) {
 
-                for (let j = 0; j < nItems; j++) {
-
-                    let menuItem = new ExtensionGui.RssPopupMenuItem(this._feedsArray[i].Items[j]);
-                    subMenu.menu.addMenuItem(menuItem);
-                }
+                    // let menuItem = new
+					// ExtensionGui.RssPopupMenuItem(this._feedsArray[i].Items[j]);
+                    // subMenu.menu.addMenuItem(menuItem);
+                	
+            	let items = this._feedsArray[i].Items;
+            	let c = nItems;
+           
+            	Mainloop.timeout_add(250, Lang.bind(this,function () {
+            		 // Main.notify('-', 'b1');
+            		
+            		c--;
+            		
+            		let item = items[c];
+            		
+            		
+            		                		 
+					let menuItem = new ExtensionGui.RssPopupMenuItem(item);
+					subMenu.menu.addMenuItem(menuItem); 
+					
+					if ( !c)
+						return false;
+					
+					return true;
+                 }));
+                // }
 
                 this._feedsSection.addMenuItem(subMenu);
+               
+				// dispatch notifications for new items
+                let pubURL = this._feedsArray[i].Publisher.URL;
+				 
+				while (nItems--) { 
+					 let item = this._feedsArray[i].Items[nItems]; 
+				 
+					 let itemURL =	 Encoder.htmlDecode(item.HttpLink);
+				 
+					 if ( !this._feedsCache[pubURL][itemURL] ) { 
+						 if ( this._enableNotifications &&
+							  this._feedsCache[pubURL]._initialRefresh ) { 
+							 let itemTitle = Encoder.htmlDecode(item.Title);
+							 this._showNotification(itemTitle, item.HttpLink + '\n\nSource: ' +
+									 	Encoder.htmlDecode(this._feedsArray[i].Publisher.Title) +
+									 	'\n\n' + itemTitle, item.HttpLink); 
+						 }
+				 
+						 this._feedsCache[pubURL][itemURL] = true; 
+					 } 
+				}
+				 
+				if ( !this._feedsCache[pubURL]._initialRefresh )
+					this._feedsCache[pubURL]._initialRefresh = true;
+				 
             }
             else {
 
@@ -362,16 +549,54 @@ const RssFeedButton = new Lang.Class({
                 break;
 
         }
+    },
+*/
+    _getDefaultBrowser: function() {
+    	let browser;
+        try {
+        	browser = Gio.app_info_get_default_for_uri_scheme("http").get_executable();
+        }
+        catch (err) {
+        	browser = "epiphany";
+        }
+        return browser;
+    },
+    
+    _showNotification: function(title, message, url) {
+
+        let Source = new MessageTray.SystemNotificationSource();
+        Source.createIcon = function() {
+                return new St.Icon({ icon_name: NOTIFICATION_ICON });
+        };
+      
+        Main.messageTray.add(Source);
+        
+        let notification = new MessageTray.Notification(Source, title, message);
+        
+        if ( url ) {
+        	notification.addAction( _('Open URL') , Lang.bind(this, function() {
+        				Util.trySpawnCommandLine(this._getDefaultBrowser() + ' ' + url);  
+        	}) );
+        	notification.addAction( _('Copy URL') , Lang.bind(this, function() {
+        		St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, url);
+        	}) );
+        }
+
+        notification.setTransient(false);
+        notification.setResident(true);
+        
+        Source.notify(notification);
     }
+
 });
 
 /*
- *  Extension widget instance
+ * Extension widget instance
  */
 let rssFeedBtn;
 
 /*
- *  Initialize the extension
+ * Initialize the extension
  */
 function init() {
     Convenience.initTranslations("rss-feed");
@@ -384,7 +609,7 @@ function init() {
 }
 
 /*
- *  Enable the extension
+ * Enable the extension
  */
 function enable() {
 
@@ -395,7 +620,7 @@ function enable() {
 }
 
 /*
- *  Disable the extension
+ * Disable the extension
  */
 function disable() {
 

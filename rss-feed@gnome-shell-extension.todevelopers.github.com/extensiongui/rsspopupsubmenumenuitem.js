@@ -47,6 +47,6 @@ const RssPopupSubMenuMenuItem = new Lang.Class({
         if (title.length > 128)
             title = title.substr(0, 128) + "...";
 
-        this.parent(Encoder.htmlDecode(title) + ' (' + nitems + ')');
+        this.parent(Encoder.htmlDecode(title));
     }
 });

@@ -26,9 +26,10 @@ const Lang = imports.lang;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Base = Me.imports.parsers.base;
 const Log = Me.imports.logger;
+const GLib = imports.gi.GLib;
 
 /*
- *  RSS 2.0 parser class
+ * RSS 2.0 parser class
  */
 const RssParser = new Lang.Class({
 
@@ -36,17 +37,17 @@ const RssParser = new Lang.Class({
     Extends: Base.BaseParser,
 
     /*
-     *  Initialize the instance of RssParser class
-     *  root - root element of feed file
-     */
+	 * Initialize the instance of RssParser class root - root element of feed
+	 * file
+	 */
     _init: function(root) {
         this.parent(root);
         Log.Debug("RSS 2.0 parser");
     },
 
     /*
-     *  Parse feed file
-     */
+	 * Parse feed file
+	 */
     parse: function() {
 
         // root = rss -> channel
@@ -54,8 +55,8 @@ const RssParser = new Lang.Class({
     },
 
     /*
-     *  Parse publisher
-     */
+	 * Parse publisher
+	 */
     _parsePublisher: function(childElements) {
 
         for (let i = 0; i < childElements.length; i++) {
@@ -79,8 +80,8 @@ const RssParser = new Lang.Class({
     },
 
     /*
-     *  Parse item
-     */
+	 * Parse item
+	 */
     _parseItem: function(itemElements) {
 
         let item = this._initItem();
@@ -91,7 +92,7 @@ const RssParser = new Lang.Class({
                 item.Title = itemElements[i].text;
             }
             else if (itemElements[i].name == 'link') {
-                item.HttpLink = itemElements[i].text;
+            	item.HttpLink = itemElements[i].text;
             }
             else if (itemElements[i].name == 'description') {
                 item.Description = itemElements[i].text;

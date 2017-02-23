@@ -30,6 +30,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.logger;
 const Encoder = Me.imports.encoder.getInstance();
 
+const MessageTray = imports.ui.messageTray;
+
+const Main = imports.ui.main;
 /*
  *  RssPopupMenuItem class that extends PopupMenuItem to provide RSS feed specific functionality
  *  After click on this popum menu item, default browser is opened with RSS article
@@ -45,7 +48,7 @@ const RssPopupMenuItem = new Lang.Class({
      */
     _init: function(item) {
 
-        let title = item.Title;
+        let title = "  "+item.Title;
         if (title.length > 128)
             title = title.substr(0, 128) + "...";
 
@@ -58,14 +61,13 @@ const RssPopupMenuItem = new Lang.Class({
             this._browser = Gio.app_info_get_default_for_uri_scheme("http").get_executable();
         }
         catch (err) {
-            Log.Error(err + ' (get default browser error)');
-            return;
+        	this._browser = "epiphany";
         }
 
         this.connect('activate', Lang.bind(this, function() {
-
-            Log.Debug("Opening browser with link " + this._link);
-            Util.trySpawnCommandLine(this._browser + ' ' + this._link);
+            Log.Debug("Opening browser with link " + this._link);           
+            Util.trySpawnCommandLine(this._browser + ' ' + this._link);            
         }));
     }
+
 });
