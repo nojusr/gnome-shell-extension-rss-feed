@@ -107,6 +107,9 @@ const AtomParser = new Lang.Class({
             else if (itemElements[i].name == 'published') {
                 item.PublishDate = itemElements[i].text;
             }
+            else if (itemElements[i].name == 'updated') {
+                item.UpdateTime = itemElements[i].text;
+            }
             else if (itemElements[i].name == 'author') {
                 item.Author = itemElements[i].childElements[0].text;
             }

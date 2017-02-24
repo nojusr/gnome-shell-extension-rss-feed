@@ -69,7 +69,8 @@ const BaseParser = new Lang.Class({
             Description: '',
             Author: '',
             Contributor: '',
-            PublishDate: ''
+            PublishDate: '',
+            UpdateTime: ''
         };
 
         return item;
@@ -86,6 +87,7 @@ const BaseParser = new Lang.Class({
         this.Publisher.HttpLink = '';
         this.Publisher.Description = '';
         this.Publisher.PublishDate = '';
+        this.Publisher.UpdateTime = '';
     },
 
     /*
