@@ -244,6 +244,17 @@ const RssFeedButton = new Lang.Class(
 
 		return jsonObj;
 	},
+	
+	_purgeSource: function(key)
+	{
+		if ( !this._feedsCache[key] )
+			return;
+		
+		if (this._feedsCache[key].Menu)
+			this._feedsCache[key].Menu.destroy();
+		delete this._feedsCache[key];
+		this._feedsCache[key] = undefined;
+	},
 
 	/*
 	 * Scheduled reload of RSS feeds from sources set in settings
@@ -299,13 +310,8 @@ const RssFeedButton = new Lang.Class(
 					}
 
 					if (!h)
-					{
-						if (this._feedsCache[key].Menu)
-							this._feedsCache[key].Menu.destroy();
-						delete this._feedsCache[key];
-						this._feedsCache[key] = undefined;
+						this._purgeSource(key);
 					}
-				}
 			}
 
 			for (let i = 0; i < this._rssFeedsSources.length; i++)
@@ -374,29 +380,20 @@ const RssFeedButton = new Lang.Class(
 	_onDownload: function(responseData, position, sourceURL)
 	{
 
-		let rssParser = new Parser.createRssParser(responseData);
+		let rssParser = Parser.createRssParser(responseData);
 
 		if (rssParser == null)
+		{
+			this._purgeSource(sourceURL);
 			return;
-
+		}
+		
 		rssParser.parse();
 
 		let nItems = rssParser.Items.length > this._itemsVisible ? this._itemsVisible : rssParser.Items.length;
 
 		if (!nItems)
-		{
-			let feedsCache = this._feedsCache[sourceURL];
-
-			if (feedsCache)
-			{
-				feedsCache.Menu.label.set_text(
-					Misc.clampTitle("[INACTIVE] " + feedsCache.Menu._olabeltext));
-
-				feedsCache._inactive = true;
-			}
-
 			return;
-		}
 
 		// initialize the cache array
 		if (!this._feedsCache[sourceURL])
@@ -421,13 +418,6 @@ const RssFeedButton = new Lang.Class(
 		}
 		else
 			subMenu = feedsCache.Menu;
-
-		if (feedsCache._inactive)
-		{
-			subMenu.label.set_text(
-				Misc.clampTitle(subMenu._olabeltext));
-			feedsCache._inactive = null;
-		}
 
 		// clear the cache
 		let i = itemCache.length;
