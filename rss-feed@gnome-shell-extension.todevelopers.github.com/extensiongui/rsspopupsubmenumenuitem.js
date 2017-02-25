@@ -43,10 +43,18 @@ const RssPopupSubMenuMenuItem = new Lang.Class({
      */
     _init: function(publisher, nitems) {
 
-        let title = publisher.Title;
+        let title = Encoder.htmlDecode(publisher.Title);
         if (title.length > 128)
             title = title.substr(0, 128) + "...";
 
-        this.parent(Encoder.htmlDecode(title));
+        this.parent(title);
+        
+        this._olabeltext = title;
+        /*
+        this.menu.connect('open-state-changed', Lang.bind(this, function(menu, open)
+		{
+					
+		}));
+		*/
     }
 });

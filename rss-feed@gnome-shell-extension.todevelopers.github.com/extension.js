@@ -20,6 +20,7 @@
  * You should have received a copy of the GNU General Public License
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 const Lang = imports.lang;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
@@ -41,7 +42,7 @@ const _ = Gettext.gettext;
 
 const MessageTray = imports.ui.messageTray;
 
-
+const Misc = Me.imports.misc;
 
 
 const ExtensionGui = {
@@ -78,7 +79,6 @@ const RssFeedButton = new Lang.Class(
 		this._startIndex = 0;
 		this._feedsCache = new Array();
 		this._feedTimers = new Array();
-		this._subMenus = new Array();
 
 		// top panel button
 		let icon = new St.Icon(
@@ -258,7 +258,6 @@ const RssFeedButton = new Lang.Class(
 		// this._feedsArray = new Array(this._rssFeedsSources.length);
 
 		let t;
-
 		while (t = this._feedTimers.pop())
 			Mainloop.source_remove(t);
 
@@ -268,6 +267,16 @@ const RssFeedButton = new Lang.Class(
 
 		if (this._rssFeedsSources)
 		{
+			/* reset if max items per source change */
+			if (this._pItemsVisible &&
+				this._itemsVisible != this._pItemsVisible)
+			{
+				this._feedsSection.removeAll();
+				delete this._feedsCache;
+				this._feedsCache = new Array();
+			}
+
+			this._pItemsVisible = this._itemsVisible;
 
 			/* cleanup after removed sources */
 			if (this._feedsCache)
@@ -294,6 +303,7 @@ const RssFeedButton = new Lang.Class(
 						if (this._feedsCache[key].Menu)
 							this._feedsCache[key].Menu.destroy();
 						delete this._feedsCache[key];
+						this._feedsCache[key] = undefined;
 					}
 				}
 			}
@@ -357,13 +367,6 @@ const RssFeedButton = new Lang.Class(
 		}));
 	},
 
-	_clampTitle: function(title)
-	{
-		if (title.length > 128)
-			title = title.substr(0, 128) + "...";
-		return title;
-	},
-
 	/*
 	 * On HTTP request response download callback responseData - response data
 	 * position - Position in RSS sources list
@@ -387,7 +390,7 @@ const RssFeedButton = new Lang.Class(
 			if (feedsCache)
 			{
 				feedsCache.Menu.label.set_text(
-					this._clampTitle("[INACTIVE] " + feedsCache.Menu._olabeltext));
+					Misc.clampTitle("[INACTIVE] " + feedsCache.Menu._olabeltext));
 
 				feedsCache._inactive = true;
 			}
@@ -400,6 +403,8 @@ const RssFeedButton = new Lang.Class(
 		{
 			this._feedsCache[sourceURL] = new Object();
 			this._feedsCache[sourceURL].Items = new Array();
+			this._feedsCache[sourceURL].UnreadCount = 0;
+			this._feedsCache[sourceURL].pUnreadCount = 0;
 		}
 
 		let feedsCache = this._feedsCache[sourceURL];
@@ -413,8 +418,6 @@ const RssFeedButton = new Lang.Class(
 			subMenu = new ExtensionGui.RssPopupSubMenuMenuItem(rssParser.Publisher, nItems);
 			this._feedsSection.addMenuItem(subMenu);
 			feedsCache.Menu = subMenu;
-			subMenu._olabeltext = subMenu.label.get_text();
-			subMenu._oicount = nItems;
 		}
 		else
 			subMenu = feedsCache.Menu;
@@ -422,7 +425,7 @@ const RssFeedButton = new Lang.Class(
 		if (feedsCache._inactive)
 		{
 			subMenu.label.set_text(
-				this._clampTitle(subMenu._olabeltext));
+				Misc.clampTitle(subMenu._olabeltext));
 			feedsCache._inactive = null;
 		}
 
@@ -432,7 +435,7 @@ const RssFeedButton = new Lang.Class(
 		while (i--)
 		{
 			let cacheItemURL = itemCache[i];
-			let cachedObj = itemCache[cacheItemURL];
+			let cacheObj = itemCache[cacheItemURL];
 			let j = nItems;
 			let h = false;
 
@@ -442,8 +445,8 @@ const RssFeedButton = new Lang.Class(
 
 				if (cacheItemURL == item.HttpLink)
 				{
-					if (cachedObj.Item.PublishDate != item.PublishDate ||
-						cachedObj.Item.UpdateTime != item.UpdateTime)
+					if (cacheObj.Item.PublishDate != item.PublishDate ||
+						cacheObj.Item.UpdateTime != item.UpdateTime)
 					{
 						item._update = true;
 					}
@@ -455,60 +458,98 @@ const RssFeedButton = new Lang.Class(
 			}
 			if (!h)
 			{
-				cachedObj.Menu.destroy();
-				itemCache[cacheItemURL] = null;
+				cacheObj.Menu.destroy();
+
+				if (cacheObj.Unread)
+				{
+					cacheObj.Unread = null;
+					feedsCache.UnreadCount--;
+				}
+
 				delete itemCache[cacheItemURL];
+				itemCache[cacheItemURL] = undefined;
 				itemCache.splice(i, 1);
 			}
 		}
 
 		let i = nItems;
+
 		while (i--)
 		{
 			let item = rssParser.Items[i];
 			let itemURL = item.HttpLink;
 
-			if (!itemCache[itemURL])
+			/* we've already processed this item, move on.. */
+			if (itemCache[itemURL])
+				continue;
+
+			let menu = new ExtensionGui.RssPopupMenuItem(item);
+			subMenu.menu.addMenuItem(menu, 0);
+
+			let cacheObj = new Object();
+			cacheObj.Menu = menu;
+			cacheObj.Item = item;
+			cacheObj.parent = feedsCache;
+			itemCache[itemURL] = cacheObj;
+			itemCache.push(itemURL);
+
+			menu._cacheObj = cacheObj;
+
+			// if ( i == 0 ) feedsCache._initialRefresh = true;
+
+			/* do not notify or flag if this is the first query */
+			if (!feedsCache._initialRefresh)
+				continue;
+
+			feedsCache.UnreadCount++;
+			cacheObj.Unread = true;
+
+			menu.setOrnament(PopupMenu.Ornament.DOT);
+
+			// trigger notification
+			if (this._enableNotifications)
 			{
-				let menu = new ExtensionGui.RssPopupMenuItem(item);
-				subMenu.menu.addMenuItem(menu, 0);
+				let itemTitle = Encoder.htmlDecode(item.Title);
 
-				cachedObj = new Object();
-				cachedObj.Menu = menu;
-				cachedObj.Item = item;
-				itemCache[itemURL] = cachedObj;
-				itemCache.push(itemURL);
+				let itemDescription;
 
-				// trigger notification
-				if (this._enableNotifications &&
-					feedsCache._initialRefresh)
+				if (item.Description.length > 0)
 				{
-					let itemTitle = Encoder.htmlDecode(item.Title);
+					itemDescription = Encoder.htmlDecode(item.Description
+						.replace("<![CDATA[", "").replace("]]>", "")
+						.replace(/<.*?>/g, "").trim());
 
-					let itemDescription;
-
-					if (item.Description.length > 0)
-					{
-						itemDescription = Encoder.htmlDecode(item.Description
-							.replace("<![CDATA[", "").replace("]]>", "")
-							.replace(/<.*?>/g, "").trim());
-
-						if (itemDescription.length > 290)
-							itemDescription = itemDescription.substr(0, 290) + "...";
-					}
-
-					this._showNotification(
-						item._update ? (_("UPDATE") + ': ' + itemTitle) : itemTitle,
-						'Source: ' + Encoder.htmlDecode(rssParser.Publisher.Title) +
-						(item.Author.length ? ', Author: ' + Encoder.htmlDecode(item.Author) : '') + '\n\n' +
-						(itemDescription ? itemDescription : itemTitle),
-						itemURL, menu);
+					if (itemDescription.length > 290)
+						itemDescription = itemDescription.substr(0, 290) + "...";
 				}
+
+				cacheObj.Notification = this._dispatchNotification(
+					item._update ? (_("UPDATE") + ': ' + itemTitle) : itemTitle,
+					_("Source") + ': ' + Encoder.htmlDecode(rssParser.Publisher.Title) +
+					(item.Author.length ? ', ' + _("Author") + ': ' + Encoder.htmlDecode(item.Author) : '') + '\n\n' +
+					(itemDescription ? itemDescription : itemTitle),
+					itemURL, cacheObj);
 			}
+
 		}
 
 		if (!feedsCache._initialRefresh)
 			feedsCache._initialRefresh = true;
+		else
+		{
+			if (feedsCache.UnreadCount)
+			{
+				if (feedsCache.UnreadCount != feedsCache.pUnreadCount)
+					subMenu.label.set_text(
+						Misc.clampTitle(subMenu._olabeltext +
+							' (' + feedsCache.UnreadCount + ')'));
+
+				feedsCache.pUnreadCount = feedsCache.UnreadCount;
+
+				subMenu.setOrnament(PopupMenu.Ornament.DOT);
+			}
+
+		}
 
 		// update last download time
 		this._lastUpdateTime.set_label(_("Last update") + ': ' + new Date().toLocaleTimeString());
@@ -517,28 +558,7 @@ const RssFeedButton = new Lang.Class(
 
 	},
 
-	_getDefaultBrowser: function()
-	{
-		let browser;
-		try
-		{
-			browser = Gio.app_info_get_default_for_uri_scheme("http").get_executable();
-		}
-		catch (err)
-		{
-			browser = "epiphany";
-		}
-		return browser;
-	},
-
-	_processLinkOpen: function(url, menu)
-	{
-		Util.trySpawnCommandLine(this._getDefaultBrowser() + ' ' + url);
-		if (menu)
-			menu.setOrnament(PopupMenu.Ornament.NONE);
-	},
-
-	_showNotification: function(title, message, url, menu)
+	_dispatchNotification: function(title, message, url, cacheObj)
 	{
 		/*
 		 * Since per-source notification limit cannot be set, we create a new
@@ -561,7 +581,7 @@ const RssFeedButton = new Lang.Class(
 		{
 			notification.addAction(_('Open URL'), Lang.bind(this, function()
 			{
-				this._processLinkOpen(url, menu);
+				Misc.processLinkOpen(url, cacheObj);
 			}));
 
 			notification.addAction(_('Copy URL'), Lang.bind(this, function()
@@ -571,7 +591,7 @@ const RssFeedButton = new Lang.Class(
 
 			notification.connect('activated', Lang.bind(this, function()
 			{
-				this._processLinkOpen(url, menu);
+				Misc.processLinkOpen(url, cacheObj);
 			}));
 		}
 
@@ -584,8 +604,11 @@ const RssFeedButton = new Lang.Class(
 		}));
 
 		notification.setTransient(false);
+		notification.setUrgency(MessageTray.Urgency.HIGH);
 
 		Source.notify(notification);
+
+		return notification;
 	}
 
 });

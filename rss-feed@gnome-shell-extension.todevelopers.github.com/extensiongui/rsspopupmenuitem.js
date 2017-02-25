@@ -29,6 +29,7 @@ const Util = imports.misc.util;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.logger;
 const Encoder = Me.imports.encoder.getInstance();
+const Misc = Me.imports.misc;
 
 const MessageTray = imports.ui.messageTray;
 
@@ -48,11 +49,11 @@ const RssPopupMenuItem = new Lang.Class({
      */
     _init: function(item) {
 
-        let title = "  "+item.Title;
+        let title = "  "+Encoder.htmlDecode(item.Title).trim();
         if (title.length > 128)
             title = title.substr(0, 128) + "...";
 
-        this.parent(Encoder.htmlDecode(title));
+        this.parent(title);
 
         this._link = item.HttpLink;
 
@@ -64,12 +65,18 @@ const RssPopupMenuItem = new Lang.Class({
         	this._browser = "epiphany";
         }
         
-        this.setOrnament(PopupMenu.Ornament.DOT);
-        
         this.connect('activate', Lang.bind(this, function() {
             Log.Debug("Opening browser with link " + this._link);
+            /*
             this.setOrnament(PopupMenu.Ornament.NONE);
-            Util.trySpawnCommandLine(this._browser + ' ' + this._link);            
+            Util.trySpawnCommandLine(this._browser + ' ' + this._link);   
+            */
+            Misc.processLinkOpen(this._link, this._cacheObj);
+            
+            /* trash the notification, if it exists */
+            if ( this._cacheObj.Notification )
+            	this._cacheObj.Notification.destroy();
+            
         }));
     }
 
