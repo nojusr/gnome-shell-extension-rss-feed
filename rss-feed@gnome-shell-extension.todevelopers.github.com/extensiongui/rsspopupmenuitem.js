@@ -63,9 +63,12 @@ const RssPopupMenuItem = new Lang.Class({
         catch (err) {
         	this._browser = "epiphany";
         }
-
+        
+        this.setOrnament(PopupMenu.Ornament.DOT);
+        
         this.connect('activate', Lang.bind(this, function() {
-            Log.Debug("Opening browser with link " + this._link);           
+            Log.Debug("Opening browser with link " + this._link);
+            this.setOrnament(PopupMenu.Ornament.NONE);
             Util.trySpawnCommandLine(this._browser + ' ' + this._link);            
         }));
     }

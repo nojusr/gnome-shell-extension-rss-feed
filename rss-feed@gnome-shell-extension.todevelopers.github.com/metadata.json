@@ -4,5 +4,5 @@
 "settings-schema": "org.gnome.shell.extensions.rss-feed",
 "name": "RSS Feed",
 "description": "RSS Feed reader for GNOME Shell",
-"url": "https://github.com/maweki/gnome-shell-extension-rss-feed"
+"url": "https://github.com/nixnodes/gnome-shell-extension-rss-feed"
 }

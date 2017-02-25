@@ -91,7 +91,7 @@ const RssFeedSettingsWidget = new GObject.Class({
 		// poll delay
         let box4 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
         box4.set_margin_bottom(6);
-		let label4 = new Gtk.Label({ xalign: 0, label: _("Poll delay (ms:") });
+		let label4 = new Gtk.Label({ xalign: 0, label: _("Poll delay (ms):") });
 		box4.pack_start(label4, true, true, 0);
 
 		let spinbtn4 = Gtk.SpinButton.new_with_range(25, MAX_POLL_DELAY, 1);
