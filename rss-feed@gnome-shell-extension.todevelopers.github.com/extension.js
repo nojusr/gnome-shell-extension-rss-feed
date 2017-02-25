@@ -57,7 +57,7 @@ const DEBUG_ENABLED_KEY = 'enable-debug';
 const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
 const POLL_DELAY_KEY = 'fpoll-timeout';
 
-const NOTIFICATION_ICON = 'emblem-web';
+const NOTIFICATION_ICON = 'application-rss+xml';
 
 /*
  * Main RSS Feed extension class
