@@ -30,42 +30,35 @@ const
 Me = imports.misc.extensionUtils.getCurrentExtension();
 const
 Log = Me.imports.logger;
-const
-Encoder = Me.imports.encoder.getInstance();
 
 const
-RssPopupSubMenu = Me.imports.extensiongui.rsspopupsubmenu.RssPopupSubMenu;
-
-/*
- *  RssPopupSubMenuMenuItem class that extends PopupSubMenuMenuItem. Holds RSS feed articles
- */
+St = imports.gi.St;
 const
-RssPopupSubMenuMenuItem = new Lang.Class(
+Gtk = imports.gi.Gtk;
+
+const
+RssPopupMenuSection = new Lang.Class(
 {
-	Name : 'RssPopupSubMenuMenuItem',
-	Extends : PopupMenu.PopupSubMenuMenuItem,
+	Name : 'RssPopupMenuSection',
+	Extends : PopupMenu.PopupMenuSection,
 
-	/*
-	 *  Initialize instance of RssPopupSubMenuMenuItem class
-	 *  publisher - RSS feed publisher
-	 *  nitems - number of articles
-	 */
-	_init : function(publisher, nitems)
+	_init : function(sv_style)
 	{
+		this.parent();
 
-		let
-		title = Encoder.htmlDecode(publisher.Title);
-		if (title.length > 128)
-			title = title.substr(0, 128) + "...";
+		this.actor = new St.ScrollView(
+		{
+			style : (sv_style ? sv_style : ''),
+			hscrollbar_policy : Gtk.PolicyType.NEVER,
+			vscrollbar_policy : Gtk.PolicyType.AUTOMATIC
+		});
 
-		this.parent(title);
+		this.actor.add_actor(this.box);
+		this.actor._delegate = this;
+		this.actor.clip_to_allocation = true;
 
-		// kinda nasty, but what the hell
-		this.menu.destroy();
-		this.menu = new RssPopupSubMenu(this.actor, this._triangle);
-		this.menu.connect('open-state-changed', Lang.bind(this,
-				this._subMenuOpenStateChanged));
+		this.actor.add_style_pseudo_class('scrolled');
 
-		this._olabeltext = title;
-	}
+	},
+
 });

@@ -12,10 +12,15 @@
             <summary>Max items per source</summary>
             <description>Number of items visible per source.</description>
         </key>
+        <key type="i" name="max-height">
+            <default>8192</default>
+            <summary>Max menu height (px)</summary>
+            <description>Maximum popup menu height (in pixels) before it starts scrolling.</description>
+        </key>
         <key type="i" name="fpoll-timeout">
             <default>1000</default>
             <summary>Poll delay (ms)</summary>
-            <description>Throttles RSS source polls to reduce the performance impact on gnome-shell</description>
+            <description>Throttles RSS source polls to reduce the performance impact on gnome-shell.</description>
         </key>
          <key type="b" name="enable-notifications">
             <default>true</default>

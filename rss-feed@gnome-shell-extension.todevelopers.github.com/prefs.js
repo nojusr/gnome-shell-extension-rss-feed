@@ -37,12 +37,14 @@ const COLUMN_ID = 0;
 const MAX_UPDATE_INTERVAL = 1440;
 const MAX_SOURCES_LIMIT = 1024;
 const MAX_POLL_DELAY = 10000;
+const MAX_HEIGHT = 8192;
 
 const RSS_FEEDS_LIST_KEY = 'rss-feeds-list';
 const UPDATE_INTERVAL_KEY = 'update-interval';
 const ITEMS_VISIBLE_KEY = 'items-visible';
 const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
 const POLL_DELAY_KEY = 'fpoll-timeout';
+const MAX_HEIGHT_KEY = 'max-height';
 
 /*
  *	RssFeedSettingsWidget class for settings widget
@@ -88,6 +90,19 @@ const RssFeedSettingsWidget = new GObject.Class({
 		box2.add(spinbtn2);
 		this.add(box2);
 		
+		// maximum menu height
+		let box5 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		box5.set_margin_bottom(6);
+		let label5 = new Gtk.Label({ xalign: 0, label: _("Max menu height (px):") });
+		box5.pack_start(label5, true, true, 0);
+
+		let spinbtn5 = Gtk.SpinButton.new_with_range(50, MAX_HEIGHT, 1);
+		spinbtn5.set_value(Settings.get_int(MAX_HEIGHT_KEY));
+		Settings.bind(MAX_HEIGHT_KEY, spinbtn5, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+		box5.add(spinbtn5);
+		this.add(box5);
+
 		// poll delay
         let box4 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
         box4.set_margin_bottom(6);

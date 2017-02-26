@@ -21,63 +21,66 @@
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Gio = imports.gi.Gio;
-const Lang = imports.lang;
-const PopupMenu = imports.ui.popupMenu;
-const Util = imports.misc.util;
+const
+Gio = imports.gi.Gio;
+const
+Lang = imports.lang;
+const
+PopupMenu = imports.ui.popupMenu;
+const
+Util = imports.misc.util;
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Log = Me.imports.logger;
-const Encoder = Me.imports.encoder.getInstance();
-const Misc = Me.imports.misc;
+const
+Me = imports.misc.extensionUtils.getCurrentExtension();
+const
+Log = Me.imports.logger;
+const
+Encoder = Me.imports.encoder.getInstance();
+const
+Misc = Me.imports.misc;
 
-const MessageTray = imports.ui.messageTray;
-
-const Main = imports.ui.main;
+const
+Main = imports.ui.main;
 /*
  *  RssPopupMenuItem class that extends PopupMenuItem to provide RSS feed specific functionality
  *  After click on this popum menu item, default browser is opened with RSS article
  */
-const RssPopupMenuItem = new Lang.Class({
+const
+RssPopupMenuItem = new Lang.Class(
+{
+	Name : 'RssPopupMenuItem',
+	Extends : PopupMenu.PopupMenuItem,
 
-    Name: 'RssPopupMenuItem',
-    Extends: PopupMenu.PopupMenuItem,
+	/*
+	 *  Initialize instance of RssPopupMenuItem class
+	 *  item - RSS feed item
+	 */
+	_init : function(item)
+	{
 
-    /*
-     *  Initialize instance of RssPopupMenuItem class
-     *  item - RSS feed item
-     */
-    _init: function(item) {
+		let
+		title = "  " + Encoder.htmlDecode(item.Title).trim();
+		if (title.length > 100)
+			title = title.substr(0, 100) + "...";
 
-        let title = "  "+Encoder.htmlDecode(item.Title).trim();
-        if (title.length > 128)
-            title = title.substr(0, 128) + "...";
+		this.parent(title);
 
-        this.parent(title);
+		this._link = item.HttpLink;
 
-        this._link = item.HttpLink;
+		this.connect('activate', Lang.bind(this, function()
+		{
+			Log.Debug("Opening browser with link " + this._link);
+			/*
+			this.setOrnament(PopupMenu.Ornament.NONE);
+			Util.trySpawnCommandLine(this._browser + ' ' + this._link);   
+			*/
+			Misc.processLinkOpen(this._link, this._cacheObj);
 
-        try {
-            // try to get default browser
-            this._browser = Gio.app_info_get_default_for_uri_scheme("http").get_executable();
-        }
-        catch (err) {
-        	this._browser = "epiphany";
-        }
-        
-        this.connect('activate', Lang.bind(this, function() {
-            Log.Debug("Opening browser with link " + this._link);
-            /*
-            this.setOrnament(PopupMenu.Ornament.NONE);
-            Util.trySpawnCommandLine(this._browser + ' ' + this._link);   
-            */
-            Misc.processLinkOpen(this._link, this._cacheObj);
-            
-            /* trash the notification, if it exists */
-            if ( this._cacheObj.Notification )
-            	this._cacheObj.Notification.destroy();
-            
-        }));
-    }
+			/* trash the notification, if it exists */
+			if (this._cacheObj.Notification)
+				this._cacheObj.Notification.destroy();
+
+		}));
+	}
 
 });

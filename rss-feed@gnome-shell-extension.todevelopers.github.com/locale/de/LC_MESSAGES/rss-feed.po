@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RSS Feed GNOME Shell Extension\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-25 21:19+0100\n"
+"POT-Creation-Date: 2017-02-26 19:15+0100\n"
 "PO-Revision-Date: 2015-06-18 11:03-0300\n"
 "Last-Translator: Jonatan Zeidler <jonatan_zeidler@gmx.de>\n"
 "Language-Team: German <jonatan_zeidler@gmx.de>\n"
@@ -19,69 +19,71 @@ msgstr ""
 "X-Generator: Poedit 1.7.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: extension.js:111
-msgid "Previous"
-msgstr "Zurück"
-
-#: extension.js:112
-msgid "Next"
-msgstr "Weiter"
-
-#: extension.js:113
+#: extension.js:140
 msgid "Reload RSS Feeds"
 msgstr "RSS-Quellen abrufen"
 
-#: extension.js:114
+#: extension.js:141
 msgid "RSS Feed Settings"
 msgstr "Einstellungen der RSS-Quellen"
 
-#: extension.js:118 extension.js:554
+#: extension.js:145 extension.js:585
 msgid "Last update"
 msgstr "Zuletzt aktualisiert"
 
-#: extension.js:526
+#: extension.js:556
 msgid "UPDATE"
 msgstr "UPDATE"
 
-#: extension.js:527
+#: extension.js:557
 msgid "Source"
 msgstr "Quelle"
 
-#: extension.js:528
+#: extension.js:558
 msgid "Author"
 msgstr "Autor"
 
-#: extension.js:581
+#: extension.js:612
 msgid "Open URL"
 msgstr "Öffne URL"
 
-#: extension.js:586
+#: extension.js:617
 msgid "Copy URL"
 msgstr "Kopieren URL"
 
-#: prefs.js:68
+#: prefs.js:70
 msgid "Update interval (minutes):"
 msgstr "Aktualisierungsintervall (Minuten):"
 
-#: prefs.js:81
+#: prefs.js:83
 msgid "Max items per source:"
 msgstr "Max. Artikel pro Quelle:"
 
-#: prefs.js:94
+#: prefs.js:96
+msgid "Max menu height (px):"
+msgstr "Max. Menühöhe (px):"
+
+#: prefs.js:109
 msgid "Poll delay (ms):"
 msgstr "Poll delay (ms):"
 
-#: prefs.js:107
+#: prefs.js:122
 msgid "Show notifications:"
 msgstr "Zeige Benachrichtigungen:"
 
-#: prefs.js:217
+#: prefs.js:232
 msgid "New RSS Feed source"
 msgstr "Neue RSS-Quelle"
 
-#: prefs.js:241
+#: prefs.js:256
 msgid "Edit RSS Feed source"
 msgstr "RSS-Quelle bearbeiten"
+
+#~ msgid "Previous"
+#~ msgstr "Zurück"
+
+#~ msgid "Next"
+#~ msgstr "Weiter"
 
 #~ msgid "No data available"
 #~ msgstr "Keine Daten verfügbar"

@@ -16,29 +16,40 @@
  * You should have received a copy of the GNU General Public License
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Gio = imports.gi.Gio;
-const Util = imports.misc.util;
-const PopupMenu = imports.ui.popupMenu;
+const
+Me = imports.misc.extensionUtils.getCurrentExtension();
+const
+Gio = imports.gi.Gio;
+const
+Util = imports.misc.util;
+const
+PopupMenu = imports.ui.popupMenu;
 
-const Log = Me.imports.logger;
+const
+Log = Me.imports.logger;
 
-function getDefaultBrowser() {
+function getDefaultBrowser()
+{
 	let
 	browser;
-	try {
+	try
+	{
 		browser = Gio.app_info_get_default_for_uri_scheme("http")
 				.get_executable();
-	} catch (err) {
+	}
+	catch (err)
+	{
 		browser = "epiphany";
 	}
 	return browser;
 }
 
-function processLinkOpen(url, cacheObj) {
+function processLinkOpen(url, cacheObj)
+{
 	Util.trySpawnCommandLine(getDefaultBrowser() + ' ' + url);
 
-	if (cacheObj && cacheObj.Unread) {
+	if (cacheObj && cacheObj.Unread)
+	{
 		cacheObj.Unread = null;
 
 		if (cacheObj.Menu)
@@ -47,7 +58,8 @@ function processLinkOpen(url, cacheObj) {
 		let
 		feedCacheObj = cacheObj.parent;
 
-		if (feedCacheObj) {
+		if (feedCacheObj)
+		{
 			feedCacheObj.UnreadCount--;
 
 			let
@@ -59,14 +71,26 @@ function processLinkOpen(url, cacheObj) {
 
 			feedCacheObj.pUnreadCount = feedCacheObj.UnreadCount;
 
-			if (feedCacheObj.Menu && !feedCacheObj.UnreadCount) {
-				feedCacheObj.Menu.setOrnament(PopupMenu.Ornament.NONE);
+			let
+			parentClass = feedCacheObj.parentClass;
+
+			if (parentClass)
+			{
+				parentClass._totalUnreadCount--;
+				parentClass
+						._updateUnreadCountLabel(parentClass._totalUnreadCount);
+			}
+
+			if (!feedCacheObj.UnreadCount)
+			{
+				subMenu.setOrnament(PopupMenu.Ornament.NONE);
 			}
 		}
 	}
 }
 
-function clampTitle(title) {
+function clampTitle(title)
+{
 	if (title.length > 128)
 		title = title.substr(0, 128) + "...";
 	return title;
