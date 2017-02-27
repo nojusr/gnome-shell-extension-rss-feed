@@ -677,11 +677,11 @@ const RssFeedButton = new Lang.Class(
 
 		while ( i-- )
 		{
-			let cacheObj = notifCache[i];
-			if ( cacheObj._itemURL == url )
+			let nCacheObj = notifCache[i];
+			if ( nCacheObj._itemURL == url )
 			{
-				Log.Debug("Updating notification: " + title + " (" + url + ")");
-				cacheObj.destroy();
+				//Log.Debug("Updating notification: " + title + " (" + url + ")");
+				nCacheObj.destroy();
 				notifCache.splice(i,1);
 				break;
 			}
