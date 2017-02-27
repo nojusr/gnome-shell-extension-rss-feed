@@ -23,6 +23,8 @@ const
 Lang = imports.lang;
 const
 PopupMenu = imports.ui.popupMenu;
+const
+Gtk = imports.gi.Gtk;
 
 const
 Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -40,8 +42,7 @@ RssPopupSubMenu = new Lang.Class(
 		this.parent(sourceActor, sourceArrow);
 
 		/* pass any 'scoll-event' to the parent */
-		this.actor.connect('scroll-event', Lang.bind(this, function(actor,
-				event)
+		this.actor.connect('scroll-event', Lang.bind(this, function(actor, event)
 		{
 			let
 			scrollBar = this._parent.actor.get_vscroll_bar();
@@ -51,8 +52,26 @@ RssPopupSubMenu = new Lang.Class(
 
 	},
 
-	_needsScrollbar : function()
+	open : function(animate)
+	{
+		/*
+		let
+		needsScrollbar = this._parent._needsScrollbar(this);
+
+		this._parent.actor.vscrollbar_policy = (needsScrollbar ? Gtk.PolicyType.AUTOMATIC
+			: Gtk.PolicyType.NEVER);
+		 */
+		this.parent(this._parent._animate);
+	},
+
+	close : function(animate)
+	{
+		this.parent(this._parent._animate);
+	},
+
+	_needsScrollbar : function(o)
 	{
 		return false;
 	}
+
 });

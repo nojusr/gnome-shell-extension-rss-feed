@@ -21,11 +21,13 @@
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const ExtensionUtils = imports.misc.extensionUtils;
+
 const Gio = imports.gi.Gio;
 const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
+
+const ExtensionUtils = imports.misc.extensionUtils;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 const Settings = Convenience.getSettings();
@@ -45,6 +47,10 @@ const ITEMS_VISIBLE_KEY = 'items-visible';
 const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
 const POLL_DELAY_KEY = 'fpoll-timeout';
 const MAX_HEIGHT_KEY = 'max-height';
+const ENABLE_ANIMATIONS = 'enable-anim';
+
+const
+Log = Me.imports.logger;
 
 /*
  *	RssFeedSettingsWidget class for settings widget
@@ -129,7 +135,21 @@ const RssFeedSettingsWidget = new GObject.Class({
         
         box3.add(show);
         this.add(box3);
-        
+
+        // enable animations
+		let box6 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		box6.set_margin_bottom(6);
+		let label6 = new Gtk.Label({ xalign: 0, label: _("Enable animations:") });
+		box6.pack_start(label6, true, true, 0);
+
+		let anims = new Gtk.Switch({active: Settings.get_boolean(ENABLE_ANIMATIONS) });
+		anims.connect('notify::active', Lang.bind(this, function(b) {
+			Settings.set_boolean(ENABLE_ANIMATIONS, b.active);
+		}));
+
+		box6.add(anims);
+		this.add(box6);
+
 		// rss feed sources
 		let scrolledWindow = new Gtk.ScrolledWindow();
 		scrolledWindow.set_border_width(0);

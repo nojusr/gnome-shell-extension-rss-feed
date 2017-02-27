@@ -61,4 +61,19 @@ RssPopupMenuSection = new Lang.Class(
 
 	},
 
+	_needsScrollbar : function(child)
+	{
+		let
+		topMenu = this;
+		let[topMinHeight, topNaturalHeight] = topMenu.actor.get_preferred_height(-1);
+		let[topMinHeight2, topNaturalHeight2] = child.actor.get_preferred_height(-1);
+
+		let
+		topThemeNode = this._parent.actor.get_theme_node();
+		let
+		topMaxHeight = topThemeNode.get_max_height();
+
+		return topNaturalHeight + topNaturalHeight2 > topMaxHeight;
+	},
+
 });

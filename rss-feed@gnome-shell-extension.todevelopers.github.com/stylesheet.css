@@ -1,3 +1,11 @@
 .rss-icon-label {
 	font-size: 87%;
 }
+
+.rss-status-label {
+	margin-right: 50px;
+}
+
+.rss-menu {
+	min-width: 400px;
+}

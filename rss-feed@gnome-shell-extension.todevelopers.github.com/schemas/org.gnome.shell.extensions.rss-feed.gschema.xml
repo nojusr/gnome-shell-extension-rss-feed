@@ -2,40 +2,45 @@
 <schemalist gettext-domain="rss-feed-gnome-shell">
     <schema path="/org/gnome/shell/extensions/rss-feed/"
             id="org.gnome.shell.extensions.rss-feed">
-        <key type="i" name="update-interval">
-            <default>15</default>
-            <summary>Update interval</summary>
-            <description>Download interval (in minutes) for all RSS feeds.</description>
-        </key>
-        <key type="i" name="items-visible">
-            <default>100</default>
-            <summary>Max items per source</summary>
-            <description>Number of items visible per source.</description>
-        </key>
-        <key type="i" name="max-height">
-            <default>8192</default>
-            <summary>Max menu height (px)</summary>
-            <description>Maximum popup menu height (in pixels) before it starts scrolling.</description>
-        </key>
-        <key type="i" name="fpoll-timeout">
-            <default>1000</default>
-            <summary>Poll delay (ms)</summary>
-            <description>Throttles RSS source polls to reduce the performance impact on gnome-shell.</description>
-        </key>
-         <key type="b" name="enable-notifications">
-            <default>true</default>
-            <summary>Show notifications</summary>
-            <description>Show notifications when new RSS items are found.</description>
-        </key>
-        <key type="as" name="rss-feeds-list">
-            <default>[]</default>
-            <summary>RSS feeds</summary>
-            <description>List of RSS feeds sources.</description>
-        </key>
-        <key type="b" name="enable-debug">
-            <default>false</default>
-            <summary>Enable debug</summary>
-            <description>Enable extension logs debug messages in Gnome logs provider.</description>
-        </key>       
+		<key type="i" name="update-interval">
+		    <default>15</default>
+		    <summary>Update interval</summary>
+		    <description>Download interval (in minutes) for all RSS feeds.</description>
+		</key>
+		<key type="i" name="items-visible">
+		    <default>100</default>
+		    <summary>Max items per source</summary>
+		    <description>Number of items visible per source.</description>
+		</key>
+		<key type="i" name="max-height">
+		    <default>8192</default>
+		    <summary>Max menu height (px)</summary>
+		    <description>Maximum popup menu height (in pixels) before it starts scrolling.</description>
+		</key>
+		<key type="i" name="fpoll-timeout">
+		    <default>1000</default>
+		    <summary>Poll delay (ms)</summary>
+		    <description>Throttles RSS source polls to reduce the performance impact on gnome-shell.</description>
+		</key>
+		<key type="b" name="enable-notifications">
+		    <default>true</default>
+		    <summary>Show notifications</summary>
+		    <description>Show notifications when new RSS items are found.</description>
+		</key>
+		<key type="b" name="enable-anim">
+		    <default>true</default>
+		    <summary>Enable animations</summary>
+		    <description>Enable animations</description>
+		</key>
+		<key type="as" name="rss-feeds-list">
+		    <default>[]</default>
+		    <summary>RSS feeds</summary>
+		    <description>List of RSS feeds sources.</description>
+		</key>
+		<key type="b" name="enable-debug">
+		    <default>false</default>
+		    <summary>Enable debug</summary>
+		    <description>Enable extension logs debug messages in Gnome logs provider.</description>
+		</key>
     </schema>
 </schemalist>

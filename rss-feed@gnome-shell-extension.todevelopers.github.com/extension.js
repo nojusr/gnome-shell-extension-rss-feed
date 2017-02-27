@@ -20,16 +20,22 @@
  * You should have received a copy of the GNU General Public License
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Lang = imports.lang;
-const Main = imports.ui.main;
-const Mainloop = imports.mainloop;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const PanelMenu = imports.ui.panelMenu;
-const PopupMenu = imports.ui.popupMenu;
 const Soup = imports.gi.Soup;
 const St = imports.gi.St;
+
+const Main = imports.ui.main;
+const PanelMenu = imports.ui.panelMenu;
+const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
-const Gio = imports.gi.Gio;
+
+
+const Mainloop = imports.mainloop;
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const Convenience = Me.imports.convenience;
 const Parser = Me.imports.parsers.factory;
@@ -59,6 +65,7 @@ const DEBUG_ENABLED_KEY = 'enable-debug';
 const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
 const POLL_DELAY_KEY = 'fpoll-timeout';
 const MAX_HEIGHT_KEY = 'max-height';
+const ENABLE_ANIMATIONS = 'enable-anim';
 
 const NOTIFICATION_ICON = 'application-rss+xml';
 
@@ -121,6 +128,18 @@ const RssFeedButton = new Lang.Class(
 		this._feedsSection = new ExtensionGui.RssPopupMenuSection(
 			this._generatePopupMenuCSS(this._pMaxMenuHeight)
 		);
+	
+		/*
+		let i = 25;
+
+		while ( i--)
+		{
+			let l = {
+					Title: "ttt " + i 
+			}
+			let subMenu = new ExtensionGui.RssPopupSubMenuMenuItem(l, 0);
+			this._feedsSection.addMenuItem(subMenu);
+		}*/
 
 		//this._feedsSection.box.style_class = 'rss-feeds-list';
 
@@ -135,17 +154,22 @@ const RssFeedButton = new Lang.Class(
 			reactive: false
 		});
 
-
 		let systemMenu = Main.panel.statusArea.aggregateMenu._system;
-		let reloadBtn = systemMenu._createActionButton('view-refresh-symbolic', _("Reload RSS Feeds"));
-		let settingsBtn = systemMenu._createActionButton('preferences-system-symbolic', _("RSS Feed Settings"));
 
-		this._lastUpdateTime = new St.Button(
+		this._lastUpdateTime = new St.Label(
 		{
-			label: _("Last update") + ': --:--'
+			text: _("Last update") + ': --:--',
+			style_class: 'rss-status-label'
 		});
 
 		this._buttonMenu.actor.add_actor(this._lastUpdateTime);
+		this._buttonMenu.actor.set_x_align(Clutter.ActorAlign.CENTER);
+
+		this._lastUpdateTime.set_y_align(Clutter.ActorAlign.CENTER);
+
+		let reloadBtn = systemMenu._createActionButton('view-refresh-symbolic', _("Reload RSS Feeds"));
+		let settingsBtn = systemMenu._createActionButton('preferences-system-symbolic', _("RSS Feed Settings"));
+
 		this._buttonMenu.actor.add_actor(reloadBtn);
 		this._buttonMenu.actor.add_actor(settingsBtn);
 
@@ -153,6 +177,13 @@ const RssFeedButton = new Lang.Class(
 		settingsBtn.connect('clicked', Lang.bind(this, this._onSettingsBtnClicked));
 
 		this.menu.addMenuItem(this._buttonMenu);
+
+		this.menu.connect('open-state-changed', Lang.bind(this, function(self, open) {
+			if ( open && this._lastOpen )
+				this._lastOpen.open();		
+		}));
+
+		this.menu.actor.add_style_class_name('rss-menu');
 
 		// loading data on startup
 		this._reloadRssFeeds();
@@ -213,20 +244,38 @@ const RssFeedButton = new Lang.Class(
 
 		this._maxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
 
+		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS);
+
 		Log.Debug("Update interval: " + this._updateInterval +
 			" Visible items: " + this._itemsVisible +
 			" RSS sources: " + this._rssFeedsSources +
 			" Notification: " + this._enableNotifications);
 	},
-
+	
 	/*
 	 * On settings button clicked callback
 	 */
 	_onSettingsBtnClicked: function()
 	{
+		var success, pid;
+		try
+		{
+			[success, pid] = GLib.spawn_async(null, ["gnome-shell-extension-prefs", Me.uuid], null,
+												GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+												null);
+		}
+		catch (err) {
+		    return;
+		}
 
-		this.menu.actor.hide();
-		Util.spawn(["gnome-shell-extension-prefs", "rss-feed@gnome-shell-extension.todevelopers.github.com"]);
+		if ( !success )
+			return;
+
+		this.menu.close();
+
+		GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this, function () {
+			this._reloadRssFeeds();
+		}));
 	},
 
 	/*
@@ -458,6 +507,20 @@ const RssFeedButton = new Lang.Class(
 		{
 			subMenu = new ExtensionGui.RssPopupSubMenuMenuItem(rssParser.Publisher, nItems);
 			this._feedsSection.addMenuItem(subMenu);
+
+			subMenu.menu.connect('open-state-changed', Lang.bind(this, function(self, open)
+			{
+				if ( open )
+					this._lastOpen = self;
+				else if ( this.menu.isOpen && this._lastOpen == self )
+					this._lastOpen = undefined;
+			}));
+
+			subMenu.menu.connect('destroy', Lang.bind(this,function(self, open) {
+				if ( this._lastOpen == self )
+					this._lastOpen = undefined;
+			}));
+
 			feedsCache.Menu = subMenu;
 		}
 		else
@@ -589,7 +652,7 @@ const RssFeedButton = new Lang.Class(
 		}
 
 		// update last download time
-		this._lastUpdateTime.set_label(_("Last update") + ': ' + new Date().toLocaleTimeString());
+		this._lastUpdateTime.set_text(_("Last update") + ': ' + new Date().toLocaleTimeString());
 
 		rssParser.clear();
 
