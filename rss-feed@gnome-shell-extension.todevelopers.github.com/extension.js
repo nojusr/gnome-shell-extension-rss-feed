@@ -31,7 +31,7 @@ const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
-
+const ScreenShield = imports.ui.screenShield;
 
 const Mainloop = imports.mainloop;
 
@@ -66,8 +66,11 @@ const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
 const POLL_DELAY_KEY = 'fpoll-timeout';
 const MAX_HEIGHT_KEY = 'max-height';
 const ENABLE_ANIMATIONS = 'enable-anim';
+const PRESERVE_ON_LOCK = 'preserve-on-lock';
 
 const NOTIFICATION_ICON = 'application-rss+xml';
+
+let _preserveOnLock = false;
 
 /*
  * Main RSS Feed extension class
@@ -228,23 +231,16 @@ const RssFeedButton = new Lang.Class(
 	 */
 	_getSettings: function()
 	{
-
 		Log.Debug("Get variables from GSettings");
 
-		// interval for updates
 		this._updateInterval = Settings.get_int(UPDATE_INTERVAL_KEY);
-		// rss sources visible per page
 		this._itemsVisible = Settings.get_int(ITEMS_VISIBLE_KEY);
-		// http sources for rss feeds
 		this._rssFeedsSources = Settings.get_strv(RSS_FEEDS_LIST_KEY);
-		// poll delay
 		this._rssPollDelay = Settings.get_int(POLL_DELAY_KEY);
-		// enable notifications
 		this._enableNotifications = Settings.get_boolean(ENABLE_NOTIFICATIONS_KEY);
-
 		this._maxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
-
 		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS);
+		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK);
 
 		Log.Debug("Update interval: " + this._updateInterval +
 			" Visible items: " + this._itemsVisible +
@@ -257,6 +253,9 @@ const RssFeedButton = new Lang.Class(
 	 */
 	_onSettingsBtnClicked: function()
 	{
+		if (Main.screenShield._isLocked)
+			return;
+		
 		var success, pid;
 		try
 		{
@@ -328,7 +327,7 @@ const RssFeedButton = new Lang.Class(
 		{
 			this._reloadTimer = Mainloop.timeout_add(0, function()
 			{
-				disable();
+				disable(true);
 				enable();
 			});
 		}
@@ -388,8 +387,6 @@ const RssFeedButton = new Lang.Class(
 					for (let j = 0; j < this._rssFeedsSources.length; j++)
 					{
 						let url = this._rssFeedsSources[j];
-						let l2o = url.indexOf('?');
-						if (l2o != -1) url = url.substr(0, l2o);
 
 						if (key == url)
 						{
@@ -406,6 +403,8 @@ const RssFeedButton = new Lang.Class(
 			for (let i = 0; i < this._rssFeedsSources.length; i++)
 			{
 				let url = this._rssFeedsSources[i];
+				let sourceURL = url;
+
 				let jsonObj = this._getParametersAsJson(url);
 
 				let l2o = url.indexOf('?');
@@ -413,7 +412,7 @@ const RssFeedButton = new Lang.Class(
 
 				let sourceID = Mainloop.timeout_add(i * this._rssPollDelay, Lang.bind(this, function()
 				{
-					this._httpGetRequestAsync(url, JSON.parse(jsonObj), i, Lang.bind(this, this._onDownload));
+					this._httpGetRequestAsync(url, JSON.parse(jsonObj), sourceURL, Lang.bind(this, this._onDownload));
 					let index = this._feedTimers.indexOf(sourceID);
 					if ( index > -1 )
 						this._feedTimers.splice(index, 1);
@@ -434,10 +433,10 @@ const RssFeedButton = new Lang.Class(
 	/*
 	 * Creates asynchronous HTTP GET request through Soup interface url - HTTP
 	 * request URL without parameters params - JSON object of HTTP GET request
-	 * parameters position - Position in RSS sources list callback - calls on
+	 * sourceURL - original URL used as cache key
 	 * HTTP GET request response
 	 */
-	_httpGetRequestAsync: function(url, params, position, callback)
+	_httpGetRequestAsync: function(url, params, sourceURL, callback)
 	{
 
 		if (this._httpSession == null)
@@ -450,26 +449,26 @@ const RssFeedButton = new Lang.Class(
 		// C convenience.
 		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
 
-		Log.Debug("[" + position + "] Soup HTTP GET request. URL: " + url + " parameters: " + JSON.stringify(params));
+		Log.Debug("Soup HTTP GET request. URL: " + url + " parameters: " + JSON.stringify(params));
 
 		let request = Soup.form_request_new_from_hash('GET', url, params);
 
 		this._httpSession.queue_message(request, Lang.bind(this, function(httpSession, message)
 		{
 
-			Log.Debug("[" + position + "] Soup HTTP GET reponse. Status code: " + message.status_code +
+			Log.Debug("Soup HTTP GET reponse. Status code: " + message.status_code +
 				" Content Type: " + message.response_headers.get_one("Content-Type"));
 
 			if (message.response_body.data)
-				callback(message.response_body.data, position, url);
+				callback(message.response_body.data, sourceURL);
 		}));
 	},
 
 	/*
 	 * On HTTP request response download callback responseData - response data
-	 * position - Position in RSS sources list
+	 * sourceURL - original URL used as cache key
 	 */
-	_onDownload: function(responseData, position, sourceURL)
+	_onDownload: function(responseData, sourceURL)
 	{
 		let rssParser = Parser.createRssParser(responseData);
 
@@ -726,8 +725,8 @@ function init()
 	Convenience.initTranslations("rss-feed");
 
 	// hack for dconf
-	let enabled = Settings.get_boolean(DEBUG_ENABLED_KEY);
-	Settings.set_boolean(DEBUG_ENABLED_KEY, enabled);
+	Settings.set_boolean(DEBUG_ENABLED_KEY, 
+		Settings.get_boolean(DEBUG_ENABLED_KEY));
 
 	Log.Debug("Extension initialized.");
 }
@@ -737,21 +736,40 @@ function init()
  */
 function enable()
 {
-
+	if ( rssFeedBtn )
+	{
+		Log.Debug("Extension already initialized.");
+		return;
+	}
+	
 	rssFeedBtn = new RssFeedButton();
 	Main.panel.addToStatusArea('rssFeedMenu', rssFeedBtn, 0, 'right');
 
 	Log.Debug("Extension enabled.");
+
 }
 
 /*
  * Disable the extension
  */
-function disable()
+function disable(force)
 {
+	if ( !force )
+	{
+		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK);
+
+		if ( _preserveOnLock &&
+				Main.screenShield._isLocked )
+		{
+			Log.Debug("Not disabling extension while locked.");
+			return;
+		}
+	}
 
 	rssFeedBtn.stop();
 	rssFeedBtn.destroy();
 
-	Log.Debug("Extension disabled.");
+	rssFeedBtn = undefined;
+
+	Log.Debug("Extension disabled. ");
 }

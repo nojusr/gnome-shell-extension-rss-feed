@@ -32,6 +32,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 const Settings = Convenience.getSettings();
 
+
 const Gettext = imports.gettext.domain('rss-feed');
 const _ = Gettext.gettext;
 
@@ -48,6 +49,7 @@ const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
 const POLL_DELAY_KEY = 'fpoll-timeout';
 const MAX_HEIGHT_KEY = 'max-height';
 const ENABLE_ANIMATIONS = 'enable-anim';
+const PRESERVE_ON_LOCK = 'preserve-on-lock';
 
 const
 Log = Me.imports.logger;
@@ -69,6 +71,9 @@ const RssFeedSettingsWidget = new GObject.Class({
 		this.parent(params);
 		this.orientation = Gtk.Orientation.VERTICAL;
 		this.margin = 12;
+		
+		if ( this.set_size_request )
+			this.set_size_request(-1,550);
 
 		// update interval
 		let box = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
@@ -150,6 +155,34 @@ const RssFeedSettingsWidget = new GObject.Class({
 		box6.add(anims);
 		this.add(box6);
 
+        // enable animations
+		let box7 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		box7.set_margin_bottom(6);
+		let label7 = new Gtk.Label({ xalign: 0, label: _("Preserve on lock:") });
+		box7.pack_start(label7, true, true, 0);
+
+		let ponlock = new Gtk.Switch({active: Settings.get_boolean(PRESERVE_ON_LOCK) });
+		ponlock.connect('notify::active', Lang.bind(this, function(b) {
+			Settings.set_boolean(PRESERVE_ON_LOCK, b.active);
+		}));
+
+		box7.add(ponlock);
+		this.add(box7);
+
+		let sep = new Gtk.Separator({ orientation: Gtk.Orientation.HORIZONTAL});
+		sep.set_margin_bottom(2);
+		sep.set_margin_top(6);
+		this.add(sep);
+
+		// sources label
+		let boxsources = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		boxsources.set_margin_bottom(6);
+		boxsources.set_margin_top(4);
+		let labels = new Gtk.Label({ xalign: Gtk.Align.CENTER, label: _("RSS sources") });
+		boxsources.pack_start(labels, true, true, 0);
+		
+		this.add(boxsources);
+		
 		// rss feed sources
 		let scrolledWindow = new Gtk.ScrolledWindow();
 		scrolledWindow.set_border_width(0);
@@ -165,7 +198,8 @@ const RssFeedSettingsWidget = new GObject.Class({
 									   hexpand: true,
 									   vexpand: true });
 		this._actor.get_selection().set_mode(Gtk.SelectionMode.SINGLE);
-
+		
+		
 		let column = new Gtk.TreeViewColumn();
 
 		let cell = new Gtk.CellRendererText({ editable: false });

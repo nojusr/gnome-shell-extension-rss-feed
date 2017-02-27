@@ -16,14 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
-const
-Me = imports.misc.extensionUtils.getCurrentExtension();
+
 const
 Gio = imports.gi.Gio;
+
+const
+Main = imports.ui.main;
 const
 Util = imports.misc.util;
 const
 PopupMenu = imports.ui.popupMenu;
+
+const
+Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const
 Log = Me.imports.logger;
@@ -34,8 +39,7 @@ function getDefaultBrowser()
 	browser;
 	try
 	{
-		browser = Gio.app_info_get_default_for_uri_scheme("http")
-				.get_executable();
+		browser = Gio.app_info_get_default_for_uri_scheme("http").get_executable();
 	}
 	catch (err)
 	{
@@ -46,6 +50,9 @@ function getDefaultBrowser()
 
 function processLinkOpen(url, cacheObj)
 {
+	if (Main.screenShield._isLocked)
+		return;
+
 	Util.trySpawnCommandLine(getDefaultBrowser() + ' ' + url);
 
 	if (cacheObj && cacheObj.Unread)
@@ -66,8 +73,7 @@ function processLinkOpen(url, cacheObj)
 			subMenu = feedCacheObj.Menu;
 
 			subMenu.label.set_text(clampTitle(subMenu._olabeltext
-					+ (!feedCacheObj.UnreadCount ? '' : (' ('
-							+ feedCacheObj.UnreadCount + ')'))));
+				+ (!feedCacheObj.UnreadCount ? '' : (' (' + feedCacheObj.UnreadCount + ')'))));
 
 			feedCacheObj.pUnreadCount = feedCacheObj.UnreadCount;
 
@@ -77,8 +83,7 @@ function processLinkOpen(url, cacheObj)
 			if (parentClass)
 			{
 				parentClass._totalUnreadCount--;
-				parentClass
-						._updateUnreadCountLabel(parentClass._totalUnreadCount);
+				parentClass._updateUnreadCountLabel(parentClass._totalUnreadCount);
 			}
 
 			if (!feedCacheObj.UnreadCount)
