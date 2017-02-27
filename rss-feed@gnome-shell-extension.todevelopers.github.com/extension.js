@@ -616,9 +616,9 @@ const RssFeedButton = new Lang.Class(
 
 				if (item.Description.length > 0)
 				{
-					itemDescription = Encoder.htmlDecode(item.Description
+					itemDescription = Encoder.htmlDecode(item.Description)
 						.replace("<![CDATA[", "").replace("]]>", "")
-						.replace(/<.*?>/g, "").trim());
+						.replace(/<.*?>/g, "").trim();
 
 					if (itemDescription.length > 290)
 						itemDescription = itemDescription.substr(0, 290) + "...";
