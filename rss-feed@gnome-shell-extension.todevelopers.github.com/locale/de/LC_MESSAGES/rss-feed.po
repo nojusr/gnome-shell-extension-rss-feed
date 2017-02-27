@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RSS Feed GNOME Shell Extension\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-26 19:15+0100\n"
+"POT-Creation-Date: 2017-02-27 04:13+0100\n"
 "PO-Revision-Date: 2015-06-18 11:03-0300\n"
 "Last-Translator: Jonatan Zeidler <jonatan_zeidler@gmx.de>\n"
 "Language-Team: German <jonatan_zeidler@gmx.de>\n"
@@ -19,63 +19,67 @@ msgstr ""
 "X-Generator: Poedit 1.7.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: extension.js:140
-msgid "Reload RSS Feeds"
-msgstr "RSS-Quellen abrufen"
-
-#: extension.js:141
-msgid "RSS Feed Settings"
-msgstr "Einstellungen der RSS-Quellen"
-
-#: extension.js:145 extension.js:585
+#: extension.js:161 extension.js:655
 msgid "Last update"
 msgstr "Zuletzt aktualisiert"
 
-#: extension.js:556
+#: extension.js:170
+msgid "Reload RSS Feeds"
+msgstr "RSS-Quellen abrufen"
+
+#: extension.js:171
+msgid "RSS Feed Settings"
+msgstr "Einstellungen der RSS-Quellen"
+
+#: extension.js:626
 msgid "UPDATE"
 msgstr "UPDATE"
 
-#: extension.js:557
+#: extension.js:627
 msgid "Source"
 msgstr "Quelle"
 
-#: extension.js:558
+#: extension.js:628
 msgid "Author"
 msgstr "Autor"
 
-#: extension.js:612
+#: extension.js:682
 msgid "Open URL"
 msgstr "Öffne URL"
 
-#: extension.js:617
+#: extension.js:687
 msgid "Copy URL"
 msgstr "Kopieren URL"
 
-#: prefs.js:70
+#: prefs.js:76
 msgid "Update interval (minutes):"
 msgstr "Aktualisierungsintervall (Minuten):"
 
-#: prefs.js:83
+#: prefs.js:89
 msgid "Max items per source:"
 msgstr "Max. Artikel pro Quelle:"
 
-#: prefs.js:96
+#: prefs.js:102
 msgid "Max menu height (px):"
 msgstr "Max. Menühöhe (px):"
 
-#: prefs.js:109
+#: prefs.js:115
 msgid "Poll delay (ms):"
 msgstr "Poll delay (ms):"
 
-#: prefs.js:122
+#: prefs.js:128
 msgid "Show notifications:"
 msgstr "Zeige Benachrichtigungen:"
 
-#: prefs.js:232
+#: prefs.js:142
+msgid "Enable animations:"
+msgstr "Animationen aktivieren:"
+
+#: prefs.js:252
 msgid "New RSS Feed source"
 msgstr "Neue RSS-Quelle"
 
-#: prefs.js:256
+#: prefs.js:276
 msgid "Edit RSS Feed source"
 msgstr "RSS-Quelle bearbeiten"
 

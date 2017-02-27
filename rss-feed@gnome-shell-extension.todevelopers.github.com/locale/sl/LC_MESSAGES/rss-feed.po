@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-26 19:15+0100\n"
+"POT-Creation-Date: 2017-02-27 04:13+0100\n"
 "PO-Revision-Date: 2017-02-25 21:20+0100\n"
 "Last-Translator:  <siska@nixnodes.net>\n"
 "Language-Team: Slovenian\n"
@@ -18,63 +18,67 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
 
-#: extension.js:140
-msgid "Reload RSS Feeds"
-msgstr "Osveži"
-
-#: extension.js:141
-msgid "RSS Feed Settings"
-msgstr "Nastavitve"
-
-#: extension.js:145 extension.js:585
+#: extension.js:161 extension.js:655
 msgid "Last update"
 msgstr "Zadnja posodobitev"
 
-#: extension.js:556
+#: extension.js:170
+msgid "Reload RSS Feeds"
+msgstr "Osveži"
+
+#: extension.js:171
+msgid "RSS Feed Settings"
+msgstr "Nastavitve"
+
+#: extension.js:626
 msgid "UPDATE"
 msgstr "UPDATE"
 
-#: extension.js:557
+#: extension.js:627
 msgid "Source"
 msgstr "Vir"
 
-#: extension.js:558
+#: extension.js:628
 msgid "Author"
 msgstr "Avtor"
 
-#: extension.js:612
+#: extension.js:682
 msgid "Open URL"
 msgstr "Odpri"
 
-#: extension.js:617
+#: extension.js:687
 msgid "Copy URL"
 msgstr "Kopiraj"
 
-#: prefs.js:70
+#: prefs.js:76
 msgid "Update interval (minutes):"
 msgstr "Interval posodobitev (minute):"
 
-#: prefs.js:83
+#: prefs.js:89
 msgid "Max items per source:"
 msgstr "Največ predmetov na vir:"
 
-#: prefs.js:96
+#: prefs.js:102
 msgid "Max menu height (px):"
 msgstr "Največja višina menija (px):"
 
-#: prefs.js:109
+#: prefs.js:115
 msgid "Poll delay (ms):"
 msgstr "Zamik med posodobitvami (ms):"
 
-#: prefs.js:122
+#: prefs.js:128
 msgid "Show notifications:"
 msgstr "Prikaži obvestila:"
 
-#: prefs.js:232
+#: prefs.js:142
+msgid "Enable animations:"
+msgstr "Vklopi animacije:"
+
+#: prefs.js:252
 msgid "New RSS Feed source"
 msgstr "Nov RSS vir"
 
-#: prefs.js:256
+#: prefs.js:276
 msgid "Edit RSS Feed source"
 msgstr "Uredi RSS vir"
 
