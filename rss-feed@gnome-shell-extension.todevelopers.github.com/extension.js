@@ -65,8 +65,9 @@ const DEBUG_ENABLED_KEY = 'enable-debug';
 const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
 const POLL_DELAY_KEY = 'fpoll-timeout';
 const MAX_HEIGHT_KEY = 'max-height';
-const ENABLE_ANIMATIONS = 'enable-anim';
-const PRESERVE_ON_LOCK = 'preserve-on-lock';
+const ENABLE_ANIMATIONS_KEY = 'enable-anim';
+const PRESERVE_ON_LOCK_KEY = 'preserve-on-lock';
+const MAX_NOTIFICATIONS_KEY = 'notification-limit';
 
 const NOTIFICATION_ICON = 'application-rss+xml';
 
@@ -91,8 +92,10 @@ const RssFeedButton = new Lang.Class(
 		this._startIndex = 0;
 		this._feedsCache = new Array();
 		this._feedTimers = new Array();
+		this._notifCache = new Array();
 
 		this._totalUnreadCount = 0;
+		this._notifLimit = 10;
 
 		// top panel button
 		let button = new St.BoxLayout(
@@ -239,8 +242,10 @@ const RssFeedButton = new Lang.Class(
 		this._rssPollDelay = Settings.get_int(POLL_DELAY_KEY);
 		this._enableNotifications = Settings.get_boolean(ENABLE_NOTIFICATIONS_KEY);
 		this._maxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
-		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS);
-		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK);
+		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS_KEY);
+		this._notifLimit = Settings.get_int(MAX_NOTIFICATIONS_KEY);
+		
+		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
 
 		Log.Debug("Update interval: " + this._updateInterval +
 			" Visible items: " + this._itemsVisible +
@@ -351,8 +356,6 @@ const RssFeedButton = new Lang.Class(
 
 		Log.Debug("Reload RSS Feeds");
 
-		// this._feedsArray = new Array(this._rssFeedsSources.length);
-
 		let t;
 		while ((t = this._feedTimers.pop()))
 			Mainloop.source_remove(t);
@@ -360,7 +363,7 @@ const RssFeedButton = new Lang.Class(
 		// remove timeout
 		if (this._timeout)
 			Mainloop.source_remove(this._timeout);
-
+		
 		if (this._rssFeedsSources)
 		{
 			/* reset if max items per source change */
@@ -656,9 +659,34 @@ const RssFeedButton = new Lang.Class(
 		rssParser.clear();
 
 	},
+	
+	_removeExcessNotifications: function()
+	{
+		let notifCache = this._notifCache;	
+		
+		while ( notifCache.length > this._notifLimit )
+			notifCache.shift().destroy();
+	},
 
 	_dispatchNotification: function(title, message, url, cacheObj)
 	{
+		let notifCache = this._notifCache;		
+		
+		/* remove notifications with same URL */
+		let i = notifCache.length;
+
+		while ( i-- )
+		{
+			let cacheObj = notifCache[i];
+			if ( cacheObj._itemURL == url )
+			{
+				Log.Debug("Updating notification: " + title + " (" + url + ")");
+				cacheObj.destroy();
+				notifCache.splice(i,1);
+				break;
+			}
+		}
+
 		/*
 		 * Since per-source notification limit cannot be set, we create a new
 		 * source each time.
@@ -704,6 +732,12 @@ const RssFeedButton = new Lang.Class(
 
 		notification.setTransient(false);
 		notification.setUrgency(MessageTray.Urgency.HIGH);
+		notification._itemURL = url;
+
+		notifCache.push(notification);
+
+		/* remove excess notifications */
+		this._removeExcessNotifications();
 
 		Source.notify(notification);
 
@@ -756,7 +790,7 @@ function disable(force)
 {
 	if ( !force )
 	{
-		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK);
+		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
 
 		if ( _preserveOnLock &&
 				Main.screenShield._isLocked )

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-27 04:13+0100\n"
+"POT-Creation-Date: 2017-02-27 10:08+0100\n"
 "PO-Revision-Date: 2017-02-25 21:20+0100\n"
 "Last-Translator:  <siska@nixnodes.net>\n"
 "Language-Team: Slovenian\n"
@@ -18,67 +18,81 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
 
-#: extension.js:161 extension.js:655
+#: extension.js:167 extension.js:657
 msgid "Last update"
 msgstr "Zadnja posodobitev"
 
-#: extension.js:170
+#: extension.js:176
 msgid "Reload RSS Feeds"
 msgstr "Osveži"
 
-#: extension.js:171
+#: extension.js:177
 msgid "RSS Feed Settings"
 msgstr "Nastavitve"
 
-#: extension.js:626
+#: extension.js:628
 msgid "UPDATE"
 msgstr "UPDATE"
 
-#: extension.js:627
+#: extension.js:629
 msgid "Source"
 msgstr "Vir"
 
-#: extension.js:628
+#: extension.js:630
 msgid "Author"
 msgstr "Avtor"
 
-#: extension.js:682
+#: extension.js:709
 msgid "Open URL"
 msgstr "Odpri"
 
-#: extension.js:687
+#: extension.js:714
 msgid "Copy URL"
 msgstr "Kopiraj"
 
-#: prefs.js:76
+#: prefs.js:83
 msgid "Update interval (minutes):"
 msgstr "Interval posodobitev (minute):"
 
-#: prefs.js:89
+#: prefs.js:96
 msgid "Max items per source:"
 msgstr "Največ predmetov na vir:"
 
-#: prefs.js:102
+#: prefs.js:109
 msgid "Max menu height (px):"
 msgstr "Največja višina menija (px):"
 
-#: prefs.js:115
+#: prefs.js:122
 msgid "Poll delay (ms):"
 msgstr "Zamik med posodobitvami (ms):"
 
-#: prefs.js:128
+#: prefs.js:135
 msgid "Show notifications:"
 msgstr "Prikaži obvestila:"
 
-#: prefs.js:142
+#: prefs.js:149
+#, fuzzy
+msgid "Max notifications:"
+msgstr "Prikaži obvestila:"
+
+#: prefs.js:162
 msgid "Enable animations:"
 msgstr "Vklopi animacije:"
 
-#: prefs.js:252
+#: prefs.js:176
+msgid "Preserve on lock:"
+msgstr "Ohrani ob zaklepu:"
+
+#: prefs.js:196
+#, fuzzy
+msgid "RSS sources"
+msgstr "Vir"
+
+#: prefs.js:301
 msgid "New RSS Feed source"
 msgstr "Nov RSS vir"
 
-#: prefs.js:276
+#: prefs.js:325
 msgid "Edit RSS Feed source"
 msgstr "Uredi RSS vir"
 

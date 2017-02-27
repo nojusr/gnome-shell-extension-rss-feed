@@ -41,6 +41,7 @@ const MAX_UPDATE_INTERVAL = 1440;
 const MAX_SOURCES_LIMIT = 1024;
 const MAX_POLL_DELAY = 10000;
 const MAX_HEIGHT = 8192;
+const MAX_NOTIFICATIONS = 100;
 
 const RSS_FEEDS_LIST_KEY = 'rss-feeds-list';
 const UPDATE_INTERVAL_KEY = 'update-interval';
@@ -50,6 +51,7 @@ const POLL_DELAY_KEY = 'fpoll-timeout';
 const MAX_HEIGHT_KEY = 'max-height';
 const ENABLE_ANIMATIONS = 'enable-anim';
 const PRESERVE_ON_LOCK = 'preserve-on-lock';
+const MAX_NOTIFICATIONS_KEY = 'notification-limit';
 
 const
 Log = Me.imports.logger;
@@ -73,7 +75,7 @@ const RssFeedSettingsWidget = new GObject.Class({
 		this.margin = 12;
 		
 		if ( this.set_size_request )
-			this.set_size_request(-1,550);
+			this.set_size_request(-1,575);
 
 		// update interval
 		let box = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
@@ -140,6 +142,19 @@ const RssFeedSettingsWidget = new GObject.Class({
         
         box3.add(show);
         this.add(box3);
+
+		// maximum notifications
+		let box8 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		box8.set_margin_bottom(6);
+		let label8 = new Gtk.Label({ xalign: 0, label: _("Max notifications:") });
+		box8.pack_start(label8, true, true, 0);
+
+		let spinbtn6 = Gtk.SpinButton.new_with_range(1, MAX_NOTIFICATIONS, 1);
+		spinbtn6.set_value(Settings.get_int(MAX_NOTIFICATIONS_KEY));
+		Settings.bind(MAX_NOTIFICATIONS_KEY, spinbtn6, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+		box8.add(spinbtn6);
+		this.add(box8);
 
         // enable animations
 		let box6 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );

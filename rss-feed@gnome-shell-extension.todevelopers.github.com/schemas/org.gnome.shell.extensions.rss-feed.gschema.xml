@@ -22,6 +22,11 @@
 		    <summary>Poll delay (ms)</summary>
 		    <description>Throttles RSS source polls to reduce the performance impact on gnome-shell.</description>
 		</key>
+		<key type="i" name="notification-limit">
+		    <default>25</default>
+		    <summary>Notification limit</summary>
+		    <description>Maximum number of notifications shown at once</description>
+		</key>
 		<key type="b" name="enable-notifications">
 		    <default>true</default>
 		    <summary>Show notifications</summary>
