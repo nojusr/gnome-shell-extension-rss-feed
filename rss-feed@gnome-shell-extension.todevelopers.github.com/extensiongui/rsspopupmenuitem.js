@@ -78,7 +78,10 @@ RssPopupMenuItem = new Lang.Class(
 
 			/* trash the notification, if it exists */
 			if (this._cacheObj.Notification)
+			{
 				this._cacheObj.Notification.destroy();
+				this._cacheObj.Notification = undefined;
+			}
 
 		}));
 	}
