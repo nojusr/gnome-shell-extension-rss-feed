@@ -39,8 +39,8 @@
 		</key>
 		<key type="b" name="preserve-on-lock">
 		    <default>false</default>
-		    <summary>Preserve on lock</summary>
-		    <description>Do not disable the extension when screen locks.</description>
+		    <summary>Preserve when screen off</summary>
+		    <description>Do not disable the extension when screen is deactivated or locked.</description>
 		</key>
 		<key type="as" name="rss-feeds-list">
 		    <default>[]</default>

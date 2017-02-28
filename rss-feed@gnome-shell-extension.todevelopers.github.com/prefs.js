@@ -173,7 +173,7 @@ const RssFeedSettingsWidget = new GObject.Class({
         // enable animations
 		let box7 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
 		box7.set_margin_bottom(6);
-		let label7 = new Gtk.Label({ xalign: 0, label: _("Preserve on lock:") });
+		let label7 = new Gtk.Label({ xalign: 0, label: _("Preserve when screen off:") });
 		box7.pack_start(label7, true, true, 0);
 
 		let ponlock = new Gtk.Switch({active: Settings.get_boolean(PRESERVE_ON_LOCK) });

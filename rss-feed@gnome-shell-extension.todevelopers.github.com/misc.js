@@ -50,7 +50,7 @@ function getDefaultBrowser()
 
 function processLinkOpen(url, cacheObj)
 {
-	if (Main.screenShield._isLocked)
+	if (isScreenLocked())
 		return;
 
 	Util.trySpawnCommandLine(getDefaultBrowser() + ' ' + url);
@@ -99,4 +99,9 @@ function clampTitle(title)
 	if (title.length > 128)
 		title = title.substr(0, 128) + "...";
 	return title;
+}
+
+function isScreenLocked()
+{
+	return Main.sessionMode.isLocked;
 }

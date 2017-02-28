@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-27 10:08+0100\n"
+"POT-Creation-Date: 2017-02-28 13:27+0100\n"
 "PO-Revision-Date: 2017-02-25 21:20+0100\n"
 "Last-Translator:  <siska@nixnodes.net>\n"
 "Language-Team: Slovenian\n"
@@ -18,35 +18,35 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
 
-#: extension.js:167 extension.js:657
+#: extension.js:169 extension.js:659
 msgid "Last update"
 msgstr "Zadnja posodobitev"
 
-#: extension.js:176
+#: extension.js:178
 msgid "Reload RSS Feeds"
 msgstr "Osveži"
 
-#: extension.js:177
+#: extension.js:179
 msgid "RSS Feed Settings"
 msgstr "Nastavitve"
 
-#: extension.js:628
+#: extension.js:630
 msgid "UPDATE"
 msgstr "UPDATE"
 
-#: extension.js:629
+#: extension.js:631
 msgid "Source"
 msgstr "Vir"
 
-#: extension.js:630
+#: extension.js:632
 msgid "Author"
 msgstr "Avtor"
 
-#: extension.js:709
+#: extension.js:711
 msgid "Open URL"
 msgstr "Odpri"
 
-#: extension.js:714
+#: extension.js:716
 msgid "Copy URL"
 msgstr "Kopiraj"
 
@@ -71,22 +71,20 @@ msgid "Show notifications:"
 msgstr "Prikaži obvestila:"
 
 #: prefs.js:149
-#, fuzzy
 msgid "Max notifications:"
-msgstr "Prikaži obvestila:"
+msgstr "Omejitev obvestil:"
 
 #: prefs.js:162
 msgid "Enable animations:"
 msgstr "Vklopi animacije:"
 
 #: prefs.js:176
-msgid "Preserve on lock:"
-msgstr "Ohrani ob zaklepu:"
+msgid "Preserve when screen off:"
+msgstr "Ohrani ob zaklepu zaslona:"
 
 #: prefs.js:196
-#, fuzzy
 msgid "RSS sources"
-msgstr "Vir"
+msgstr "RSS Viri"
 
 #: prefs.js:301
 msgid "New RSS Feed source"

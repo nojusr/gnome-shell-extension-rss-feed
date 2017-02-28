@@ -42,6 +42,8 @@ const Parser = Me.imports.parsers.factory;
 const Log = Me.imports.logger;
 const Settings = Convenience.getSettings();
 
+const ExtensionSystem = imports.ui.extensionSystem;
+
 const Gettext = imports.gettext.domain('rss-feed');
 const _ = Gettext.gettext;
 
@@ -258,7 +260,7 @@ const RssFeedButton = new Lang.Class(
 	 */
 	_onSettingsBtnClicked: function()
 	{
-		if (Main.screenShield._isLocked)
+		if (Misc.isScreenLocked())
 			return;
 		
 		var success, pid;
@@ -332,7 +334,7 @@ const RssFeedButton = new Lang.Class(
 		{
 			this._reloadTimer = Mainloop.timeout_add(0, function()
 			{
-				disable(true);
+				extension_disable();
 				enable();
 			});
 		}
@@ -771,39 +773,39 @@ function init()
 function enable()
 {
 	if ( rssFeedBtn )
-	{
-		Log.Debug("Extension already initialized.");
 		return;
-	}
-	
+
 	rssFeedBtn = new RssFeedButton();
 	Main.panel.addToStatusArea('rssFeedMenu', rssFeedBtn, 0, 'right');
 
-	Log.Debug("Extension enabled.");
+	Log.Debug("Extension enabled. " + Me.path);
+}
 
+function extension_disable()
+{
+	if ( !rssFeedBtn )
+		return;
+
+	rssFeedBtn.stop();
+	rssFeedBtn.destroy();
+	rssFeedBtn = undefined;
+
+	Log.Debug("Extension disabled. ");
 }
 
 /*
  * Disable the extension
  */
-function disable(force)
-{
-	if ( !force )
-	{
-		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
+function disable()
+{	
+	_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
 
-		if ( _preserveOnLock &&
-				Main.screenShield._isLocked )
-		{
-			Log.Debug("Not disabling extension while locked.");
-			return;
-		}
+	if ( _preserveOnLock &&
+			Misc.isScreenLocked() )
+	{
+		Log.Debug("Not disabling extension while screen inactive.");
+		return;
 	}
 
-	rssFeedBtn.stop();
-	rssFeedBtn.destroy();
-
-	rssFeedBtn = undefined;
-
-	Log.Debug("Extension disabled. ");
+	extension_disable();
 }
