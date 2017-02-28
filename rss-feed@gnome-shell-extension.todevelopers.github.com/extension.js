@@ -105,6 +105,8 @@ const RssFeedButton = new Lang.Class(
 		this._totalUnreadCount = 0;
 		this._notifLimit = 10;
 
+		this._miStPadding = Array(158).join(" ");
+
 		// top panel button
 		let button = new St.BoxLayout(
 		{
@@ -606,7 +608,7 @@ const RssFeedButton = new Lang.Class(
 			let menu = new ExtensionGui.RssPopupMenuItem(item);
 			subMenu.menu.addMenuItem(menu, 0);
 			//menu.label.set_style('max-width: 700px;');
-			
+
 			/* enter it into cache */
 			let cacheObj = new Object();
 			cacheObj.Menu = menu;
@@ -615,56 +617,63 @@ const RssFeedButton = new Lang.Class(
 			cacheObj.lText = menu.label.get_text();
 			itemCache[itemURL] = cacheObj;
 			itemCache.push(itemURL);
-			
-			this._lMenu = menu;
 
 			menu._cacheObj = cacheObj;
 
+			// this._lMenu = menu;
 			// if (i == 0) feedsCache._initialRefresh = true;
-						
+
 			/* decode description, if present */
 			if (item.Description.length > 0)
 			{
-				cacheObj._itemDescription = Encoder.htmlDecode(item.Description)
+				let itemDescription = Encoder.htmlDecode(item.Description)
 					.replace("<![CDATA[", "").replace("]]>", "")
 					.replace(/<.*?>/g, "").trim();
-				
-				/* trim the description shown in notifications */
-				if (cacheObj._itemDescription.length > 290)
-					cacheObj._itemDescription = cacheObj._itemDescription.substr(0, 290) + "...";
-				
-				/* word-break it for in-menu descriptions */
-				cacheObj._bItemDescription = Misc.lineBreak(cacheObj._itemDescription, 80, 90, "  ");
 
-				/* 
-				 *  show description inside the article label, when selected 
-				 *
-				 *  This is not an ideal solution, it should be replaced with
-				 *  a free-floating (not bound to the menu) tooltip or similar.
-				 */
-				menu.connect('active-changed', Lang.bind(this, function(self, over) 
+				if (itemDescription.length > 0)
 				{
-					if ( !this._showDesc )
-						return;
-					
-					let label_actor = self.actor.label_actor;
-					
-					if (over )
+					/* word-break it for in-menu descriptions */
+					cacheObj._bItemDescription = Misc.lineBreak(itemDescription, 80, 90, "  ");
+
+					/* trim the description shown in notifications */
+					if (itemDescription.length > 290)
+						itemDescription = itemDescription.substr(0, 290) + "...";
+
+					cacheObj._itemDescription = itemDescription;
+
+					/* 
+					 *  show description inside the article label, when selected 
+					 *
+					 *  FIXME:
+					 *  This is not an ideal solution, it should be replaced with
+					 *  a free-floating (not bound to the menu) tooltip or similar.
+					 */
+					menu.connect('active-changed', Lang.bind(this, function(self, over)
 					{
-						label_actor._originalHeight = label_actor.get_height();
-							
-						label_actor.set_text(
-							self._cacheObj.lText + "\n  " + Array(158).join(" ") + "\n" +
-							self._cacheObj._bItemDescription
-						);
-						
-						label_actor.set_height(120);
-					} else
-					{						
-						label_actor.set_text(self._cacheObj.lText);
-						label_actor.set_height(label_actor._originalHeight);
-					}
-				}));
+						if (!this._showDesc)
+							return;
+
+						let label_actor = self.actor.label_actor;
+
+						if (over)
+						{
+							label_actor._originalHeight = label_actor.get_height();
+
+							label_actor.set_text(
+								self._cacheObj.lText + "\n  " +
+								this._miStPadding + "\n" +
+								self._cacheObj._bItemDescription
+							);
+
+							label_actor.set_height(120);
+						}
+						else
+						{
+							label_actor.set_text(self._cacheObj.lText);
+							label_actor.set_height(label_actor._originalHeight);
+						}
+					}));
+				}
 			}
 
 			/* do not notify or flag if this is the first query */
@@ -714,8 +723,6 @@ const RssFeedButton = new Lang.Class(
 
 		// update last download time
 		this._lastUpdateTime.set_text(_("Last update") + ': ' + new Date().toLocaleTimeString());
-
-		rssParser.clear();
 
 	},
 

@@ -295,7 +295,7 @@ const RssFeedSettingsWidget = new GObject.Class({
 		let dialog_area = dialog.get_content_area();
 		//dialog_area.pack_start(label, 0, 0, 0);
 		dialog_area.pack_start(this._entry, 0, 0, 0);
-		//Log.Debug("... ");
+
 		dialog.connect("response", Lang.bind(this, function(w, response_id) {
 			
 			if (response_id > -1) {	// button OK
