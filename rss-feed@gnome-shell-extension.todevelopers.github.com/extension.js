@@ -20,7 +20,6 @@
  * You should have received a copy of the GNU General Public License
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -96,7 +95,7 @@ const RssFeedButton = new Lang.Class(
 		// property called 'add-feature', designed as a construct property for
 		// C convenience.
 		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
-		
+
 		this._startIndex = 0;
 		this._feedsCache = new Array();
 		this._feedTimers = new Array();
@@ -142,7 +141,7 @@ const RssFeedButton = new Lang.Class(
 		this._feedsSection = new ExtensionGui.RssPopupMenuSection(
 			this._generatePopupMenuCSS(this._pMaxMenuHeight)
 		);
-	
+
 		/*
 		let i = 25;
 
@@ -192,9 +191,10 @@ const RssFeedButton = new Lang.Class(
 
 		this.menu.addMenuItem(this._buttonMenu);
 
-		this.menu.connect('open-state-changed', Lang.bind(this, function(self, open) {
-			if ( open && this._lastOpen )
-				this._lastOpen.open();		
+		this.menu.connect('open-state-changed', Lang.bind(this, function(self, open)
+		{
+			if (open && this._lastOpen)
+				this._lastOpen.open();
 		}));
 
 		this.menu.actor.add_style_class_name('rss-menu');
@@ -221,7 +221,7 @@ const RssFeedButton = new Lang.Class(
 
 		for (let t in this._feedTimers)
 			Mainloop.source_remove(t);
-		
+
 		this.parent();
 	},
 
@@ -253,7 +253,7 @@ const RssFeedButton = new Lang.Class(
 		this._maxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
 		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS_KEY);
 		this._notifLimit = Settings.get_int(MAX_NOTIFICATIONS_KEY);
-		
+
 		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
 
 		Log.Debug("Update interval: " + this._updateInterval +
@@ -261,7 +261,7 @@ const RssFeedButton = new Lang.Class(
 			" RSS sources: " + this._rssFeedsSources +
 			" Notification: " + this._enableNotifications);
 	},
-	
+
 	/*
 	 * On settings button clicked callback
 	 */
@@ -269,24 +269,26 @@ const RssFeedButton = new Lang.Class(
 	{
 		if (Misc.isScreenLocked())
 			return;
-		
+
 		var success, pid;
 		try
 		{
 			[success, pid] = GLib.spawn_async(null, ["gnome-shell-extension-prefs", Me.uuid], null,
-												GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-												null);
+				GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+				null);
 		}
-		catch (err) {
-		    return;
+		catch (err)
+		{
+			return;
 		}
 
-		if ( !success )
+		if (!success)
 			return;
 
 		this.menu.close();
 
-		GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this, function () {
+		GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this, function()
+		{
 			this._reloadRssFeeds();
 		}));
 	},
@@ -365,18 +367,18 @@ const RssFeedButton = new Lang.Class(
 
 		Log.Debug("Reload RSS Feeds");
 
-		if ( this._feedTimers.length )
+		if (this._feedTimers.length)
 		{
 			for (let t in this._feedTimers)
 				Mainloop.source_remove(t);
-			
+
 			this._feedTimers = [];
 		}
 
 		// remove timeout
 		if (this._timeout)
 			Mainloop.source_remove(this._timeout);
-		
+
 		if (this._rssFeedsSources)
 		{
 			/* reset if max items per source change */
@@ -440,7 +442,8 @@ const RssFeedButton = new Lang.Class(
 		if (this._updateInterval > 0)
 		{
 			Log.Debug("Next scheduled reload after " + this._updateInterval * 60 + " seconds");
-			this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60, Lang.bind(this, function() {
+			this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60, Lang.bind(this, function()
+			{
 				this._timeout = undefined;
 				this._reloadRssFeeds();
 			}));
@@ -458,8 +461,8 @@ const RssFeedButton = new Lang.Class(
 		Log.Debug("Soup HTTP GET request. URL: " + url + " parameters: " + JSON.stringify(params));
 
 		let request = Soup.form_request_new_from_hash('GET', url, params);
-		
-		if ( !request )
+
+		if (!request)
 		{
 			Log.Debug("Soup.form_request_new_from_hash returned 'null' for URL '" + url + "'");
 			return;
@@ -497,7 +500,7 @@ const RssFeedButton = new Lang.Class(
 		if (!nItems)
 			return;
 
-		let feedsCache;	
+		let feedsCache;
 
 		if (!this._feedsCache[sourceURL])
 		{
@@ -507,9 +510,10 @@ const RssFeedButton = new Lang.Class(
 			feedsCache.UnreadCount = 0;
 			feedsCache.pUnreadCount = 0;
 			feedsCache.parentClass = this;
-		} else
+		}
+		else
 			feedsCache = this._feedsCache[sourceURL];
-		
+
 		let itemCache = feedsCache.Items;
 
 		let subMenu;
@@ -522,14 +526,15 @@ const RssFeedButton = new Lang.Class(
 
 			subMenu.menu.connect('open-state-changed', Lang.bind(this, function(self, open)
 			{
-				if ( open )
+				if (open)
 					this._lastOpen = self;
-				else if ( this.menu.isOpen && this._lastOpen == self )
+				else if (this.menu.isOpen && this._lastOpen == self)
 					this._lastOpen = undefined;
 			}));
 
-			subMenu.menu.connect('destroy', Lang.bind(this,function(self, open) {
-				if ( this._lastOpen == self )
+			subMenu.menu.connect('destroy', Lang.bind(this, function(self, open)
+			{
+				if (this._lastOpen == self)
 					this._lastOpen = undefined;
 			}));
 
@@ -609,7 +614,7 @@ const RssFeedButton = new Lang.Class(
 
 			menu._cacheObj = cacheObj;
 
-			// if ( i == 0 ) feedsCache._initialRefresh = true;
+			// if (i == 0) feedsCache._initialRefresh = true;
 
 			/* do not notify or flag if this is the first query */
 			if (!feedsCache._initialRefresh)
@@ -676,17 +681,17 @@ const RssFeedButton = new Lang.Class(
 		rssParser.clear();
 
 	},
-	
+
 	_removeExcessNotifications: function()
 	{
-		let notifCache = this._notifCache;	
-		
-		while ( notifCache.length > this._notifLimit )
+		let notifCache = this._notifCache;
+
+		while (notifCache.length > this._notifLimit)
 			notifCache.shift().destroy();
 	},
 
 	_dispatchNotification: function(title, message, url, cacheObj)
-	{		
+	{
 		/*
 		 * Since per-source notification limit cannot be set, we create a new
 		 * source each time.
@@ -706,43 +711,46 @@ const RssFeedButton = new Lang.Class(
 
 		let notifCache = this._notifCache;
 
-		if ( url.length > 0 )
+		if (url.length > 0)
 		{
 			/* remove notifications with same URL */
 			let i = notifCache.length;
-	
-			while ( i-- )
+
+			while (i--)
 			{
 				let nCacheObj = notifCache[i];
-				if ( nCacheObj._itemURL == url )
+				if (nCacheObj._itemURL == url)
 				{
 					nCacheObj.destroy();
-					notifCache.splice(i,1);
+					notifCache.splice(i, 1);
 					break;
 				}
 			}
-	
+
 			notification._itemURL = url;
 			notification._cacheObj = cacheObj;
-	
+
 			notification.addAction(_('Open URL'), Lang.bind(this, function()
 			{
 				Misc.processLinkOpen(notification._itemURL, notification._cacheObj);
 				notification.destroy();
 			}));
-	
-			notification.addAction(_('Copy URL'), Lang.bind(this, function()
+
+			notification.addAction(_('Copy URL'), function()
 			{
 				St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, notification._itemURL);
-				notification.acknowledged = true;
-			}));
-	
+
+				/* don't destroy notification, just hide the banner */
+				if (Main.messageTray._banner)
+					Main.messageTray._banner.emit('done-displaying');
+			});
+
 			notification.connect('activated', Lang.bind(this, function(self)
 			{
 				Misc.processLinkOpen(self._itemURL, self._cacheObj);
 				self.destroy();
 			}));
-			
+
 			notification.setResident(true);
 		}
 
@@ -755,7 +763,7 @@ const RssFeedButton = new Lang.Class(
 		}));
 
 		notification.setTransient(false);
-		notification.setUrgency(MessageTray.Urgency.HIGH);		
+		notification.setUrgency(MessageTray.Urgency.HIGH);
 
 		notifCache.push(notification);
 
@@ -782,7 +790,7 @@ function init()
 	Convenience.initTranslations("rss-feed");
 
 	// hack for dconf
-	Settings.set_boolean(DEBUG_ENABLED_KEY, 
+	Settings.set_boolean(DEBUG_ENABLED_KEY,
 		Settings.get_boolean(DEBUG_ENABLED_KEY));
 
 	Log.Debug("Extension initialized.");
@@ -793,7 +801,7 @@ function init()
  */
 function enable()
 {
-	if ( rssFeedBtn )
+	if (rssFeedBtn)
 		return;
 
 	rssFeedBtn = new RssFeedButton();
@@ -804,7 +812,7 @@ function enable()
 
 function extension_disable()
 {
-	if ( !rssFeedBtn )
+	if (!rssFeedBtn)
 		return;
 
 	rssFeedBtn.destroy();
@@ -817,11 +825,11 @@ function extension_disable()
  * Disable the extension
  */
 function disable()
-{	
+{
 	_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
 
-	if ( _preserveOnLock &&
-			Misc.isScreenLocked() )
+	if (_preserveOnLock &&
+		Misc.isScreenLocked())
 	{
 		Log.Debug("Not disabling extension while screen inactive.");
 		return;
