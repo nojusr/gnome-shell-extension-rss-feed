@@ -44,3 +44,7 @@ function Debug(message) {
           log("rss-feed@gnome-shell-extension: " + message);
     }
 }
+
+function Msg(message) {
+	log("rss-feed@gnome-shell-extension: " + message);
+}

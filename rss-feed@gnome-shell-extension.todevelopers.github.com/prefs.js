@@ -280,11 +280,11 @@ const RssFeedSettingsWidget = new GObject.Class({
 		let dialog_area = dialog.get_content_area();
 		//dialog_area.pack_start(label, 0, 0, 0);
 		dialog_area.pack_start(this._entry, 0, 0, 0);
-
+		//Log.Debug("... ");
 		dialog.connect("response", Lang.bind(this, function(w, response_id) {
-
-			if (response_id) {	// button OK
-				onOkButton();
+			
+			if (response_id > -1) {	// button OK
+				onOkButton(response_id);
 			}
 
 			dialog.hide();
@@ -298,18 +298,23 @@ const RssFeedSettingsWidget = new GObject.Class({
 	 */
 	_createNew: function() {
 
-		this._createDialog(_("New RSS Feed source"), '', Lang.bind(this, function() {
+		this._createDialog(_("New RSS Feed source"), '', Lang.bind(this, function(id) {
 
+			let text = this._entry.get_text();
+			
+			if ( !text.length )
+				return;
+			
 			// update tree view
 			let iter = this._store.append();
-			this._store.set_value(iter, COLUMN_ID, this._entry.get_text());
+			this._store.set_value(iter, COLUMN_ID, text);
 
 			// update settings
 			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
 			if (feeds == null)
 				feeds = new Array();
 
-			feeds.push(this._entry.get_text());
+			feeds.push(text);
 			Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
 		}));
 	},

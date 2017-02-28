@@ -42,8 +42,6 @@ const Parser = Me.imports.parsers.factory;
 const Log = Me.imports.logger;
 const Settings = Convenience.getSettings();
 
-const ExtensionSystem = imports.ui.extensionSystem;
-
 const Gettext = imports.gettext.domain('rss-feed');
 const _ = Gettext.gettext;
 
@@ -90,7 +88,15 @@ const RssFeedButton = new Lang.Class(
 	{
 		this.parent(0.0, "RSS Feed");
 
-		this._httpSession = null;
+		this._httpSession = new Soup.SessionAsync();
+
+		// Lours974 Vitry David
+		// This makes the session work under a proxy. The funky syntax here
+		// is required because of another libsoup quirk, where there's a gobject
+		// property called 'add-feature', designed as a construct property for
+		// C convenience.
+		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
+		
 		this._startIndex = 0;
 		this._feedsCache = new Array();
 		this._feedTimers = new Array();
@@ -200,7 +206,7 @@ const RssFeedButton = new Lang.Class(
 	/*
 	 * Frees resources of extension
 	 */
-	stop: function()
+	destroy: function()
 	{
 
 		if (this._httpSession)
@@ -213,9 +219,10 @@ const RssFeedButton = new Lang.Class(
 		if (this._timeout)
 			Mainloop.source_remove(this._timeout);
 
-		let t;
-		while ((t = this._feedTimers.pop()))
+		for (let t in this._feedTimers)
 			Mainloop.source_remove(t);
+		
+		this.parent();
 	},
 
 	_updateUnreadCountLabel: function(count)
@@ -324,6 +331,7 @@ const RssFeedButton = new Lang.Class(
 
 		if (feedsCache.Menu)
 			feedsCache.Menu.destroy();
+
 		delete this._feedsCache[key];
 		this._feedsCache[key] = undefined;
 	},
@@ -345,7 +353,6 @@ const RssFeedButton = new Lang.Class(
 	 */
 	_reloadRssFeeds: function()
 	{
-
 		this._getSettings();
 
 		if (this._maxMenuHeight != this._pMaxMenuHeight)
@@ -358,9 +365,13 @@ const RssFeedButton = new Lang.Class(
 
 		Log.Debug("Reload RSS Feeds");
 
-		let t;
-		while ((t = this._feedTimers.pop()))
-			Mainloop.source_remove(t);
+		if ( this._feedTimers.length )
+		{
+			for (let t in this._feedTimers)
+				Mainloop.source_remove(t);
+			
+			this._feedTimers = [];
+		}
 
 		// remove timeout
 		if (this._timeout)
@@ -418,12 +429,10 @@ const RssFeedButton = new Lang.Class(
 				let sourceID = Mainloop.timeout_add(i * this._rssPollDelay, Lang.bind(this, function()
 				{
 					this._httpGetRequestAsync(url, JSON.parse(jsonObj), sourceURL, Lang.bind(this, this._onDownload));
-					let index = this._feedTimers.indexOf(sourceID);
-					if ( index > -1 )
-						this._feedTimers.splice(index, 1);
+					delete this._feedTimers[sourceID];
 				}))
 
-				this._feedTimers.push(sourceID);
+				this._feedTimers[sourceID] = undefined;
 			}
 		}
 
@@ -431,7 +440,10 @@ const RssFeedButton = new Lang.Class(
 		if (this._updateInterval > 0)
 		{
 			Log.Debug("Next scheduled reload after " + this._updateInterval * 60 + " seconds");
-			this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60, Lang.bind(this, this._reloadRssFeeds));
+			this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60, Lang.bind(this, function() {
+				this._timeout = undefined;
+				this._reloadRssFeeds();
+			}));
 		}
 	},
 
@@ -443,20 +455,15 @@ const RssFeedButton = new Lang.Class(
 	 */
 	_httpGetRequestAsync: function(url, params, sourceURL, callback)
 	{
-
-		if (this._httpSession == null)
-			this._httpSession = new Soup.SessionAsync();
-
-		// Lours974 Vitry David
-		// This makes the session work under a proxy. The funky syntax here
-		// is required because of another libsoup quirk, where there's a gobject
-		// property called 'add-feature', designed as a construct property for
-		// C convenience.
-		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
-
 		Log.Debug("Soup HTTP GET request. URL: " + url + " parameters: " + JSON.stringify(params));
 
 		let request = Soup.form_request_new_from_hash('GET', url, params);
+		
+		if ( !request )
+		{
+			Log.Debug("Soup.form_request_new_from_hash returned 'null' for URL '" + url + "'");
+			return;
+		}
 
 		this._httpSession.queue_message(request, Lang.bind(this, function(httpSession, message)
 		{
@@ -490,10 +497,11 @@ const RssFeedButton = new Lang.Class(
 		if (!nItems)
 			return;
 
-		let feedsCache;		
-		// initialize the cache array
+		let feedsCache;	
+
 		if (!this._feedsCache[sourceURL])
 		{
+			// initialize the publisher cache array
 			feedsCache = this._feedsCache[sourceURL] = new Object();
 			feedsCache.Items = new Array();
 			feedsCache.UnreadCount = 0;
@@ -506,7 +514,7 @@ const RssFeedButton = new Lang.Class(
 
 		let subMenu;
 
-		// create submenu
+		// create publisher submenu
 		if (!feedsCache.Menu)
 		{
 			subMenu = new ExtensionGui.RssPopupSubMenuMenuItem(rssParser.Publisher, nItems);
@@ -530,7 +538,9 @@ const RssFeedButton = new Lang.Class(
 		else
 			subMenu = feedsCache.Menu;
 
-		// clear the cache
+		/* clear any cache items which are no longer 
+		 * required or should be updated
+		 */
 		let i = itemCache.length;
 
 		while (i--)
@@ -585,9 +595,11 @@ const RssFeedButton = new Lang.Class(
 			if (itemCache[itemURL])
 				continue;
 
+			/* create the menu item in publisher submenu */
 			let menu = new ExtensionGui.RssPopupMenuItem(item);
 			subMenu.menu.addMenuItem(menu, 0);
 
+			/* enter it into cache */
 			let cacheObj = new Object();
 			cacheObj.Menu = menu;
 			cacheObj.Item = item;
@@ -603,19 +615,22 @@ const RssFeedButton = new Lang.Class(
 			if (!feedsCache._initialRefresh)
 				continue;
 
+			/* increment unread counts and flag item as unread */
 			feedsCache.UnreadCount++;
 			this._totalUnreadCount++;
 			cacheObj.Unread = true;
 
+			/* decorate menu item, indicating it unread */
 			menu.setOrnament(PopupMenu.Ornament.DOT);
 
-			// trigger notification
+			/* trigger notification, if requested */
 			if (this._enableNotifications)
 			{
 				let itemTitle = Encoder.htmlDecode(item.Title);
 
 				let itemDescription;
 
+				/* decode description, if present */
 				if (item.Description.length > 0)
 				{
 					itemDescription = Encoder.htmlDecode(item.Description)
@@ -671,24 +686,7 @@ const RssFeedButton = new Lang.Class(
 	},
 
 	_dispatchNotification: function(title, message, url, cacheObj)
-	{
-		let notifCache = this._notifCache;		
-		
-		/* remove notifications with same URL */
-		let i = notifCache.length;
-
-		while ( i-- )
-		{
-			let nCacheObj = notifCache[i];
-			if ( nCacheObj._itemURL == url )
-			{
-				//Log.Debug("Updating notification: " + title + " (" + url + ")");
-				nCacheObj.destroy();
-				notifCache.splice(i,1);
-				break;
-			}
-		}
-
+	{		
 		/*
 		 * Since per-source notification limit cannot be set, we create a new
 		 * source each time.
@@ -706,35 +704,58 @@ const RssFeedButton = new Lang.Class(
 
 		let notification = new MessageTray.Notification(Source, title, message);
 
-		if (url)
+		let notifCache = this._notifCache;
+
+		if ( url.length > 0 )
 		{
+			/* remove notifications with same URL */
+			let i = notifCache.length;
+	
+			while ( i-- )
+			{
+				let nCacheObj = notifCache[i];
+				if ( nCacheObj._itemURL == url )
+				{
+					nCacheObj.destroy();
+					notifCache.splice(i,1);
+					break;
+				}
+			}
+	
+			notification._itemURL = url;
+			notification._cacheObj = cacheObj;
+	
 			notification.addAction(_('Open URL'), Lang.bind(this, function()
 			{
-				Misc.processLinkOpen(url, cacheObj);
+				Misc.processLinkOpen(notification._itemURL, notification._cacheObj);
+				notification.destroy();
 			}));
-
+	
 			notification.addAction(_('Copy URL'), Lang.bind(this, function()
 			{
-				St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, url);
+				St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, notification._itemURL);
+				notification.acknowledged = true;
 			}));
-
-			notification.connect('activated', Lang.bind(this, function()
+	
+			notification.connect('activated', Lang.bind(this, function(self)
 			{
-				Misc.processLinkOpen(url, cacheObj);
+				Misc.processLinkOpen(self._itemURL, self._cacheObj);
+				self.destroy();
 			}));
+			
+			notification.setResident(true);
 		}
 
 		/*
 		 * Destroy the source after notification is gone
 		 */
-		notification.connect('destroy', Lang.bind(this, function(n)
+		notification.connect('destroy', Lang.bind(this, function(self)
 		{
-			n.source.destroy();
+			self.source.destroy();
 		}));
 
 		notification.setTransient(false);
-		notification.setUrgency(MessageTray.Urgency.HIGH);
-		notification._itemURL = url;
+		notification.setUrgency(MessageTray.Urgency.HIGH);		
 
 		notifCache.push(notification);
 
@@ -786,7 +807,6 @@ function extension_disable()
 	if ( !rssFeedBtn )
 		return;
 
-	rssFeedBtn.stop();
 	rssFeedBtn.destroy();
 	rssFeedBtn = undefined;
 
