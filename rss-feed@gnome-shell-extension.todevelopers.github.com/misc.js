@@ -105,3 +105,26 @@ function isScreenLocked()
 {
 	return Main.sessionMode.isLocked;
 }
+
+function lineBreak(input, ld, lm, pl)
+{
+	var result = "";
+	var pi = 0;
+	var lc = 0;
+
+	for (var i = 0; i < input.length; i++)
+	{
+		lc++;
+		if ((lc >= ld && input[i] == " " || lc == lm) || input[i] == "\n")
+		{
+			result += pl + input.substr(pi, lc).trim() + "\n";
+			lc = 0;
+			pi = i + 1;
+		}
+	}
+
+	if (lc > 0)
+		result += pl + input.substr(pi, lc);
+
+	return result;
+}

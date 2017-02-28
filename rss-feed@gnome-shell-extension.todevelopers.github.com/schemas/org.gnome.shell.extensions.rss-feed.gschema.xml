@@ -42,6 +42,11 @@
 		    <summary>Preserve when screen off</summary>
 		    <description>Do not disable the extension when screen is deactivated or locked.</description>
 		</key>
+		<key type="b" name="enable-descriptions">
+		    <default>false</default>
+		    <summary>Show descriptions</summary>
+		    <description>Show description received from RSS feed when selecting an article.</description>
+		</key>
 		<key type="as" name="rss-feeds-list">
 		    <default>[]</default>
 		    <summary>RSS feeds</summary>

@@ -67,6 +67,7 @@ const MAX_HEIGHT_KEY = 'max-height';
 const ENABLE_ANIMATIONS_KEY = 'enable-anim';
 const PRESERVE_ON_LOCK_KEY = 'preserve-on-lock';
 const MAX_NOTIFICATIONS_KEY = 'notification-limit';
+const ENABLE_DESC_KEY = 'enable-descriptions';
 
 const NOTIFICATION_ICON = 'application-rss+xml';
 
@@ -253,6 +254,7 @@ const RssFeedButton = new Lang.Class(
 		this._maxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
 		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS_KEY);
 		this._notifLimit = Settings.get_int(MAX_NOTIFICATIONS_KEY);
+		this._showDesc = Settings.get_boolean(ENABLE_DESC_KEY);
 
 		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
 
@@ -372,7 +374,7 @@ const RssFeedButton = new Lang.Class(
 			for (let t in this._feedTimers)
 				Mainloop.source_remove(t);
 
-			this._feedTimers = [];
+			this._feedTimers = new Array();
 		}
 
 		// remove timeout
@@ -434,7 +436,7 @@ const RssFeedButton = new Lang.Class(
 					delete this._feedTimers[sourceID];
 				}))
 
-				this._feedTimers[sourceID] = undefined;
+				this._feedTimers[sourceID] = true;
 			}
 		}
 
@@ -603,18 +605,67 @@ const RssFeedButton = new Lang.Class(
 			/* create the menu item in publisher submenu */
 			let menu = new ExtensionGui.RssPopupMenuItem(item);
 			subMenu.menu.addMenuItem(menu, 0);
-
+			//menu.label.set_style('max-width: 700px;');
+			
 			/* enter it into cache */
 			let cacheObj = new Object();
 			cacheObj.Menu = menu;
 			cacheObj.Item = item;
 			cacheObj.parent = feedsCache;
+			cacheObj.lText = menu.label.get_text();
 			itemCache[itemURL] = cacheObj;
 			itemCache.push(itemURL);
+			
+			this._lMenu = menu;
 
 			menu._cacheObj = cacheObj;
 
 			// if (i == 0) feedsCache._initialRefresh = true;
+						
+			/* decode description, if present */
+			if (item.Description.length > 0)
+			{
+				cacheObj._itemDescription = Encoder.htmlDecode(item.Description)
+					.replace("<![CDATA[", "").replace("]]>", "")
+					.replace(/<.*?>/g, "").trim();
+				
+				/* trim the description shown in notifications */
+				if (cacheObj._itemDescription.length > 290)
+					cacheObj._itemDescription = cacheObj._itemDescription.substr(0, 290) + "...";
+				
+				/* word-break it for in-menu descriptions */
+				cacheObj._bItemDescription = Misc.lineBreak(cacheObj._itemDescription, 80, 90, "  ");
+
+				/* 
+				 *  show description inside the article label, when selected 
+				 *
+				 *  This is not an ideal solution, it should be replaced with
+				 *  a free-floating (not bound to the menu) tooltip or similar.
+				 */
+				menu.connect('active-changed', Lang.bind(this, function(self, over) 
+				{
+					if ( !this._showDesc )
+						return;
+					
+					let label_actor = self.actor.label_actor;
+					
+					if (over )
+					{
+						label_actor._originalHeight = label_actor.get_height();
+							
+						label_actor.set_text(
+							self._cacheObj.lText + "\n  " + Array(158).join(" ") + "\n" +
+							self._cacheObj._bItemDescription
+						);
+						
+						label_actor.set_height(120);
+					} else
+					{						
+						label_actor.set_text(self._cacheObj.lText);
+						label_actor.set_height(label_actor._originalHeight);
+					}
+				}));
+			}
 
 			/* do not notify or flag if this is the first query */
 			if (!feedsCache._initialRefresh)
@@ -633,27 +684,13 @@ const RssFeedButton = new Lang.Class(
 			{
 				let itemTitle = Encoder.htmlDecode(item.Title);
 
-				let itemDescription;
-
-				/* decode description, if present */
-				if (item.Description.length > 0)
-				{
-					itemDescription = Encoder.htmlDecode(item.Description)
-						.replace("<![CDATA[", "").replace("]]>", "")
-						.replace(/<.*?>/g, "").trim();
-
-					if (itemDescription.length > 290)
-						itemDescription = itemDescription.substr(0, 290) + "...";
-				}
-
 				cacheObj.Notification = this._dispatchNotification(
 					item._update ? (_("UPDATE") + ': ' + itemTitle) : itemTitle,
 					_("Source") + ': ' + Encoder.htmlDecode(rssParser.Publisher.Title) +
 					(item.Author.length ? ', ' + _("Author") + ': ' + Encoder.htmlDecode(item.Author) : '') + '\n\n' +
-					(itemDescription ? itemDescription : itemTitle),
+					(cacheObj._itemDescription ? cacheObj._itemDescription : itemTitle),
 					itemURL, cacheObj);
 			}
-
 		}
 
 		if (!feedsCache._initialRefresh)
@@ -807,7 +844,7 @@ function enable()
 	rssFeedBtn = new RssFeedButton();
 	Main.panel.addToStatusArea('rssFeedMenu', rssFeedBtn, 0, 'right');
 
-	Log.Debug("Extension enabled. " + Me.path);
+	Log.Debug("Extension enabled.");
 }
 
 function extension_disable()

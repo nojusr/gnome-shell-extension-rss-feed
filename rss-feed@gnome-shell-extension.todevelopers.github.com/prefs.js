@@ -49,9 +49,10 @@ const ITEMS_VISIBLE_KEY = 'items-visible';
 const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
 const POLL_DELAY_KEY = 'fpoll-timeout';
 const MAX_HEIGHT_KEY = 'max-height';
-const ENABLE_ANIMATIONS = 'enable-anim';
-const PRESERVE_ON_LOCK = 'preserve-on-lock';
+const ENABLE_ANIMATIONS_KEY = 'enable-anim';
+const PRESERVE_ON_LOCK_KEY = 'preserve-on-lock';
 const MAX_NOTIFICATIONS_KEY = 'notification-limit';
+const ENABLE_DESC_KEY = 'enable-descriptions';
 
 const
 Log = Me.imports.logger;
@@ -162,28 +163,42 @@ const RssFeedSettingsWidget = new GObject.Class({
 		let label6 = new Gtk.Label({ xalign: 0, label: _("Enable animations:") });
 		box6.pack_start(label6, true, true, 0);
 
-		let anims = new Gtk.Switch({active: Settings.get_boolean(ENABLE_ANIMATIONS) });
+		let anims = new Gtk.Switch({active: Settings.get_boolean(ENABLE_ANIMATIONS_KEY) });
 		anims.connect('notify::active', Lang.bind(this, function(b) {
-			Settings.set_boolean(ENABLE_ANIMATIONS, b.active);
+			Settings.set_boolean(ENABLE_ANIMATIONS_KEY, b.active);
 		}));
 
 		box6.add(anims);
 		this.add(box6);
 
-        // enable animations
+        // preserve when screen off
 		let box7 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
 		box7.set_margin_bottom(6);
 		let label7 = new Gtk.Label({ xalign: 0, label: _("Preserve when screen off:") });
 		box7.pack_start(label7, true, true, 0);
 
-		let ponlock = new Gtk.Switch({active: Settings.get_boolean(PRESERVE_ON_LOCK) });
+		let ponlock = new Gtk.Switch({active: Settings.get_boolean(PRESERVE_ON_LOCK_KEY) });
 		ponlock.connect('notify::active', Lang.bind(this, function(b) {
-			Settings.set_boolean(PRESERVE_ON_LOCK, b.active);
+			Settings.set_boolean(PRESERVE_ON_LOCK_KEY, b.active);
 		}));
 
 		box7.add(ponlock);
 		this.add(box7);
 
+        // preserve when screen off
+		let box10 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		box10.set_margin_bottom(6);
+		let label10 = new Gtk.Label({ xalign: 0, label: _("Show descriptions:") });
+		box10.pack_start(label10, true, true, 0);
+
+		let sdesc = new Gtk.Switch({active: Settings.get_boolean(ENABLE_DESC_KEY) });
+		sdesc.connect('notify::active', Lang.bind(this, function(b) {
+			Settings.set_boolean(ENABLE_DESC_KEY, b.active);
+		}));
+
+		box10.add(sdesc);
+		this.add(box10);
+		
 		let sep = new Gtk.Separator({ orientation: Gtk.Orientation.HORIZONTAL});
 		sep.set_margin_bottom(2);
 		sep.set_margin_top(6);

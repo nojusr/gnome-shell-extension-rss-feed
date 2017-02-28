@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RSS Feed GNOME Shell Extension\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-28 13:27+0100\n"
+"POT-Creation-Date: 2017-02-28 21:34+0100\n"
 "PO-Revision-Date: 2015-06-18 11:03-0300\n"
 "Last-Translator: Jonatan Zeidler <jonatan_zeidler@gmx.de>\n"
 "Language-Team: German <jonatan_zeidler@gmx.de>\n"
@@ -19,78 +19,82 @@ msgstr ""
 "X-Generator: Poedit 1.7.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: extension.js:169 extension.js:659
+#: extension.js:175 extension.js:716
 msgid "Last update"
 msgstr "Zuletzt aktualisiert"
 
-#: extension.js:178
+#: extension.js:184
 msgid "Reload RSS Feeds"
 msgstr "RSS-Quellen abrufen"
 
-#: extension.js:179
+#: extension.js:185
 msgid "RSS Feed Settings"
 msgstr "Einstellungen der RSS-Quellen"
 
-#: extension.js:630
+#: extension.js:688
 msgid "UPDATE"
 msgstr "UPDATE"
 
-#: extension.js:631
+#: extension.js:689
 msgid "Source"
 msgstr "Quelle"
 
-#: extension.js:632
+#: extension.js:690
 msgid "Author"
 msgstr "Autor"
 
-#: extension.js:711
+#: extension.js:770
 msgid "Open URL"
 msgstr "Öffne URL"
 
-#: extension.js:716
+#: extension.js:776
 msgid "Copy URL"
 msgstr "Kopieren URL"
 
-#: prefs.js:83
+#: prefs.js:84
 msgid "Update interval (minutes):"
 msgstr "Aktualisierungsintervall (Minuten):"
 
-#: prefs.js:96
+#: prefs.js:97
 msgid "Max items per source:"
 msgstr "Max. Artikel pro Quelle:"
 
-#: prefs.js:109
+#: prefs.js:110
 msgid "Max menu height (px):"
 msgstr "Max. Menühöhe (px):"
 
-#: prefs.js:122
+#: prefs.js:123
 msgid "Poll delay (ms):"
 msgstr "Abfrageverzögerung (ms):"
 
-#: prefs.js:135
+#: prefs.js:136
 msgid "Show notifications:"
 msgstr "Zeige Benachrichtigungen:"
 
-#: prefs.js:149
+#: prefs.js:150
 msgid "Max notifications:"
 msgstr "Maximale Benachrichtigung:"
 
-#: prefs.js:162
+#: prefs.js:163
 msgid "Enable animations:"
 msgstr "Animationen aktivieren:"
 
-#: prefs.js:176
+#: prefs.js:177
 msgid "Preserve when screen off:"
 msgstr "Erhalten wenn Bildschirm aus:"
 
-#: prefs.js:196
+#: prefs.js:191
+msgid "Show descriptions:"
+msgstr "Beschreibungen anzeigen:"
+
+#: prefs.js:211
 msgid "RSS sources"
 msgstr "RSS Quellen"
 
-#: prefs.js:301
+#: prefs.js:316
 msgid "New RSS Feed source"
 msgstr "Neue RSS-Quelle"
 
-#: prefs.js:325
+#: prefs.js:345
 msgid "Edit RSS Feed source"
 msgstr "RSS-Quelle bearbeiten"
