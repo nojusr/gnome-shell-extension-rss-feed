@@ -77,13 +77,13 @@ let _preserveOnLock = false;
 /*
  * Main RSS Feed extension class
  */
-const RssFeedButton = new Lang.Class(
+const RssFeed = new Lang.Class(
 {
-	Name: 'RssFeedButton',
+	Name: 'RssFeed',
 	Extends: PanelMenu.Button,
 
 	/*
-	 * Initialize instance of RssFeedButton class
+	 * Initialize instance of RssFeed class
 	 */
 	_init: function()
 	{
@@ -222,7 +222,7 @@ const RssFeedButton = new Lang.Class(
 		if (this._timeout)
 			Mainloop.source_remove(this._timeout);
 
-		if ( this._settingsCWId )
+		if (this._settingsCWId)
 			Mainloop.source_remove(this._settingsCWId);
 
 		for (let t in this._feedTimers)
@@ -371,7 +371,7 @@ const RssFeedButton = new Lang.Class(
 		if (this._maxMenuHeight != this._pMaxMenuHeight)
 			this._feedsSection.actor.set_style(
 				this._generatePopupMenuCSS(this._maxMenuHeight));
-		
+
 		this._pMaxMenuHeight = this._maxMenuHeight;
 
 		Log.Debug("Reload RSS Feeds");
@@ -470,8 +470,6 @@ const RssFeedButton = new Lang.Class(
 	 */
 	_httpGetRequestAsync: function(url, params, sourceURL, callback)
 	{
-		Log.Debug("Soup HTTP GET request. URL: " + url + " parameters: " + JSON.stringify(params));
-
 		let request = Soup.form_request_new_from_hash('GET', url, params);
 
 		if (!request)
@@ -482,9 +480,16 @@ const RssFeedButton = new Lang.Class(
 
 		this._httpSession.queue_message(request, Lang.bind(this, function(httpSession, message)
 		{
+			let status_phrase = Soup.Status.get_phrase(message.status_code);
 
-			Log.Debug("Soup HTTP GET reponse. Status code: " + message.status_code +
-				" Content Type: " + message.response_headers.get_one("Content-Type"));
+			if ( !((message.status_code) >= 200 && (message.status_code) < 300) )
+			{
+				Log.Debug("HTTP GET " + sourceURL + ": " + message.status_code + " " + status_phrase);
+				return;
+			}
+
+			Log.Debug("HTTP GET " + sourceURL + ": " + message.status_code + " " + status_phrase +
+				" Content-Type: " + message.response_headers.get_one("Content-Type"));
 
 			if (message.response_body.data)
 				callback(message.response_body.data, sourceURL);
@@ -859,7 +864,7 @@ function enable()
 		return;
 	}
 
-	rssFeedBtn = new RssFeedButton();
+	rssFeedBtn = new RssFeed();
 	Main.panel.addToStatusArea('rssFeedMenu', rssFeedBtn, 0, 'right');
 
 	Log.Debug("Extension enabled.");
@@ -876,7 +881,7 @@ function extension_disable()
 	}
 
 	rssFeedBtn.destroy();
-	rssFeedBtn = undefined;	
+	rssFeedBtn = undefined;
 
 	Log.Debug("Extension disabled.");
 }
