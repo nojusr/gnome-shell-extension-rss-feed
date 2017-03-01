@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-28 21:34+0100\n"
+"POT-Creation-Date: 2017-03-01 12:36+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,82 +17,90 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: extension.js:175 extension.js:716
-msgid "Last update"
+#: extension.js:153
+msgid "Reload Plugin"
 msgstr ""
 
-#: extension.js:184
+#: extension.js:173
 msgid "Reload RSS Feeds"
 msgstr ""
 
-#: extension.js:185
+#: extension.js:174
 msgid "RSS Feed Settings"
 msgstr ""
 
-#: extension.js:688
+#: extension.js:707
 msgid "UPDATE"
 msgstr ""
 
-#: extension.js:689
+#: extension.js:708
 msgid "Source"
 msgstr ""
 
-#: extension.js:690
+#: extension.js:709
 msgid "Author"
 msgstr ""
 
-#: extension.js:770
+#: extension.js:735
+msgid "Last update"
+msgstr ""
+
+#: extension.js:787
 msgid "Open URL"
 msgstr ""
 
-#: extension.js:776
+#: extension.js:793
 msgid "Copy URL"
 msgstr ""
 
-#: prefs.js:84
-msgid "Update interval (minutes):"
+#: prefs.js:120
+msgid "Update interval (min):"
 msgstr ""
 
-#: prefs.js:97
-msgid "Max items per source:"
-msgstr ""
-
-#: prefs.js:110
-msgid "Max menu height (px):"
-msgstr ""
-
-#: prefs.js:123
-msgid "Poll delay (ms):"
-msgstr ""
-
-#: prefs.js:136
-msgid "Show notifications:"
-msgstr ""
-
-#: prefs.js:150
-msgid "Max notifications:"
-msgstr ""
-
-#: prefs.js:163
-msgid "Enable animations:"
-msgstr ""
-
-#: prefs.js:177
+#: prefs.js:140
 msgid "Preserve when screen off:"
 msgstr ""
 
-#: prefs.js:191
+#: prefs.js:165
+msgid "Poll delay (ms):"
+msgstr ""
+
+#: prefs.js:204
+msgid "Reactivate extension"
+msgstr ""
+
+#: prefs.js:216
+msgid "Debug mode:"
+msgstr ""
+
+#: prefs.js:265
+msgid "Max menu height (px):"
+msgstr ""
+
+#: prefs.js:286
+msgid "Max items per source:"
+msgstr ""
+
+#: prefs.js:307
+msgid "Enable animations:"
+msgstr ""
+
+#: prefs.js:333
 msgid "Show descriptions:"
 msgstr ""
 
-#: prefs.js:211
+#: prefs.js:377
+msgid "Show notifications:"
+msgstr ""
+
+#: prefs.js:404
+msgid "Max notifications:"
+msgstr ""
+
+#: prefs.js:434
 msgid "RSS sources"
 msgstr ""
 
-#: prefs.js:316
+#: prefs.js:694
 msgid "New RSS Feed source"
-msgstr ""
-
-#: prefs.js:345
-msgid "Edit RSS Feed source"
 msgstr ""

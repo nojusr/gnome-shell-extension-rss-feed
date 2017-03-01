@@ -20,18 +20,19 @@
  * You should have received a copy of the GNU General Public License
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
+
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 const Settings = Convenience.getSettings();
 
+const Mainloop = imports.mainloop;
 
 const Gettext = imports.gettext.domain('rss-feed');
 const _ = Gettext.gettext;
@@ -39,7 +40,7 @@ const _ = Gettext.gettext;
 const COLUMN_ID = 0;
 const MAX_UPDATE_INTERVAL = 1440;
 const MAX_SOURCES_LIMIT = 1024;
-const MAX_POLL_DELAY = 10000;
+const MAX_POLL_DELAY = 9999;
 const MAX_HEIGHT = 8192;
 const MAX_NOTIFICATIONS = 100;
 
@@ -53,14 +54,17 @@ const ENABLE_ANIMATIONS_KEY = 'enable-anim';
 const PRESERVE_ON_LOCK_KEY = 'preserve-on-lock';
 const MAX_NOTIFICATIONS_KEY = 'notification-limit';
 const ENABLE_DESC_KEY = 'enable-descriptions';
+const ENABLE_DEBUG_KEY = 'enable-debug';
 
-const
-Log = Me.imports.logger;
+const Log = Me.imports.logger;
+
+const GSE_TOOL_PATH = 'gnome-shell-extension-tool';
 
 /*
  *	RssFeedSettingsWidget class for settings widget
  */
-const RssFeedSettingsWidget = new GObject.Class({
+const RssFeedSettingsWidget = new GObject.Class(
+{
 
 	Name: 'RssFeed.Prefs.RssFeedSettingsWidget',
 	GTypeName: 'RssFeedSettingsWidget',
@@ -69,85 +73,336 @@ const RssFeedSettingsWidget = new GObject.Class({
 	/*
 	 *	Initialize new instance of RssFeedSettingsWidget class
 	 */
-	_init : function(params) {
-		
+	_init: function(params)
+	{
+
 		this.parent(params);
 		this.orientation = Gtk.Orientation.VERTICAL;
 		this.margin = 12;
-		
-		if ( this.set_size_request )
-			this.set_size_request(-1,575);
 
-		// update interval
-		let box = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
-		box.set_margin_bottom(6);
-		let label = new Gtk.Label({ xalign: 0, label: _("Update interval (minutes):") });
-		box.pack_start(label, true, true, 0);
+		let sep;
 
-		let spinbtn = Gtk.SpinButton.new_with_range(0, MAX_UPDATE_INTERVAL, 1);
-		spinbtn.set_value(Settings.get_int(UPDATE_INTERVAL_KEY));
-		Settings.bind(UPDATE_INTERVAL_KEY, spinbtn, 'value', Gio.SettingsBindFlags.DEFAULT);
+		if (this.set_size_request)
+			this.set_size_request(600, 550);
 
-		box.add(spinbtn);
-		this.add(box);
+		sep = new Gtk.Separator(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL
+		});
+		sep.set_margin_bottom(9);
+		this.add(sep);
 
-		// items visible per page
-		let box2 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
-		box2.set_margin_bottom(6);
-		let label2 = new Gtk.Label({ xalign: 0, label: _("Max items per source:") });
-		box2.pack_start(label2, true, true, 0);
+		let upper_box = new Gtk.Box(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 8
+		});
+		{
 
-		let spinbtn2 = Gtk.SpinButton.new_with_range(0, MAX_SOURCES_LIMIT, 1);
-		spinbtn2.set_value(Settings.get_int(ITEMS_VISIBLE_KEY));
-		Settings.bind(ITEMS_VISIBLE_KEY, spinbtn2, 'value', Gio.SettingsBindFlags.DEFAULT);
+			let general_box = new Gtk.Box(
+			{
+				orientation: Gtk.Orientation.VERTICAL,
+				spacing: 6,
+				hexpand: true
+			});
+			general_box.set_margin_bottom(6);
+			{
+				// update interval
+				let box = new Gtk.Box(
+				{
+					orientation: Gtk.Orientation.HORIZONTAL,
+					spacing: 6
+				});
+				box.set_margin_bottom(6);
+				let label = new Gtk.Label(
+				{
+					xalign: 0,
+					label: _("Update interval (min):")
+				});
+				box.pack_start(label, true, true, 0);
 
-		box2.add(spinbtn2);
-		this.add(box2);
-		
-		// maximum menu height
-		let box5 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
-		box5.set_margin_bottom(6);
-		let label5 = new Gtk.Label({ xalign: 0, label: _("Max menu height (px):") });
-		box5.pack_start(label5, true, true, 0);
+				let spinbtn = Gtk.SpinButton.new_with_range(0, MAX_UPDATE_INTERVAL, 1);
+				spinbtn.set_value(Settings.get_int(UPDATE_INTERVAL_KEY));
+				Settings.bind(UPDATE_INTERVAL_KEY, spinbtn, 'value', Gio.SettingsBindFlags.DEFAULT);
 
-		let spinbtn5 = Gtk.SpinButton.new_with_range(50, MAX_HEIGHT, 1);
-		spinbtn5.set_value(Settings.get_int(MAX_HEIGHT_KEY));
-		Settings.bind(MAX_HEIGHT_KEY, spinbtn5, 'value', Gio.SettingsBindFlags.DEFAULT);
+				box.add(spinbtn);
 
-		box5.add(spinbtn5);
-		this.add(box5);
+				// preserve when screen off
+				let box7 = new Gtk.Box(
+				{
+					orientation: Gtk.Orientation.HORIZONTAL,
+					spacing: 6
+				});
+				box7.set_margin_bottom(6);
+				let label7 = new Gtk.Label(
+				{
+					xalign: 0,
+					label: _("Preserve when screen off:")
+				});
+				box7.pack_start(label7, true, true, 0);
 
-		// poll delay
-        let box4 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
-        box4.set_margin_bottom(6);
-		let label4 = new Gtk.Label({ xalign: 0, label: _("Poll delay (ms):") });
-		box4.pack_start(label4, true, true, 0);
+				let ponlock = new Gtk.Switch(
+				{
+					active: Settings.get_boolean(PRESERVE_ON_LOCK_KEY)
+				});
+				ponlock.connect('notify::active', Lang.bind(this, function(b)
+				{
+					Settings.set_boolean(PRESERVE_ON_LOCK_KEY, b.active);
+				}));
 
-		let spinbtn4 = Gtk.SpinButton.new_with_range(25, MAX_POLL_DELAY, 1);
-		spinbtn4.set_value(Settings.get_int(POLL_DELAY_KEY));
-		Settings.bind(POLL_DELAY_KEY, spinbtn4, 'value', Gio.SettingsBindFlags.DEFAULT);
+				box7.add(ponlock);
 
-		box4.add(spinbtn4);
-		this.add(box4);
-		
+				// poll delay
+				let box4 = new Gtk.Box(
+				{
+					orientation: Gtk.Orientation.HORIZONTAL,
+					spacing: 6
+				});
+				box4.set_margin_bottom(6);
+				let label4 = new Gtk.Label(
+				{
+					xalign: 0,
+					label: _("Poll delay (ms):")
+				});
+				box4.pack_start(label4, true, true, 0);
+
+				let spinbtn4 = Gtk.SpinButton.new_with_range(25, MAX_POLL_DELAY, 1);
+				spinbtn4.set_value(Settings.get_int(POLL_DELAY_KEY));
+				Settings.bind(POLL_DELAY_KEY, spinbtn4, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+				box4.add(spinbtn4);
+
+				general_box.add(box4);
+				general_box.add(box);
+				general_box.add(box7);
+
+				let debug_box = new Gtk.Box(
+				{
+					orientation: Gtk.Orientation.HORIZONTAL,
+					spacing: 6,
+					hexpand: true
+				});
+				{
+					let reloadButton = new Gtk.ToolButton(
+					{
+						icon_name: 'view-refresh-symbolic'
+					});
+					reloadButton.connect('clicked', Lang.bind(this, function()
+					{
+						if ( this._rldTimeout )
+							return;
+
+						if ( !try_spawn([GSE_TOOL_PATH, '-d', Me.uuid]) )
+							return;
+
+						this._rldTimeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, function()
+						{
+							this._rldTimeout = undefined;
+							try_spawn([GSE_TOOL_PATH, '-e', Me.uuid])
+						}));
+					}));
+					reloadButton.set_tooltip_text(_("Reactivate extension"));
+
+					let box_dbgsw = new Gtk.Box(
+					{
+						hexpand: true,
+						orientation: Gtk.Orientation.HORIZONTAL,
+						spacing: 6
+					});
+					box_dbgsw.set_margin_bottom(6);
+					let label_dbgsw = new Gtk.Label(
+					{
+						xalign: 0,
+						label: _("Debug mode:")
+					});
+
+					box_dbgsw.pack_start(label_dbgsw, true, true, 0);
+					box_dbgsw.add(reloadButton);
+
+					let dbg_sw = new Gtk.Switch(
+					{
+						active: Settings.get_boolean(ENABLE_DEBUG_KEY)
+					});
+					dbg_sw.connect('notify::active', Lang.bind(this, function(b)
+					{
+						Settings.set_boolean(ENABLE_DEBUG_KEY, b.active);
+					}));
+
+					box_dbgsw.add(dbg_sw);
+
+					debug_box.add(box_dbgsw);
+				}
+
+				general_box.add(debug_box);
+			}
+
+			upper_box.add(general_box);
+
+			sep = new Gtk.Separator(
+			{
+				orientation: Gtk.Orientation.VERTICAL
+			});
+			upper_box.add(sep);
+
+			let menu_box = new Gtk.Box(
+			{
+				orientation: Gtk.Orientation.VERTICAL,
+				spacing: 8,
+				hexpand: true
+			});
+			menu_box.set_margin_bottom(6);
+			{
+				// maximum menu height
+				let box5 = new Gtk.Box(
+				{
+					orientation: Gtk.Orientation.HORIZONTAL,
+					spacing: 6
+				});
+				box5.set_margin_bottom(6);
+				let label5 = new Gtk.Label(
+				{
+					xalign: 0,
+					label: _("Max menu height (px):")
+				});
+				box5.pack_start(label5, true, true, 0);
+
+				let spinbtn5 = Gtk.SpinButton.new_with_range(50, MAX_HEIGHT, 1);
+				spinbtn5.set_value(Settings.get_int(MAX_HEIGHT_KEY));
+				Settings.bind(MAX_HEIGHT_KEY, spinbtn5, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+				box5.add(spinbtn5);
+				menu_box.add(box5);
+
+				// items visible per page
+				let box2 = new Gtk.Box(
+				{
+					orientation: Gtk.Orientation.HORIZONTAL,
+					spacing: 6
+				});
+				box2.set_margin_bottom(6);
+				let label2 = new Gtk.Label(
+				{
+					xalign: 0,
+					label: _("Max items per source:")
+				});
+				box2.pack_start(label2, true, true, 0);
+
+				let spinbtn2 = Gtk.SpinButton.new_with_range(0, MAX_SOURCES_LIMIT, 1);
+				spinbtn2.set_value(Settings.get_int(ITEMS_VISIBLE_KEY));
+				Settings.bind(ITEMS_VISIBLE_KEY, spinbtn2, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+				box2.add(spinbtn2);
+				menu_box.add(box2);
+
+				// enable animations
+				let box6 = new Gtk.Box(
+				{
+					orientation: Gtk.Orientation.HORIZONTAL,
+					spacing: 6
+				});
+				box6.set_margin_bottom(6);
+				let label6 = new Gtk.Label(
+				{
+					xalign: 0,
+					label: _("Enable animations:")
+				});
+				box6.pack_start(label6, true, true, 0);
+
+				let anims = new Gtk.Switch(
+				{
+					active: Settings.get_boolean(ENABLE_ANIMATIONS_KEY)
+				});
+				anims.connect('notify::active', Lang.bind(this, function(b)
+				{
+					Settings.set_boolean(ENABLE_ANIMATIONS_KEY, b.active);
+				}));
+
+				box6.add(anims);
+				menu_box.add(box6);
+
+				// preserve when screen off
+				let box10 = new Gtk.Box(
+				{
+					orientation: Gtk.Orientation.HORIZONTAL,
+					spacing: 6
+				});
+				box10.set_margin_bottom(6);
+				let label10 = new Gtk.Label(
+				{
+					xalign: 0,
+					label: _("Show descriptions:")
+				});
+				box10.pack_start(label10, true, true, 0);
+
+				let sdesc = new Gtk.Switch(
+				{
+					active: Settings.get_boolean(ENABLE_DESC_KEY)
+				});
+				sdesc.connect('notify::active', Lang.bind(this, function(b)
+				{
+					Settings.set_boolean(ENABLE_DESC_KEY, b.active);
+				}));
+
+
+				box10.add(sdesc);
+				menu_box.add(box10);
+			}
+
+			upper_box.add(menu_box);
+
+		}
+
+		this.add(upper_box);
+
+		sep = new Gtk.Separator(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL
+		});
+		sep.set_margin_bottom(12);
+		sep.set_margin_top(8);
+		this.add(sep);
+
+		let box8;
+
 		// show notifications
-		let box3 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		let box3 = new Gtk.Box(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 6
+		});
 		box3.set_margin_bottom(6);
-		let label3 = new Gtk.Label({ xalign: 0, label: _("Show notifications:") });
+		let label3 = new Gtk.Label(
+		{
+			xalign: 0,
+			label: _("Show notifications:")
+		});
 		box3.pack_start(label3, true, true, 0);
-		
-		let show = new Gtk.Switch({active: Settings.get_boolean(ENABLE_NOTIFICATIONS_KEY) });
-        show.connect('notify::active', Lang.bind(this, function(b) {
-        	Settings.set_boolean(ENABLE_NOTIFICATIONS_KEY, b.active);
-        }));
-        
-        box3.add(show);
-        this.add(box3);
+
+		let show = new Gtk.Switch(
+		{
+			active: Settings.get_boolean(ENABLE_NOTIFICATIONS_KEY)
+		});
+		show.connect('notify::active', Lang.bind(this, function(b)
+		{
+			Settings.set_boolean(ENABLE_NOTIFICATIONS_KEY, b.active);
+			box8.set_sensitive(b.active);
+		}));
+
+		box3.add(show);
+		this.add(box3);
 
 		// maximum notifications
-		let box8 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		box8 = new Gtk.Box(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 6
+		});
 		box8.set_margin_bottom(6);
-		let label8 = new Gtk.Label({ xalign: 0, label: _("Max notifications:") });
+		let label8 = new Gtk.Label(
+		{
+			xalign: 0,
+			label: _("Max notifications:")
+		});
 		box8.pack_start(label8, true, true, 0);
 
 		let spinbtn6 = Gtk.SpinButton.new_with_range(1, MAX_NOTIFICATIONS, 1);
@@ -157,62 +412,31 @@ const RssFeedSettingsWidget = new GObject.Class({
 		box8.add(spinbtn6);
 		this.add(box8);
 
-        // enable animations
-		let box6 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
-		box6.set_margin_bottom(6);
-		let label6 = new Gtk.Label({ xalign: 0, label: _("Enable animations:") });
-		box6.pack_start(label6, true, true, 0);
-
-		let anims = new Gtk.Switch({active: Settings.get_boolean(ENABLE_ANIMATIONS_KEY) });
-		anims.connect('notify::active', Lang.bind(this, function(b) {
-			Settings.set_boolean(ENABLE_ANIMATIONS_KEY, b.active);
-		}));
-
-		box6.add(anims);
-		this.add(box6);
-
-        // preserve when screen off
-		let box7 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
-		box7.set_margin_bottom(6);
-		let label7 = new Gtk.Label({ xalign: 0, label: _("Preserve when screen off:") });
-		box7.pack_start(label7, true, true, 0);
-
-		let ponlock = new Gtk.Switch({active: Settings.get_boolean(PRESERVE_ON_LOCK_KEY) });
-		ponlock.connect('notify::active', Lang.bind(this, function(b) {
-			Settings.set_boolean(PRESERVE_ON_LOCK_KEY, b.active);
-		}));
-
-		box7.add(ponlock);
-		this.add(box7);
-
-        // preserve when screen off
-		let box10 = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
-		box10.set_margin_bottom(6);
-		let label10 = new Gtk.Label({ xalign: 0, label: _("Show descriptions:") });
-		box10.pack_start(label10, true, true, 0);
-
-		let sdesc = new Gtk.Switch({active: Settings.get_boolean(ENABLE_DESC_KEY) });
-		sdesc.connect('notify::active', Lang.bind(this, function(b) {
-			Settings.set_boolean(ENABLE_DESC_KEY, b.active);
-		}));
-
-		box10.add(sdesc);
-		this.add(box10);
-		
-		let sep = new Gtk.Separator({ orientation: Gtk.Orientation.HORIZONTAL});
-		sep.set_margin_bottom(2);
-		sep.set_margin_top(6);
+		sep = new Gtk.Separator(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL
+		});
+		sep.set_margin_bottom(8);
+		sep.set_margin_top(2);
 		this.add(sep);
 
 		// sources label
-		let boxsources = new Gtk.Box( { orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 } );
+		let boxsources = new Gtk.Box(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 6
+		});
 		boxsources.set_margin_bottom(6);
 		boxsources.set_margin_top(4);
-		let labels = new Gtk.Label({ xalign: Gtk.Align.CENTER, label: _("RSS sources") });
+		let labels = new Gtk.Label(
+		{
+			xalign: Gtk.Align.CENTER,
+			label: _("RSS sources")
+		});
 		boxsources.pack_start(labels, true, true, 0);
-		
+
 		this.add(boxsources);
-		
+
 		// rss feed sources
 		let scrolledWindow = new Gtk.ScrolledWindow();
 		scrolledWindow.set_border_width(0);
@@ -222,41 +446,141 @@ const RssFeedSettingsWidget = new GObject.Class({
 		this._store.set_column_types([GObject.TYPE_STRING]);
 		this._loadStoreFromSettings();
 
-		this._actor = new Gtk.TreeView({ model: this._store,
-									   headers_visible: false,
-									   reorderable: false,
-									   hexpand: true,
-									   vexpand: true });
+		this._actor = new Gtk.TreeView(
+		{
+			model: this._store,
+			headers_visible: false,
+			reorderable: true,
+			hexpand: true,
+			vexpand: true,
+			search_column: true
+		});
+
 		this._actor.get_selection().set_mode(Gtk.SelectionMode.SINGLE);
-		
-		
+
 		let column = new Gtk.TreeViewColumn();
 
-		let cell = new Gtk.CellRendererText({ editable: false });
+		let cell = new Gtk.CellRendererText(
+		{
+			editable: true
+		});
 		column.pack_start(cell, true);
 		column.add_attribute(cell, "text", COLUMN_ID);
 		this._actor.append_column(column);
 
+		cell.connect('edited', Lang.bind(this, function(self, str_path, text)
+		{
+			let path = Gtk.TreePath.new_from_string(str_path);
+
+			let [res, iter] = this._store.get_iter(path);
+
+			if (!res)
+				return;
+
+			this._store.set_value(iter, COLUMN_ID, text);
+		}));
+
+
+		this._store.connect('row-inserted', Lang.bind(this, function(tree, path, iter)
+		{
+			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+
+			if (feeds == null)
+				feeds = new Array()
+
+			let index = path.get_indices();
+
+			if (index <= feeds.length)
+			{
+				feeds.splice(index, 0, ""); // placeholder
+				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+			}
+		}));
+
+		this._store.connect('row-changed', Lang.bind(this, function(tree, path, iter)
+		{
+
+			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+			if (feeds == null)
+				feeds = new Array()
+
+			let index = path.get_indices();
+
+			if (index < feeds.length)
+			{
+				feeds[index] = this._store.get_value(iter, COLUMN_ID);
+				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+			}
+
+		}));
+
+		this._store.connect('row-deleted', Lang.bind(this, function(tree, path)
+		{
+			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+			if (feeds == null)
+				feeds = new Array();
+
+			let index = path.get_indices();
+
+			if (index < feeds.length)
+			{
+				feeds.splice(index, 1);
+				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+			}
+
+		}));
+
 		scrolledWindow.add(this._actor);
 		this.add(scrolledWindow);
 
+		let box_toolbar = new Gtk.Box(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL
+		});
+
 		let toolbar = new Gtk.Toolbar();
-		toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_INLINE_TOOLBAR);
+		toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_TOOLBAR);
+
 		toolbar.set_icon_size(1);
 
-		let delButton = new Gtk.ToolButton({ icon_name: 'list-remove-symbolic' });
+		let delButton = new Gtk.ToolButton(
+		{
+			icon_name: 'list-remove-symbolic'
+		});
 		delButton.connect('clicked', Lang.bind(this, this._deleteSelected));
 		toolbar.add(delButton);
 
-		let editButton = new Gtk.ToolButton({ icon_name: 'edit-symbolic' });
-		editButton.connect('clicked', Lang.bind(this, this._editSelected));
-		toolbar.add(editButton);
-
-		let newButton = new Gtk.ToolButton({ icon_name: 'list-add-symbolic' });
+		let newButton = new Gtk.ToolButton(
+		{
+			hexpand: true,
+			icon_name: 'list-add-symbolic'
+		});
 		newButton.connect('clicked', Lang.bind(this, this._createNew));
 		toolbar.add(newButton);
 
-		this.add(toolbar);
+		box_toolbar.add(toolbar);
+
+		let toolbar2 = new Gtk.Toolbar();
+		toolbar2.set_icon_size(1);
+
+		let moveUpButton = new Gtk.ToolButton(
+		{
+			icon_name: 'go-up-symbolic'
+		});
+		moveUpButton.connect('clicked', Lang.bind(this, this._moveItem, true));
+		toolbar2.add(moveUpButton);
+
+		let moveDownButton = new Gtk.ToolButton(
+		{
+			icon_name: 'go-down-symbolic'
+		});
+		moveDownButton.connect('clicked', Lang.bind(this, this._moveItem, false));
+		toolbar2.add(moveDownButton);
+
+		box_toolbar.add(toolbar2);
+		box_toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_TOOLBAR);
+
+		this.add(box_toolbar);
 	},
 
 	/*
@@ -265,19 +589,27 @@ const RssFeedSettingsWidget = new GObject.Class({
 	 *	text - text in dialog
 	 *	onOkButton - callback on OK button clicked
 	 */
-	_createDialog: function(title, text, onOkButton) {
+	_createDialog: function(title, text, onOkButton)
+	{
 
-		let dialog = new Gtk.Dialog({title: title});
+		let dialog = new Gtk.Dialog(
+		{
+			title: title
+		});
 		dialog.set_modal(true);
 		dialog.set_resizable(false);
 		dialog.set_border_width(12);
 
-		this._entry = new Gtk.Entry({text: text});
+		this._entry = new Gtk.Entry(
+		{
+			text: text
+		});
 		//this._entry.margin_top = 12;
 		this._entry.margin_bottom = 12;
 		this._entry.width_chars = 40;
 
-		this._entry.connect("changed", Lang.bind(this, function() {
+		this._entry.connect("changed", Lang.bind(this, function()
+		{
 
 			if (this._entry.get_text().length === 0)
 				this._okButton.sensitive = false;
@@ -286,7 +618,7 @@ const RssFeedSettingsWidget = new GObject.Class({
 		}));
 
 		dialog.add_button(Gtk.STOCK_CANCEL, 0);
-		this._okButton = dialog.add_button(Gtk.STOCK_OK, 1);	// default
+		this._okButton = dialog.add_button(Gtk.STOCK_OK, 1); // default
 		this._okButton.set_can_default(true);
 		this._okButton.sensitive = false;
 		dialog.set_default(this._okButton);
@@ -296,9 +628,11 @@ const RssFeedSettingsWidget = new GObject.Class({
 		//dialog_area.pack_start(label, 0, 0, 0);
 		dialog_area.pack_start(this._entry, 0, 0, 0);
 
-		dialog.connect("response", Lang.bind(this, function(w, response_id) {
-			
-			if (response_id > -1) {	// button OK
+		dialog.connect("response", Lang.bind(this, function(w, response_id)
+		{
+
+			if (response_id > -1)
+			{ // button OK
 				onOkButton(response_id);
 			}
 
@@ -309,95 +643,103 @@ const RssFeedSettingsWidget = new GObject.Class({
 	},
 
 	/*
+	 *	Move selected item on the list
+	 */
+	_moveItem: function(self, direction)
+	{
+
+		let [any, model, iter] = this._actor.get_selection().get_selected();
+
+		if (!any)
+			return;
+
+		let path = model.get_path(iter);
+
+		if (!direction)
+			path.next();
+		else
+			path.prev();
+
+		let [res, iter_step] = model.get_iter(path);
+
+		if (!res)
+			return;
+
+		this._store.swap(iter, iter_step);
+
+		let index = model.get_path(iter).get_indices();
+		let index_step = model.get_path(iter_step).get_indices();
+
+		let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+
+		if (feeds == null)
+			feeds = new Array();
+
+		if (index < feeds.length && index_step < feeds.length)
+		{
+			feeds[index] = model.get_value(iter, COLUMN_ID);
+			feeds[index_step] = model.get_value(iter_step, COLUMN_ID);
+
+			Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+		}
+	},
+
+
+	/*
 	 *	On create new clicked callback
 	 */
-	_createNew: function() {
+	_createNew: function()
+	{
 
-		this._createDialog(_("New RSS Feed source"), '', Lang.bind(this, function(id) {
-
+		this._createDialog(_("New RSS Feed source"), '', Lang.bind(this, function(id)
+		{
 			let text = this._entry.get_text();
-			
-			if ( !text.length )
+
+			if (!text.length)
 				return;
-			
+
 			// update tree view
 			let iter = this._store.append();
 			this._store.set_value(iter, COLUMN_ID, text);
 
-			// update settings
-			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
-			if (feeds == null)
-				feeds = new Array();
-
-			feeds.push(text);
-			Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
 		}));
 	},
 
-	/*
-	 *	On edit clicked callback
-	 */
-	_editSelected: function() {
-
-		let [any, model, iter] = this._actor.get_selection().get_selected();
-
-		if (any) {
-			this._createDialog(_("Edit RSS Feed source"), model.get_value(iter, COLUMN_ID),
-			Lang.bind(this, function() {
-				// update tree view
-				this._store.set_value(iter, COLUMN_ID, this._entry.get_text());
-
-				// update settings
-				let index = model.get_path(iter).get_indices();
-				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
-				if (feeds == null)
-					feeds = new Array();
-
-				if (index < feeds.length) {
-					feeds[index] = this._entry.get_text();
-					Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
-				}
-			}));
-		}
-	},
 
 	/*
 	 *	On delete clicked callback
 	 */
-	_deleteSelected: function() {
+	_deleteSelected: function()
+	{
 
 		let [any, model, iter] = this._actor.get_selection().get_selected();
 
-		if (any) {
+		if (any)
+		{
 			// must call before remove
 			let index = model.get_path(iter).get_indices();
 			// update tree view
 			this._store.remove(iter);
 
-			// update settings
-			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
-			if (feeds == null)
-				feeds = new Array();
-
-			if (index < feeds.length) {
-				feeds.splice(index, 1);
-				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
-			}
 		}
 	},
 
 	/*
 	 *	Loads RSS feeds entries from gsettings structure
 	 */
-	_loadStoreFromSettings: function() {
+	_loadStoreFromSettings: function()
+	{
 
 		let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
 
-		if (feeds) {
+		if (feeds)
+		{
 
-			for (let i = 0; i < feeds.length; i++) {
+			for (let i = 0; i < feeds.length; i++)
+			{
 
-				if (feeds[i]) {	// test on empty string
+				if (feeds[i])
+				{ // test on empty string
 
 					let iter = this._store.append();
 					this._store.set_value(iter, COLUMN_ID, feeds[i]);
@@ -407,17 +749,38 @@ const RssFeedSettingsWidget = new GObject.Class({
 	}
 });
 
+function try_spawn(argv)
+{
+	var success, pid;
+
+	try
+	{
+		[success, pid] = GLib.spawn_sync(null, argv, null,
+			GLib.SpawnFlags.SEARCH_PATH, null);
+	}
+	catch (err)
+	{
+		Log.Error(err);
+		return false;
+	}
+
+	return success;
+}
+
+
 /*
  *	Initialize the settings widget
  */
-function init() {
-    Convenience.initTranslations("rss-feed");
+function init()
+{
+	Convenience.initTranslations("rss-feed");
 }
 
 /*
  *	Builds settings widget
  */
-function buildPrefsWidget() {
+function buildPrefsWidget()
+{
 
 	let widget = new RssFeedSettingsWidget();
 	widget.show_all();

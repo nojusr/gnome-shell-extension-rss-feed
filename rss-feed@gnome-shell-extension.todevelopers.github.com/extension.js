@@ -31,6 +31,7 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const ScreenShield = imports.ui.screenShield;
+const ExtensionSystem = imports.ui.extensionSystem;
 
 const Mainloop = imports.mainloop;
 
@@ -133,50 +134,36 @@ const RssFeedButton = new Lang.Class(
 
 		this.actor.add_actor(button);
 
-		this._feedsBox = new St.BoxLayout(
-		{
-			vertical: true,
-			reactive: false
-		});
+		let systemMenu = Main.panel.statusArea.aggregateMenu._system;
 
-		this._pMaxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
-
-		this._feedsSection = new ExtensionGui.RssPopupMenuSection(
-			this._generatePopupMenuCSS(this._pMaxMenuHeight)
-		);
-
-		/*
-		let i = 25;
-
-		while ( i--)
-		{
-			let l = {
-					Title: "ttt " + i 
-			}
-			let subMenu = new ExtensionGui.RssPopupSubMenuMenuItem(l, 0);
-			this._feedsSection.addMenuItem(subMenu);
-		}*/
-
-		//this._feedsSection.box.style_class = 'rss-feeds-list';
-
-		this.menu.addMenuItem(this._feedsSection);
-
-		let separator = new PopupMenu.PopupSeparatorMenuItem();
-		this.menu.addMenuItem(separator);
-
-		// buttons in bottom menu bar
+		// buttons
 		this._buttonMenu = new PopupMenu.PopupBaseMenuItem(
 		{
 			reactive: false
 		});
 
-		let systemMenu = Main.panel.statusArea.aggregateMenu._system;
-
 		this._lastUpdateTime = new St.Label(
 		{
-			text: _("Last update") + ': --:--',
+			text: "Initializing..",
 			style_class: 'rss-status-label'
 		});
+
+		if (Settings.get_boolean(DEBUG_ENABLED_KEY))
+		{
+			let reloadPluginBtn = systemMenu._createActionButton('system-shutdown-symbolic', _("Reload Plugin"));
+			this._buttonMenu.actor.add_actor(reloadPluginBtn);
+			reloadPluginBtn.connect('clicked', Lang.bind(this, function()
+			{
+				if (this._reloadTimeout || Misc.isScreenLocked())
+					return;
+
+				this._reloadTimeout = Mainloop.timeout_add(0, function()
+				{
+					ExtensionSystem.reloadExtension(Me);
+				});
+			}));
+
+		}
 
 		this._buttonMenu.actor.add_actor(this._lastUpdateTime);
 		this._buttonMenu.actor.set_x_align(Clutter.ActorAlign.CENTER);
@@ -184,12 +171,12 @@ const RssFeedButton = new Lang.Class(
 		this._lastUpdateTime.set_y_align(Clutter.ActorAlign.CENTER);
 
 		let reloadBtn = systemMenu._createActionButton('view-refresh-symbolic', _("Reload RSS Feeds"));
-		let settingsBtn = systemMenu._createActionButton('preferences-system-symbolic', _("RSS Feed Settings"));
+		let settingsBtn = systemMenu._createActionButton('emblem-system-symbolic', _("RSS Feed Settings"));
 
 		this._buttonMenu.actor.add_actor(reloadBtn);
 		this._buttonMenu.actor.add_actor(settingsBtn);
 
-		reloadBtn.connect('clicked', Lang.bind(this, this._reloadRssFeeds));
+		reloadBtn.connect('clicked', Lang.bind(this, this._pollFeeds));
 		settingsBtn.connect('clicked', Lang.bind(this, this._onSettingsBtnClicked));
 
 		this.menu.addMenuItem(this._buttonMenu);
@@ -202,8 +189,19 @@ const RssFeedButton = new Lang.Class(
 
 		this.menu.actor.add_style_class_name('rss-menu');
 
-		// loading data on startup
-		this._reloadRssFeeds();
+		let separator = new PopupMenu.PopupSeparatorMenuItem();
+		this.menu.addMenuItem(separator);
+
+		this._pMaxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
+
+		this._feedsSection = new ExtensionGui.RssPopupMenuSection(
+			this._generatePopupMenuCSS(this._pMaxMenuHeight)
+		);
+
+		//this._feedsSection.box.style_class = 'rss-feeds-list';
+
+		this.menu.addMenuItem(this._feedsSection);
+
 	},
 
 	/*
@@ -211,16 +209,21 @@ const RssFeedButton = new Lang.Class(
 	 */
 	destroy: function()
 	{
+		this._isDiscarded = true;
 
 		if (this._httpSession)
 			this._httpSession.abort();
-		this._httpSession = null;
+
+		this._httpSession = undefined;
 
 		if (this._scid)
 			Settings.disconnect(this._scid);
 
 		if (this._timeout)
 			Mainloop.source_remove(this._timeout);
+
+		if ( this._settingsCWId )
+			Mainloop.source_remove(this._settingsCWId);
 
 		for (let t in this._feedTimers)
 			Mainloop.source_remove(t);
@@ -291,9 +294,13 @@ const RssFeedButton = new Lang.Class(
 
 		this.menu.close();
 
-		GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this, function()
+		this._settingsCWId = GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this, function(pid, status)
 		{
-			this._reloadRssFeeds();
+			this._settingsCWId = undefined;
+
+			GLib.spawn_close_pid(pid);
+
+			this._pollFeeds();
 		}));
 	},
 
@@ -342,7 +349,7 @@ const RssFeedButton = new Lang.Class(
 		this._feedsCache[key] = undefined;
 	},
 
-	_reloadExtension: function()
+	_restartExtension: function()
 	{
 		if (!this._reloadTimer)
 		{
@@ -357,13 +364,13 @@ const RssFeedButton = new Lang.Class(
 	/*
 	 * Scheduled reload of RSS feeds from sources set in settings
 	 */
-	_reloadRssFeeds: function()
+	_pollFeeds: function()
 	{
 		this._getSettings();
 
 		if (this._maxMenuHeight != this._pMaxMenuHeight)
 		{
-			this._reloadExtension();
+			this._restartExtension();
 			return;
 		}
 
@@ -385,9 +392,9 @@ const RssFeedButton = new Lang.Class(
 
 		if (this._rssFeedsSources)
 		{
-			/* reset if max items per source change */
-			if (this._pItemsVisible &&
-				this._itemsVisible != this._pItemsVisible)
+			/* reload the feed list if necessary */
+			if ((this._pItemsVisible &&
+					this._itemsVisible != this._pItemsVisible))
 			{
 				this._feedsSection.removeAll();
 				delete this._feedsCache;
@@ -427,6 +434,9 @@ const RssFeedButton = new Lang.Class(
 				let url = this._rssFeedsSources[i];
 				let sourceURL = url;
 
+				if (!url.length)
+					continue;
+
 				let jsonObj = this._getParametersAsJson(url);
 
 				let l2o = url.indexOf('?');
@@ -449,7 +459,7 @@ const RssFeedButton = new Lang.Class(
 			this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60, Lang.bind(this, function()
 			{
 				this._timeout = undefined;
-				this._reloadRssFeeds();
+				this._pollFeeds();
 			}));
 		}
 	},
@@ -846,23 +856,31 @@ function init()
 function enable()
 {
 	if (rssFeedBtn)
+	{
+		Log.Debug("Extension already enabled!");
 		return;
+	}
 
 	rssFeedBtn = new RssFeedButton();
 	Main.panel.addToStatusArea('rssFeedMenu', rssFeedBtn, 0, 'right');
 
 	Log.Debug("Extension enabled.");
+
+	rssFeedBtn._pollFeeds();
 }
 
 function extension_disable()
 {
 	if (!rssFeedBtn)
+	{
+		Log.Debug("Extension already disabled!");
 		return;
+	}
 
 	rssFeedBtn.destroy();
-	rssFeedBtn = undefined;
+	rssFeedBtn = undefined;	
 
-	Log.Debug("Extension disabled. ");
+	Log.Debug("Extension disabled.");
 }
 
 /*

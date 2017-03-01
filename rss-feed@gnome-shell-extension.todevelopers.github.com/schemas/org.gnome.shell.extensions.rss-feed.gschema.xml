@@ -57,5 +57,10 @@
 		    <summary>Enable debug</summary>
 		    <description>Enable extension logs debug messages in Gnome logs provider.</description>
 		</key>
+		<key type="b" name="reset-feeds">
+		    <default>false</default>
+		    <summary>Reset feedss</summary>
+		    <description>Reset feeds on next reload</description>
+		</key>
     </schema>
 </schemalist>

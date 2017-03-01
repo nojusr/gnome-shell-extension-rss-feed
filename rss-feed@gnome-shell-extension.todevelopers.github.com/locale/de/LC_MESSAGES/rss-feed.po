@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RSS Feed GNOME Shell Extension\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-28 21:34+0100\n"
+"POT-Creation-Date: 2017-03-01 12:36+0100\n"
 "PO-Revision-Date: 2015-06-18 11:03-0300\n"
 "Last-Translator: Jonatan Zeidler <jonatan_zeidler@gmx.de>\n"
 "Language-Team: German <jonatan_zeidler@gmx.de>\n"
@@ -19,82 +19,93 @@ msgstr ""
 "X-Generator: Poedit 1.7.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: extension.js:175 extension.js:716
-msgid "Last update"
-msgstr "Zuletzt aktualisiert"
+#: extension.js:153
+msgid "Reload Plugin"
+msgstr "Das Plugin neu laden"
 
-#: extension.js:184
+#: extension.js:173
 msgid "Reload RSS Feeds"
 msgstr "RSS-Quellen abrufen"
 
-#: extension.js:185
+#: extension.js:174
 msgid "RSS Feed Settings"
 msgstr "Einstellungen der RSS-Quellen"
 
-#: extension.js:688
+#: extension.js:707
 msgid "UPDATE"
-msgstr "UPDATE"
+msgstr "NEUFASSUNG"
 
-#: extension.js:689
+#: extension.js:708
 msgid "Source"
 msgstr "Quelle"
 
-#: extension.js:690
+#: extension.js:709
 msgid "Author"
 msgstr "Autor"
 
-#: extension.js:770
+#: extension.js:735
+msgid "Last update"
+msgstr "Zuletzt aktualisiert"
+
+#: extension.js:787
 msgid "Open URL"
 msgstr "Öffne URL"
 
-#: extension.js:776
+#: extension.js:793
 msgid "Copy URL"
 msgstr "Kopieren URL"
 
-#: prefs.js:84
-msgid "Update interval (minutes):"
-msgstr "Aktualisierungsintervall (Minuten):"
+#: prefs.js:120
+msgid "Update interval (min):"
+msgstr "Aktualisierungsintervall (Min):"
 
-#: prefs.js:97
-msgid "Max items per source:"
-msgstr "Max. Artikel pro Quelle:"
-
-#: prefs.js:110
-msgid "Max menu height (px):"
-msgstr "Max. Menühöhe (px):"
-
-#: prefs.js:123
-msgid "Poll delay (ms):"
-msgstr "Abfrageverzögerung (ms):"
-
-#: prefs.js:136
-msgid "Show notifications:"
-msgstr "Zeige Benachrichtigungen:"
-
-#: prefs.js:150
-msgid "Max notifications:"
-msgstr "Maximale Benachrichtigung:"
-
-#: prefs.js:163
-msgid "Enable animations:"
-msgstr "Animationen aktivieren:"
-
-#: prefs.js:177
+#: prefs.js:140
 msgid "Preserve when screen off:"
 msgstr "Erhalten wenn Bildschirm aus:"
 
-#: prefs.js:191
+#: prefs.js:165
+msgid "Poll delay (ms):"
+msgstr "Abfrageverzögerung (ms):"
+
+#: prefs.js:204
+msgid "Reactivate extension"
+msgstr "Verlängerung reaktivieren"
+
+#: prefs.js:216
+msgid "Debug mode:"
+msgstr "Debug-Modus:"
+
+#: prefs.js:265
+msgid "Max menu height (px):"
+msgstr "Max. Menühöhe (px):"
+
+#: prefs.js:286
+msgid "Max items per source:"
+msgstr "Max. Artikel pro Quelle:"
+
+#: prefs.js:307
+msgid "Enable animations:"
+msgstr "Animationen aktivieren:"
+
+#: prefs.js:333
 msgid "Show descriptions:"
 msgstr "Beschreibungen anzeigen:"
 
-#: prefs.js:211
+#: prefs.js:377
+msgid "Show notifications:"
+msgstr "Zeige Benachrichtigungen:"
+
+#: prefs.js:404
+msgid "Max notifications:"
+msgstr "Maximale Benachrichtigung:"
+
+#: prefs.js:434
 msgid "RSS sources"
 msgstr "RSS Quellen"
 
-#: prefs.js:316
+#: prefs.js:694
 msgid "New RSS Feed source"
 msgstr "Neue RSS-Quelle"
 
-#: prefs.js:345
-msgid "Edit RSS Feed source"
-msgstr "RSS-Quelle bearbeiten"
+#~ msgid "Edit RSS Feed source"
+#~ msgstr "RSS-Quelle bearbeiten"
