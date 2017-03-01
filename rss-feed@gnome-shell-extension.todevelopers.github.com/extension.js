@@ -369,11 +369,9 @@ const RssFeedButton = new Lang.Class(
 		this._getSettings();
 
 		if (this._maxMenuHeight != this._pMaxMenuHeight)
-		{
-			this._restartExtension();
-			return;
-		}
-
+			this._feedsSection.actor.set_style(
+				this._generatePopupMenuCSS(this._maxMenuHeight));
+		
 		this._pMaxMenuHeight = this._maxMenuHeight;
 
 		Log.Debug("Reload RSS Feeds");
@@ -392,7 +390,7 @@ const RssFeedButton = new Lang.Class(
 
 		if (this._rssFeedsSources)
 		{
-			/* reload the feed list if necessary */
+			/* clear feed list if necessary */
 			if ((this._pItemsVisible &&
 					this._itemsVisible != this._pItemsVisible))
 			{
@@ -631,7 +629,7 @@ const RssFeedButton = new Lang.Class(
 			menu._cacheObj = cacheObj;
 
 			// this._lMenu = menu;
-			// if (i == 0) feedsCache._initialRefresh = true;
+			// if (i < 3 && Math.random() < 0.07332) feedsCache._initialRefresh = true;
 
 			/* decode description, if present */
 			if (item.Description.length > 0)
