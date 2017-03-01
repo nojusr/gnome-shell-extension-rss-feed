@@ -18,7 +18,7 @@ You can add URL links of your RSS sources in Settings tab. Also you can adjust r
 
 * Support for different content encoding then UTF-8
 * Verification of RSS source availability in Settings widget
-* Rework of Settings widget
+* ~~Rework of Settings widget~~
 * ~~Notifications for new articles~~
 * ~~Mark articles read / unread~~
 * Categories for RSS Feeds
@@ -35,6 +35,6 @@ Download latest release (https://github.com/maweki/gnome-shell-extension-rss-fee
 
 ## Screenshots
 
-![](http://i.imgur.com/8G0ELDZ.png)
+![](http://i.imgur.com/JUUwRU2.png)
 ![](http://i.imgur.com/BhsKd1q.png)
 ![](http://i.imgur.com/ZunKk5b.png)
