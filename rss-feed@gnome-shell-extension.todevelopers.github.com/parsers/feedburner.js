@@ -41,6 +41,7 @@ const FeedburnerParser = new Lang.Class({
      */
     _init: function(root) {
         this.parent(root);
+        this._type = "Feedburner";
         Log.Debug("Feedburner parser");
     },
 

@@ -59,7 +59,8 @@ RssPopupMenuItem = new Lang.Class(
 	{
 
 		let
-		title = "  " + Encoder.htmlDecode(item.Title).trim();
+		title = "  " + item.Title;
+
 		if (title.length > 100)
 			title = title.substr(0, 100) + "...";
 

@@ -41,6 +41,7 @@ const RdfParser = new Lang.Class({
      */
     _init: function(root) {
         this.parent(root);
+        this._type = "RDF (RSS 1.0)";
         Log.Debug("RDF (RSS 1.0) parser");
     },
 

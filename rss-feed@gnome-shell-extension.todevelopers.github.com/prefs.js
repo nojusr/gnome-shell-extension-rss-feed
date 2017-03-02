@@ -24,8 +24,8 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
+const Soup = imports.gi.Soup;
 const Lang = imports.lang;
-
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -37,7 +37,11 @@ const Mainloop = imports.mainloop;
 const Gettext = imports.gettext.domain('rss-feed');
 const _ = Gettext.gettext;
 
+const HTTP = Me.imports.http;
+const Parser = Me.imports.parsers.factory;
+
 const COLUMN_ID = 0;
+const COLUMN_ID_STATUS = 1;
 const MAX_UPDATE_INTERVAL = 1440;
 const MAX_SOURCES_LIMIT = 1024;
 const MAX_POLL_DELAY = 9999;
@@ -78,12 +82,21 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 		this.parent(params);
 		this.orientation = Gtk.Orientation.VERTICAL;
-		this.margin = 12;
+		this.margin_left = 10;
+		this.margin_right = 10;
+		this.margin_top = 10;
+		this.margin_bottom = 2;
+
+		this._httpSession = new Soup.SessionAsync();
+
+		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
+
+		this._fCache = new Array();
 
 		let sep;
 
 		if (this.set_size_request)
-			this.set_size_request(600, 550);
+			this.set_size_request(600, 600);
 
 		sep = new Gtk.Separator(
 		{
@@ -98,7 +111,6 @@ const RssFeedSettingsWidget = new GObject.Class(
 			spacing: 8
 		});
 		{
-
 			let general_box = new Gtk.Box(
 			{
 				orientation: Gtk.Orientation.VERTICAL,
@@ -189,10 +201,10 @@ const RssFeedSettingsWidget = new GObject.Class(
 					});
 					reloadButton.connect('clicked', Lang.bind(this, function()
 					{
-						if ( this._rldTimeout )
+						if (this._rldTimeout)
 							return;
 
-						if ( !try_spawn([GSE_TOOL_PATH, '-d', Me.uuid]) )
+						if (!try_spawn([GSE_TOOL_PATH, '-d', Me.uuid]))
 							return;
 
 						this._rldTimeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, function()
@@ -443,92 +455,163 @@ const RssFeedSettingsWidget = new GObject.Class(
 		scrolledWindow.set_shadow_type(1);
 
 		this._store = new Gtk.ListStore();
-		this._store.set_column_types([GObject.TYPE_STRING]);
+		this._store.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
 		this._loadStoreFromSettings();
 
 		this._actor = new Gtk.TreeView(
 		{
 			model: this._store,
-			headers_visible: false,
+			headers_visible: true,
+			headers_clickable: true,
 			reorderable: true,
 			hexpand: true,
 			vexpand: true,
-			search_column: true
+			enable_search: true
 		});
+
+		this._actor.set_search_equal_func(
+			Lang.bind(this, function(model, column, key, iter)
+			{
+				if (model.get_value(iter, COLUMN_ID).match(key))
+					return false;
+				else
+					return true;
+			}));
 
 		this._actor.get_selection().set_mode(Gtk.SelectionMode.SINGLE);
 
-		let column = new Gtk.TreeViewColumn();
+		let column_url = new Gtk.TreeViewColumn();
 
-		let cell = new Gtk.CellRendererText(
+		let cell_url = new Gtk.CellRendererText(
 		{
 			editable: true
 		});
-		column.pack_start(cell, true);
-		column.add_attribute(cell, "text", COLUMN_ID);
-		this._actor.append_column(column);
+		column_url.pack_start(cell_url, true);
+		column_url.add_attribute(cell_url, "text", COLUMN_ID);
 
-		cell.connect('edited', Lang.bind(this, function(self, str_path, text)
+		column_url.set_title(_("URL"));
+
+		this._actor.append_column(column_url);
+
+		let column_status = new Gtk.TreeViewColumn();
+
+		let cell_status = new Gtk.CellRendererText(
 		{
-			let path = Gtk.TreePath.new_from_string(str_path);
+			editable: false
+		});
+		column_status.pack_start(cell_status, true);
+		column_status.add_attribute(cell_status, "text", COLUMN_ID_STATUS);
+		column_status.set_title(_("Status"));
 
-			let [res, iter] = this._store.get_iter(path);
+		this._actor.append_column(column_status);
 
-			if (!res)
-				return;
-
-			this._store.set_value(iter, COLUMN_ID, text);
-		}));
-
-
-		this._store.connect('row-inserted', Lang.bind(this, function(tree, path, iter)
-		{
-			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
-
-			if (feeds == null)
-				feeds = new Array()
-
-			let index = path.get_indices();
-
-			if (index <= feeds.length)
+		this._actor.connect('row-activated', Lang.bind(this,
+			function(self, path, column)
 			{
+				let [res, iter] = this._store.get_iter(path);
+
+				if (!res)
+					return;
+
+				let index = path.get_indices();
+
+				if (index > this._fCache)
+					return;
+
+				let cacheObj = this._fCache[index];
+
+				this._validateItemURL(iter, cacheObj);
+			}));
+
+		cell_url.connect('edited', Lang.bind(this,
+			function(self, str_path, text)
+			{
+				if (!text.length)
+					return;
+
+				let path = Gtk.TreePath.new_from_string(str_path);
+
+				if (!path)
+					return;
+
+				let [res, iter] = this._store.get_iter(path);
+
+				if (!res)
+					return;
+
+				this._store.set_value(iter, COLUMN_ID, text);
+			}));
+
+		this._store.connect('row-inserted', Lang.bind(this,
+			function(tree, path, iter)
+			{
+				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+
+				if (feeds == null)
+					feeds = new Array()
+
+				let index = path.get_indices();
+
+				if (index > feeds.length)
+					return;
+
 				feeds.splice(index, 0, ""); // placeholder
+				this._fCache.splice(index, 0, new Object());
+
 				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
-			}
-		}));
+			}));
 
-		this._store.connect('row-changed', Lang.bind(this, function(tree, path, iter)
-		{
-
-			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
-			if (feeds == null)
-				feeds = new Array()
-
-			let index = path.get_indices();
-
-			if (index < feeds.length)
+		this._store.connect('row-changed', Lang.bind(this,
+			function(tree, path, iter)
 			{
-				feeds[index] = this._store.get_value(iter, COLUMN_ID);
+				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+
+				if (feeds == null)
+					feeds = new Array()
+
+				let index = path.get_indices();
+
+				if (index >= feeds.length)
+					return;
+
+				let urlValue = this._store.get_value(iter, COLUMN_ID);
+
+				// detect URL column changes
+				if (urlValue == feeds[index])
+					return;
+
+				feeds[index] = urlValue;
+
+				let cacheObj = this._fCache[index];
+				cacheObj.v = urlValue;
+
 				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
-			}
 
-		}));
+				this._validateItemURL(iter, cacheObj);
+			}));
 
-		this._store.connect('row-deleted', Lang.bind(this, function(tree, path)
-		{
-			let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
-			if (feeds == null)
-				feeds = new Array();
-
-			let index = path.get_indices();
-
-			if (index < feeds.length)
+		this._store.connect('row-deleted', Lang.bind(this,
+			function(tree, path)
 			{
+				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+				if (feeds == null)
+					feeds = new Array();
+
+				let index = path.get_indices();
+
+				if (index >= feeds.length)
+					return;
+
+				let cacheObj = this._fCache[index];
+				if (cacheObj.p)
+					this._httpSession.cancel_message(cacheObj.p, Soup.Status.CANCELLED);
+
 				feeds.splice(index, 1);
-				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
-			}
+				this._fCache.splice(index, 1);
 
-		}));
+				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+
+			}));
 
 		scrolledWindow.add(this._actor);
 		this.add(scrolledWindow);
@@ -581,6 +664,66 @@ const RssFeedSettingsWidget = new GObject.Class(
 		box_toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_TOOLBAR);
 
 		this.add(box_toolbar);
+	},
+
+	/* 
+	 * Validates the URL of an item and displays
+	 * result in 'Status' column
+	 */
+	_validateItemURL: function(iter, cacheObj)
+	{
+		let url = this._store.get_value(iter, COLUMN_ID);
+
+		let params = HTTP.getParametersAsJson(url);
+
+		let l2o = url.indexOf('?');
+		if (l2o != -1) url = url.substr(0, l2o);
+
+		let request = Soup.form_request_new_from_hash('GET', url, JSON.parse(params));
+
+		if (!request)
+		{
+			this._store.set_value(iter, COLUMN_ID_STATUS, _("Invalid URL"));
+			return;
+		}
+
+		if (cacheObj.p)
+			this._httpSession.cancel_message(cacheObj.p, Soup.Status.CANCELLED);
+
+		cacheObj.p = request;
+
+		this._store.set_value(iter, COLUMN_ID_STATUS, _("Checking") + "..");
+
+		this._httpSession.queue_message(request, Lang.bind(this,
+			function(session, message)
+			{
+				cacheObj.p = undefined;
+
+				if (message.status_code == Soup.Status.CANCELLED)
+					return;
+
+				if (!this._store.iter_is_valid(iter))
+					return;
+
+				if (!((message.status_code) >= 200 && (message.status_code) < 300))
+				{
+					this._store.set_value(iter, COLUMN_ID_STATUS,
+						_("ERROR") + " " + message.status_code);
+					return;
+				}
+
+				let parser = Parser.createRssParser(message.response_body.data);
+
+				if (parser == null)
+				{
+					this._store.set_value(iter, COLUMN_ID_STATUS, _("RSS ERROR"));
+					return;
+				}
+
+				this._store.set_value(iter, COLUMN_ID_STATUS, _("OK") + " - " + parser._type);
+			}));
+
+		return request;
 	},
 
 	/*
@@ -680,6 +823,10 @@ const RssFeedSettingsWidget = new GObject.Class(
 			feeds[index] = model.get_value(iter, COLUMN_ID);
 			feeds[index_step] = model.get_value(iter_step, COLUMN_ID);
 
+			let it = this._fCache[index];
+			this._fCache[index] = this._fCache[index_step];
+			this._fCache[index_step] = it;
+
 			Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
 		}
 	},
@@ -690,7 +837,6 @@ const RssFeedSettingsWidget = new GObject.Class(
 	 */
 	_createNew: function()
 	{
-
 		this._createDialog(_("New RSS Feed source"), '', Lang.bind(this, function(id)
 		{
 			let text = this._entry.get_text();
@@ -701,17 +847,14 @@ const RssFeedSettingsWidget = new GObject.Class(
 			// update tree view
 			let iter = this._store.append();
 			this._store.set_value(iter, COLUMN_ID, text);
-
 		}));
 	},
-
 
 	/*
 	 *	On delete clicked callback
 	 */
 	_deleteSelected: function()
 	{
-
 		let [any, model, iter] = this._actor.get_selection().get_selected();
 
 		if (any)
@@ -720,7 +863,6 @@ const RssFeedSettingsWidget = new GObject.Class(
 			let index = model.get_path(iter).get_indices();
 			// update tree view
 			this._store.remove(iter);
-
 		}
 	},
 
@@ -729,21 +871,17 @@ const RssFeedSettingsWidget = new GObject.Class(
 	 */
 	_loadStoreFromSettings: function()
 	{
-
 		let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
 
 		if (feeds)
 		{
-
 			for (let i = 0; i < feeds.length; i++)
 			{
-
-				if (feeds[i])
-				{ // test on empty string
-
-					let iter = this._store.append();
-					this._store.set_value(iter, COLUMN_ID, feeds[i]);
-				}
+				let iter = this._store.append();
+				this._store.set_value(iter, COLUMN_ID, feeds[i]);
+				let cacheObj = this._fCache[i] = new Object();
+				cacheObj.v = feeds[i];
+				this._validateItemURL(iter, cacheObj);
 			}
 		}
 	}
@@ -781,7 +919,6 @@ function init()
  */
 function buildPrefsWidget()
 {
-
 	let widget = new RssFeedSettingsWidget();
 	widget.show_all();
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-01 12:36+0100\n"
+"POT-Creation-Date: 2017-03-02 18:49+0100\n"
 "PO-Revision-Date: 2017-02-25 21:20+0100\n"
 "Last-Translator:  <siska@nixnodes.net>\n"
 "Language-Team: Slovenian\n"
@@ -18,91 +18,119 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
 
-#: extension.js:153
+#: extension.js:154
 msgid "Reload Plugin"
 msgstr "Ponovno naloži vtičnik"
 
-#: extension.js:173
+#: extension.js:174
 msgid "Reload RSS Feeds"
 msgstr "Osveži"
 
-#: extension.js:174
+#: extension.js:175
 msgid "RSS Feed Settings"
 msgstr "Nastavitve"
 
-#: extension.js:707
+#: extension.js:687
 msgid "UPDATE"
 msgstr "POPRAVEK"
 
-#: extension.js:708
+#: extension.js:688
 msgid "Source"
 msgstr "Vir"
 
-#: extension.js:709
+#: extension.js:689
 msgid "Author"
 msgstr "Avtor"
 
-#: extension.js:735
+#: extension.js:715
 msgid "Last update"
 msgstr "Zadnja posodobitev"
 
-#: extension.js:787
+#: extension.js:767
 msgid "Open URL"
 msgstr "Odpri"
 
-#: extension.js:793
+#: extension.js:773
 msgid "Copy URL"
 msgstr "Kopiraj"
 
-#: prefs.js:120
+#: prefs.js:132
 msgid "Update interval (min):"
 msgstr "Interval osvežitev (min):"
 
-#: prefs.js:140
+#: prefs.js:152
 msgid "Preserve when screen off:"
 msgstr "Ohrani ob zaklepu zaslona:"
 
-#: prefs.js:165
+#: prefs.js:177
 msgid "Poll delay (ms):"
 msgstr "Zamik med posodobitvami (ms):"
 
-#: prefs.js:204
+#: prefs.js:216
 msgid "Reactivate extension"
 msgstr "Ponovno aktiviraj vtičnik"
 
-#: prefs.js:216
+#: prefs.js:228
 msgid "Debug mode:"
 msgstr "Razhroščevanje:"
 
-#: prefs.js:265
+#: prefs.js:277
 msgid "Max menu height (px):"
 msgstr "Največja višina menija (px):"
 
-#: prefs.js:286
+#: prefs.js:298
 msgid "Max items per source:"
 msgstr "Največ predmetov na vir:"
 
-#: prefs.js:307
+#: prefs.js:319
 msgid "Enable animations:"
 msgstr "Vklopi animacije:"
 
-#: prefs.js:333
+#: prefs.js:345
 msgid "Show descriptions:"
 msgstr "Prikaži opise:"
 
-#: prefs.js:377
+#: prefs.js:389
 msgid "Show notifications:"
 msgstr "Prikaži obvestila:"
 
-#: prefs.js:404
+#: prefs.js:416
 msgid "Max notifications:"
 msgstr "Omejitev obvestil:"
 
-#: prefs.js:434
+#: prefs.js:446
 msgid "RSS sources"
 msgstr "RSS Viri"
 
-#: prefs.js:694
+#: prefs.js:492
+msgid "URL"
+msgstr "URL"
+
+#: prefs.js:504
+msgid "Status"
+msgstr "Status"
+
+#: prefs.js:686
+msgid "Invalid URL"
+msgstr "Neveljaven URL"
+
+#: prefs.js:695
+msgid "Checking"
+msgstr "Preverjam"
+
+#: prefs.js:711
+msgid "ERROR"
+msgstr "NAPAKA"
+
+#: prefs.js:719
+msgid "RSS ERROR"
+msgstr "RSS NAPAKA"
+
+#: prefs.js:723
+msgid "OK"
+msgstr "OK"
+
+#: prefs.js:840
 msgid "New RSS Feed source"
 msgstr "Nov RSS vir"
 

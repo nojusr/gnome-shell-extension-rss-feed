@@ -41,6 +41,7 @@ const AtomParser = new Lang.Class({
      */
     _init: function(root) {
         this.parent(root);
+        this._type = "Atom 1.0";
         Log.Debug("Atom 1.0 parser");
     },
 

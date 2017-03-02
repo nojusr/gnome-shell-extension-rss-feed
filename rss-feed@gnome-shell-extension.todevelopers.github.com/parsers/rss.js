@@ -42,6 +42,7 @@ const RssParser = new Lang.Class({
 	 */
     _init: function(root) {
         this.parent(root);
+        this._type = "RSS 2.0";
         Log.Debug("RSS 2.0 parser");
     },
 

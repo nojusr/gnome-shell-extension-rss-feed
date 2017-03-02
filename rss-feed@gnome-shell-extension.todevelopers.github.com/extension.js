@@ -51,6 +51,7 @@ const Misc = Me.imports.misc;
 const Clutter = imports.gi.Clutter;
 
 const Encoder = Me.imports.encoder.getInstance();
+const HTTP = Me.imports.http;
 
 const ExtensionGui = {
 	RssPopupMenuItem: Me.imports.extensiongui.rsspopupmenuitem.RssPopupMenuItem,
@@ -259,7 +260,7 @@ const RssFeed = new Lang.Class(
 		this._maxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
 		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS_KEY);
 		this._notifLimit = Settings.get_int(MAX_NOTIFICATIONS_KEY);
-		this._showDesc = Settings.get_boolean(ENABLE_DESC_KEY);
+		//this._showDesc = Settings.get_boolean(ENABLE_DESC_KEY);
 
 		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
 
@@ -302,34 +303,6 @@ const RssFeed = new Lang.Class(
 
 			this._pollFeeds();
 		}));
-	},
-
-	/*
-	 * Returns JSON object that represents HTTP (GET method) parameters stored
-	 * in URL url - HTTP request URL
-	 */
-	_getParametersAsJson: function(url)
-	{
-
-		let l2o = url.indexOf('?');
-
-		if (l2o == -1)
-			return "{}";
-
-		let urlParams = url.substr(l2o + 1);
-		let params = urlParams.split('&');
-
-		let jsonObj = "{";
-		for (let i = 0; i < params.length; i++)
-		{
-			let pair = params[i].split('=');
-			jsonObj += '"' + pair[0] + '":' + '"' + pair[1] + '"';
-			if (i != params.length - 1)
-				jsonObj += ',';
-		}
-		jsonObj += "}";
-
-		return jsonObj;
 	},
 
 	_purgeSource: function(key)
@@ -392,7 +365,7 @@ const RssFeed = new Lang.Class(
 		{
 			/* clear feed list if necessary */
 			if ((this._pItemsVisible &&
-					this._itemsVisible != this._pItemsVisible))
+					this._itemsVisible > this._pItemsVisible))
 			{
 				this._feedsSection.removeAll();
 				delete this._feedsCache;
@@ -435,7 +408,7 @@ const RssFeed = new Lang.Class(
 				if (!url.length)
 					continue;
 
-				let jsonObj = this._getParametersAsJson(url);
+				let jsonObj = HTTP.getParametersAsJson(url);
 
 				let l2o = url.indexOf('?');
 				if (l2o != -1) url = url.substr(0, l2o);
@@ -617,6 +590,10 @@ const RssFeed = new Lang.Class(
 			if (itemCache[itemURL])
 				continue;
 
+			/* remove HTML tags */
+			item.Title = Encoder.htmlDecode(item.Title)
+							.replace(/<.*?>/g, "").trim();
+
 			/* create the menu item in publisher submenu */
 			let menu = new ExtensionGui.RssPopupMenuItem(item);
 			subMenu.menu.addMenuItem(menu, 0);
@@ -663,7 +640,7 @@ const RssFeed = new Lang.Class(
 					 */
 					menu.connect('active-changed', Lang.bind(this, function(self, over)
 					{
-						if (!this._showDesc)
+						if (!Settings.get_boolean(ENABLE_DESC_KEY))
 							return;
 
 						let label_actor = self.actor.label_actor;
@@ -837,7 +814,7 @@ const RssFeed = new Lang.Class(
 /*
  * Extension widget instance
  */
-let rssFeedBtn;
+let rssFeed;
 
 /*
  * Initialize the extension
@@ -858,30 +835,33 @@ function init()
  */
 function enable()
 {
-	if (rssFeedBtn)
+	if (rssFeed)
 	{
 		Log.Debug("Extension already enabled!");
 		return;
 	}
 
-	rssFeedBtn = new RssFeed();
-	Main.panel.addToStatusArea('rssFeedMenu', rssFeedBtn, 0, 'right');
+	rssFeed = new RssFeed();
+	Main.panel.addToStatusArea('rssFeedMenu', rssFeed, 0, 'right');
 
 	Log.Debug("Extension enabled.");
 
-	rssFeedBtn._pollFeeds();
+	try
+	{
+		rssFeed._pollFeeds();
+	} catch (e) {}
 }
 
 function extension_disable()
 {
-	if (!rssFeedBtn)
+	if (!rssFeed)
 	{
 		Log.Debug("Extension already disabled!");
 		return;
 	}
 
-	rssFeedBtn.destroy();
-	rssFeedBtn = undefined;
+	rssFeed.destroy();
+	rssFeed = undefined;
 
 	Log.Debug("Extension disabled.");
 }
