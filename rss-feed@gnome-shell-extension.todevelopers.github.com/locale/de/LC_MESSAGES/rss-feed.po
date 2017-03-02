@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RSS Feed GNOME Shell Extension\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-02 22:00+0100\n"
+"POT-Creation-Date: 2017-03-02 22:59+0100\n"
 "PO-Revision-Date: 2015-06-18 11:03-0300\n"
 "Last-Translator: Jonatan Zeidler <jonatan_zeidler@gmx.de>\n"
 "Language-Team: German <jonatan_zeidler@gmx.de>\n"
@@ -103,35 +103,38 @@ msgstr "Maximale Benachrichtigung:"
 msgid "RSS sources"
 msgstr "RSS Quellen"
 
-#: prefs.js:494
+#: prefs.js:477
+msgid "Re-check all RSS sources"
+msgstr "Überprüfe alle RSS-Quellen"
+
+#: prefs.js:523
 msgid "URL"
 msgstr "URL"
 
-#: prefs.js:506
+#: prefs.js:535
 msgid "Status"
 msgstr "Status"
 
-#: prefs.js:688
+#: prefs.js:717
 msgid "Invalid URL"
 msgstr "Ungültige URL"
 
-#: prefs.js:697
+#: prefs.js:726
 msgid "Checking"
 msgstr "Überprüfung"
 
-#: prefs.js:720
+#: prefs.js:749
 msgid "EXCEPTION"
 msgstr "JS Fehler"
 
-#: prefs.js:727
+#: prefs.js:756
 msgid "RSS parsing error"
 msgstr "RSS Fehler"
 
-#: prefs.js:731
+#: prefs.js:760
 msgid "OK"
 msgstr "OK"
 
-#: prefs.js:848
+#: prefs.js:877
 msgid "New RSS Feed source"
 msgstr "Neue RSS-Quelle"
-

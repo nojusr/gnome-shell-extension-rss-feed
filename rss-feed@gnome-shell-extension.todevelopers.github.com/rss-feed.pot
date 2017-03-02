@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-02 22:00+0100\n"
+"POT-Creation-Date: 2017-03-02 22:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,34 +101,38 @@ msgstr ""
 msgid "RSS sources"
 msgstr ""
 
-#: prefs.js:494
+#: prefs.js:477
+msgid "Re-check all RSS sources"
+msgstr ""
+
+#: prefs.js:523
 msgid "URL"
 msgstr ""
 
-#: prefs.js:506
+#: prefs.js:535
 msgid "Status"
 msgstr ""
 
-#: prefs.js:688
+#: prefs.js:717
 msgid "Invalid URL"
 msgstr ""
 
-#: prefs.js:697
+#: prefs.js:726
 msgid "Checking"
 msgstr ""
 
-#: prefs.js:720
+#: prefs.js:749
 msgid "EXCEPTION"
 msgstr ""
 
-#: prefs.js:727
+#: prefs.js:756
 msgid "RSS parsing error"
 msgstr ""
 
-#: prefs.js:731
+#: prefs.js:760
 msgid "OK"
 msgstr ""
 
-#: prefs.js:848
+#: prefs.js:877
 msgid "New RSS Feed source"
 msgstr ""

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-02 22:00+0100\n"
+"POT-Creation-Date: 2017-03-02 22:59+0100\n"
 "PO-Revision-Date: 2017-02-25 21:20+0100\n"
 "Last-Translator:  <siska@nixnodes.net>\n"
 "Language-Team: Slovenian\n"
@@ -102,35 +102,38 @@ msgstr "Omejitev obvestil:"
 msgid "RSS sources"
 msgstr "RSS Viri"
 
-#: prefs.js:494
+#: prefs.js:477
+msgid "Re-check all RSS sources"
+msgstr "Ponovno preveri vse RSS vire"
+
+#: prefs.js:523
 msgid "URL"
 msgstr "URL"
 
-#: prefs.js:506
+#: prefs.js:535
 msgid "Status"
 msgstr "Status"
 
-#: prefs.js:688
+#: prefs.js:717
 msgid "Invalid URL"
 msgstr "Neveljaven URL"
 
-#: prefs.js:697
+#: prefs.js:726
 msgid "Checking"
 msgstr "Preverjam"
 
-#: prefs.js:720
+#: prefs.js:749
 msgid "EXCEPTION"
 msgstr "NAPAKA"
 
-#: prefs.js:727
+#: prefs.js:756
 msgid "RSS parsing error"
 msgstr "RSS napaka"
 
-#: prefs.js:731
+#: prefs.js:760
 msgid "OK"
 msgstr "OK"
 
-#: prefs.js:848
+#: prefs.js:877
 msgid "New RSS Feed source"
 msgstr "Nov RSS vir"
-

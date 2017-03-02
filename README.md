@@ -36,5 +36,5 @@ Download latest release (https://github.com/maweki/gnome-shell-extension-rss-fee
 ## Screenshots
 
 ![](http://i.imgur.com/JUUwRU2.png)
-![](http://i.imgur.com/r1X1aT2.png)
+![](http://i.imgur.com/3JXgC1c.png)
 ![](http://i.imgur.com/ZunKk5b.png)

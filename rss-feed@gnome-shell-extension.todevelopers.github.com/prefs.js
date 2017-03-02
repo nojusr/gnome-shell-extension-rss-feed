@@ -130,7 +130,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box.set_margin_bottom(6);
 				let label = new Gtk.Label(
 				{
-					xalign: Gtk.Align.START,
+					xalign: Gtk.Align.FILL,
 					label: _("Update interval (min):")
 				});
 				box.pack_start(label, true, true, 0);
@@ -150,7 +150,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box7.set_margin_bottom(6);
 				let label7 = new Gtk.Label(
 				{
-					xalign: Gtk.Align.START,
+					xalign: Gtk.Align.FILL,
 					label: _("Preserve when screen off:")
 				});
 				box7.pack_start(label7, true, true, 0);
@@ -175,7 +175,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box4.set_margin_bottom(6);
 				let label4 = new Gtk.Label(
 				{
-					xalign: Gtk.Align.START,
+					xalign: Gtk.Align.FILL,
 					label: _("Poll delay (ms):")
 				});
 				box4.pack_start(label4, true, true, 0);
@@ -226,7 +226,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 					box_dbgsw.set_margin_bottom(6);
 					let label_dbgsw = new Gtk.Label(
 					{
-						xalign: Gtk.Align.START,
+						xalign: Gtk.Align.FILL,
 						label: _("Debug mode:")
 					});
 
@@ -275,7 +275,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box5.set_margin_bottom(6);
 				let label5 = new Gtk.Label(
 				{
-					xalign: Gtk.Align.START,
+					xalign: Gtk.Align.FILL,
 					label: _("Max menu height (px):")
 				});
 				box5.pack_start(label5, true, true, 0);
@@ -296,7 +296,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box2.set_margin_bottom(6);
 				let label2 = new Gtk.Label(
 				{
-					xalign: Gtk.Align.START,
+					xalign: Gtk.Align.FILL,
 					label: _("Max items per source:")
 				});
 				box2.pack_start(label2, true, true, 0);
@@ -317,7 +317,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box6.set_margin_bottom(6);
 				let label6 = new Gtk.Label(
 				{
-					xalign: Gtk.Align.START,
+					xalign: Gtk.Align.FILL,
 					label: _("Enable animations:")
 				});
 				box6.pack_start(label6, true, true, 0);
@@ -343,7 +343,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box10.set_margin_bottom(6);
 				let label10 = new Gtk.Label(
 				{
-					xalign: Gtk.Align.START,
+					xalign: Gtk.Align.FILL,
 					label: _("Show descriptions:")
 				});
 				box10.pack_start(label10, true, true, 0);
@@ -387,7 +387,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		box3.set_margin_bottom(6);
 		let label3 = new Gtk.Label(
 		{
-			xalign: Gtk.Align.START,
+			xalign: Gtk.Align.FILL,
 			label: _("Show notifications:")
 		});
 		box3.pack_start(label3, true, true, 0);
@@ -414,7 +414,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		box8.set_margin_bottom(6);
 		let label8 = new Gtk.Label(
 		{
-			xalign: Gtk.Align.START,
+			xalign: Gtk.Align.FILL,
 			label: _("Max notifications:")
 		});
 		box8.pack_start(label8, true, true, 0);
@@ -448,6 +448,35 @@ const RssFeedSettingsWidget = new GObject.Class(
 			label: _("RSS sources")
 		});
 		boxsources.pack_start(labels, true, true, 0);
+		
+		let checkRSSButton = new Gtk.ToolButton(
+		{
+			icon_name: 'view-refresh-symbolic'
+		});
+		checkRSSButton.connect('clicked', Lang.bind(this, function()
+		{
+			let [res, iter] = this._store.get_iter_first();
+			let path;
+			
+			while ( res )
+			{
+				path = this._store.get_path(iter);
+								
+				let cacheObj = this._fCache[path.get_indices()];
+				
+				if (!cacheObj)
+					throw "FIXME: cache object and ListStore out of sync";
+				
+				this._validateItemURL(iter, cacheObj);
+				
+				path.next();
+				
+				[res, iter] = this._store.get_iter(path);
+			}
+		}));
+		checkRSSButton.set_tooltip_text(_("Re-check all RSS sources"))
+		
+		boxsources.add(checkRSSButton);
 
 		this.add(boxsources);
 
