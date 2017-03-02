@@ -90,7 +90,9 @@ const RssFeed = new Lang.Class(
 	{
 		this.parent(0.0, "RSS Feed");
 
-		this._httpSession = new Soup.SessionAsync();
+		this._httpSession = new Soup.SessionAsync({
+			timeout: 60
+		});
 
 		// Lours974 Vitry David
 		// This makes the session work under a proxy. The funky syntax here

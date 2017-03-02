@@ -87,7 +87,9 @@ const RssFeedSettingsWidget = new GObject.Class(
 		this.margin_top = 10;
 		this.margin_bottom = 2;
 
-		this._httpSession = new Soup.SessionAsync();
+		this._httpSession = new Soup.SessionAsync({
+			timeout: 30
+		});
 
 		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
 
@@ -128,7 +130,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box.set_margin_bottom(6);
 				let label = new Gtk.Label(
 				{
-					xalign: 0,
+					xalign: Gtk.Align.START,
 					label: _("Update interval (min):")
 				});
 				box.pack_start(label, true, true, 0);
@@ -148,7 +150,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box7.set_margin_bottom(6);
 				let label7 = new Gtk.Label(
 				{
-					xalign: 0,
+					xalign: Gtk.Align.START,
 					label: _("Preserve when screen off:")
 				});
 				box7.pack_start(label7, true, true, 0);
@@ -173,7 +175,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box4.set_margin_bottom(6);
 				let label4 = new Gtk.Label(
 				{
-					xalign: 0,
+					xalign: Gtk.Align.START,
 					label: _("Poll delay (ms):")
 				});
 				box4.pack_start(label4, true, true, 0);
@@ -224,7 +226,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 					box_dbgsw.set_margin_bottom(6);
 					let label_dbgsw = new Gtk.Label(
 					{
-						xalign: 0,
+						xalign: Gtk.Align.START,
 						label: _("Debug mode:")
 					});
 
@@ -273,7 +275,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box5.set_margin_bottom(6);
 				let label5 = new Gtk.Label(
 				{
-					xalign: 0,
+					xalign: Gtk.Align.START,
 					label: _("Max menu height (px):")
 				});
 				box5.pack_start(label5, true, true, 0);
@@ -294,7 +296,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box2.set_margin_bottom(6);
 				let label2 = new Gtk.Label(
 				{
-					xalign: 0,
+					xalign: Gtk.Align.START,
 					label: _("Max items per source:")
 				});
 				box2.pack_start(label2, true, true, 0);
@@ -315,7 +317,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box6.set_margin_bottom(6);
 				let label6 = new Gtk.Label(
 				{
-					xalign: 0,
+					xalign: Gtk.Align.START,
 					label: _("Enable animations:")
 				});
 				box6.pack_start(label6, true, true, 0);
@@ -341,7 +343,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				box10.set_margin_bottom(6);
 				let label10 = new Gtk.Label(
 				{
-					xalign: 0,
+					xalign: Gtk.Align.START,
 					label: _("Show descriptions:")
 				});
 				box10.pack_start(label10, true, true, 0);
@@ -385,7 +387,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		box3.set_margin_bottom(6);
 		let label3 = new Gtk.Label(
 		{
-			xalign: 0,
+			xalign: Gtk.Align.START,
 			label: _("Show notifications:")
 		});
 		box3.pack_start(label3, true, true, 0);
@@ -412,7 +414,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		box8.set_margin_bottom(6);
 		let label8 = new Gtk.Label(
 		{
-			xalign: 0,
+			xalign: Gtk.Align.START,
 			label: _("Max notifications:")
 		});
 		box8.pack_start(label8, true, true, 0);
@@ -705,7 +707,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				if (!((message.status_code) >= 200 && (message.status_code) < 300))
 				{
 					this._store.set_value(iter, COLUMN_ID_STATUS,
-						_("ERROR") + " " + message.status_code);
+						Soup.Status.get_phrase(message.status_code));
 					return;
 				}
 				let parser;
@@ -716,12 +718,13 @@ const RssFeedSettingsWidget = new GObject.Class(
 				} catch (e)
 				{
 					this._store.set_value(iter, COLUMN_ID_STATUS, _("EXCEPTION"));
+					Log.Error(e);
 					return;
 				}
 
 				if (parser == null)
 				{
-					this._store.set_value(iter, COLUMN_ID_STATUS, _("RSS ERROR"));
+					this._store.set_value(iter, COLUMN_ID_STATUS, _("RSS parsing error"));
 					return;
 				}
 
