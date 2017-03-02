@@ -499,7 +499,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		{
 			editable: false
 		});
-		column_status.pack_start(cell_status, true);
+		column_status.pack_start(cell_status, false);
 		column_status.add_attribute(cell_status, "text", COLUMN_ID_STATUS);
 		column_status.set_title(_("Status"));
 
@@ -702,17 +702,22 @@ const RssFeedSettingsWidget = new GObject.Class(
 				if (message.status_code == Soup.Status.CANCELLED)
 					return;
 
-				if (!this._store.iter_is_valid(iter))
-					return;
-
 				if (!((message.status_code) >= 200 && (message.status_code) < 300))
 				{
 					this._store.set_value(iter, COLUMN_ID_STATUS,
 						_("ERROR") + " " + message.status_code);
 					return;
 				}
+				let parser;
 
-				let parser = Parser.createRssParser(message.response_body.data);
+				try
+				{
+					parser = Parser.createRssParser(message.response_body.data);
+				} catch (e)
+				{
+					this._store.set_value(iter, COLUMN_ID_STATUS, _("EXCEPTION"));
+					return;
+				}
 
 				if (parser == null)
 				{
