@@ -60,6 +60,8 @@ const MAX_NOTIFICATIONS_KEY = 'notification-limit';
 const ENABLE_DESC_KEY = 'enable-descriptions';
 const ENABLE_DEBUG_KEY = 'enable-debug';
 const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top'
+const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
+const CLEANUP_NOTIFICATIONS = 'notifications-cleanup'
 
 const Log = Me.imports.logger;
 
@@ -97,12 +99,11 @@ const RssFeedSettingsWidget = new GObject.Class(
 		if (this.set_size_request)
 			this.set_size_request(600, 600);
 
-		this._addSeparator(this, 0, 9);
-
 		let upper_box = new Gtk.Box(
 		{
 			orientation: Gtk.Orientation.HORIZONTAL,
-			spacing: 8
+			spacing: 8,
+			margin_bottom: 6
 		});
 		{
 			let general_box = new Gtk.Box(
@@ -111,7 +112,6 @@ const RssFeedSettingsWidget = new GObject.Class(
 				spacing: 6,
 				hexpand: true
 			});
-			general_box.set_margin_bottom(6);
 			{
 	
 				this._addSpinButton(general_box, UPDATE_INTERVAL_KEY, _("Update interval (min):"), MAX_UPDATE_INTERVAL);
@@ -177,10 +177,9 @@ const RssFeedSettingsWidget = new GObject.Class(
 			let menu_box = new Gtk.Box(
 			{
 				orientation: Gtk.Orientation.VERTICAL,
-				spacing: 8,
+				spacing: 6,
 				hexpand: true
 			});
-			menu_box.set_margin_bottom(6);
 			{
 				this._addSpinButton(menu_box, MAX_HEIGHT_KEY, _("Max menu height (px):"), MAX_HEIGHT);
 				this._addSpinButton(menu_box, ITEMS_VISIBLE_KEY, _("Max items per source:"), MAX_SOURCES_LIMIT);
@@ -191,15 +190,47 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 			upper_box.add(menu_box);
 		}
-
-		this.add(upper_box);
 		
-		this._addSeparator(this, 8, 12);
+		this.add(upper_box);
+		this._addSeparator(this, 0, 12);
+		
+		let notif_box = new Gtk.Box(
+		{
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 16,
+			margin_bottom: 6
+		});
+		{
+			let notif_left = new Gtk.Box(
+			{
+				orientation: Gtk.Orientation.VERTICAL,
+				spacing: 6,
+				hexpand: true
+			});
 
-		this._addSwitch(this, ENABLE_NOTIFICATIONS_KEY, _("Show notifications:"));
-		this._addSpinButton(this, MAX_NOTIFICATIONS_KEY, _("Max notifications:"), MAX_NOTIFICATIONS);
+			{ 
+				this._addSwitch(notif_left, ENABLE_NOTIFICATIONS_KEY, _("Show notifications:"));
+				this._addSpinButton(notif_left, MAX_NOTIFICATIONS_KEY, _("Max notifications:"), MAX_NOTIFICATIONS);
+			}
 
-		this._addSeparator(this, 2, 8);
+			let notif_right = new Gtk.Box(
+			{
+				orientation: Gtk.Orientation.VERTICAL,
+				spacing: 6,
+				hexpand: true
+			});
+			{
+				this._addSwitch(notif_right, NOTIFICATIONS_ON_LOCKSCREEN, _("Show on lock screen:"));
+				this._addSwitch(notif_right, CLEANUP_NOTIFICATIONS, _("Clean up notifications:"));
+			}
+
+			notif_box.add(notif_left);
+			notif_box.add(notif_right);
+		}
+
+		this.add(notif_box);
+		
+		this._addSeparator(this, 2, 2);
 
 		// sources label
 		let boxsources = new Gtk.Box(
@@ -541,6 +572,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		let label = new Gtk.Label(
 		{
 			xalign: Gtk.Align.FILL,
+			hexpand: true,
 			label: text
 		});
 		box.pack_start(label, true, true, 0);
@@ -583,11 +615,12 @@ const RssFeedSettingsWidget = new GObject.Class(
 		return box;
 	},
 	
-	_addSeparator: function(parent, margin_top, margin_bottom)
+	_addSeparator: function(parent, margin_top, margin_bottom, visible)
 	{
 		let sep = new Gtk.Separator(
 		{
-			orientation: Gtk.Orientation.HORIZONTAL
+			orientation: Gtk.Orientation.HORIZONTAL,
+			visible: (visible != undefined ? visible : true)
 		});
 		sep.set_margin_top(margin_top);
 		sep.set_margin_bottom(margin_bottom);

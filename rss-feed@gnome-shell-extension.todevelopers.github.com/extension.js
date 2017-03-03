@@ -70,7 +70,9 @@ const ENABLE_ANIMATIONS_KEY = 'enable-anim';
 const PRESERVE_ON_LOCK_KEY = 'preserve-on-lock';
 const MAX_NOTIFICATIONS_KEY = 'notification-limit';
 const ENABLE_DESC_KEY = 'enable-descriptions';
-const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top'
+const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top';
+const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
+const CLEANUP_NOTIFICATIONS = 'notifications-cleanup'
 
 const NOTIFICATION_ICON = 'application-rss+xml';
 
@@ -245,6 +247,14 @@ const RssFeed = new Lang.Class(
 
 		for (let t in this._feedTimers)
 			Mainloop.source_remove(t);
+		
+		if (Settings.get_boolean(CLEANUP_NOTIFICATIONS))
+		{
+			let notifCache = this._notifCache;
+	
+			while (notifCache.length > 0)
+				notifCache.shift().destroy();
+		}
 
 		this.parent();
 	},
@@ -267,8 +277,6 @@ const RssFeed = new Lang.Class(
 	 */
 	_getSettings: function()
 	{
-		Log.Debug("Get variables from GSettings");
-
 		this._updateInterval = Settings.get_int(UPDATE_INTERVAL_KEY);
 		this._itemsVisible = Settings.get_int(ITEMS_VISIBLE_KEY);
 		this._rssFeedsSources = Settings.get_strv(RSS_FEEDS_LIST_KEY);
@@ -278,13 +286,9 @@ const RssFeed = new Lang.Class(
 		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS_KEY);
 		this._notifLimit = Settings.get_int(MAX_NOTIFICATIONS_KEY);
 		//this._showDesc = Settings.get_boolean(ENABLE_DESC_KEY);
+		this._notifOnLockScreen = Settings.get_boolean(NOTIFICATIONS_ON_LOCKSCREEN);
 
 		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
-
-		Log.Debug("Update interval: " + this._updateInterval +
-			" Visible items: " + this._itemsVisible +
-			" RSS sources: " + this._rssFeedsSources +
-			" Notification: " + this._enableNotifications);
 	},
 
 	/*
@@ -628,7 +632,7 @@ const RssFeed = new Lang.Class(
 			menu._cacheObj = cacheObj;
 
 			// this._lMenu = menu;
-			// if (i < 3 && Math.random() < 0.07332) feedsCache._initialRefresh = true;
+			// if (i < 5 && Math.random() < 0.17332) feedsCache._initialRefresh = true;
 
 			/* decode description, if present */
 			if (item.Description.length > 0)
@@ -696,7 +700,8 @@ const RssFeed = new Lang.Class(
 			menu.setOrnament(PopupMenu.Ornament.DOT);
 
 			/* trigger notification, if requested */
-			if (this._enableNotifications)
+			if (this._enableNotifications && 
+				!(!this._notifOnLockScreen && Misc.isScreenLocked()))
 			{
 				let itemTitle = Encoder.htmlDecode(item.Title);
 

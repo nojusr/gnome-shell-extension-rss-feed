@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-03 01:18+0100\n"
+"POT-Creation-Date: 2017-03-03 03:21+0100\n"
 "PO-Revision-Date: 2017-02-25 21:20+0100\n"
 "Last-Translator:  <siska@nixnodes.net>\n"
 "Language-Team: Slovenian\n"
@@ -18,39 +18,39 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
 
-#: extension.js:192
+#: extension.js:194
 msgid "Reload Plugin"
 msgstr "Ponovno naloži vtičnik"
 
-#: extension.js:212
+#: extension.js:214
 msgid "Reload RSS Feeds"
 msgstr "Osveži"
 
-#: extension.js:213
+#: extension.js:215
 msgid "RSS Feed Settings"
 msgstr "Nastavitve"
 
-#: extension.js:704
+#: extension.js:709
 msgid "UPDATE"
 msgstr "POPRAVEK"
 
-#: extension.js:705
+#: extension.js:710
 msgid "Source"
 msgstr "Vir"
 
-#: extension.js:706
+#: extension.js:711
 msgid "Author"
 msgstr "Avtor"
 
-#: extension.js:732
+#: extension.js:737
 msgid "Last update"
 msgstr "Zadnja posodobitev"
 
-#: extension.js:784
+#: extension.js:789
 msgid "Open URL"
 msgstr "Odpri"
 
-#: extension.js:790
+#: extension.js:795
 msgid "Copy URL"
 msgstr "Kopiraj"
 
@@ -74,70 +74,78 @@ msgstr "Ponovno aktiviraj vtičnik"
 msgid "Debug mode:"
 msgstr "Razhroščevanje:"
 
-#: prefs.js:185
+#: prefs.js:184
 msgid "Max menu height (px):"
 msgstr "Največja višina menija (px):"
 
-#: prefs.js:186
+#: prefs.js:185
 msgid "Max items per source:"
 msgstr "Največ predmetov na vir:"
 
-#: prefs.js:187
+#: prefs.js:186
 msgid "Enable animations:"
 msgstr "Vklopi animacije:"
 
-#: prefs.js:188
+#: prefs.js:187
 msgid "Top-align buttons:"
 msgstr "Gumbi zgoraj:"
 
-#: prefs.js:189
+#: prefs.js:188
 msgid "Show descriptions:"
 msgstr "Prikaži opise:"
 
-#: prefs.js:199
+#: prefs.js:212
 msgid "Show notifications:"
 msgstr "Prikaži obvestila:"
 
-#: prefs.js:200
+#: prefs.js:213
 msgid "Max notifications:"
 msgstr "Omejitev obvestil:"
 
-#: prefs.js:215
+#: prefs.js:223
+msgid "Show on lock screen:"
+msgstr "Prikaži na lockscreenu:"
+
+#: prefs.js:224
+msgid "Clean up notifications:"
+msgstr "Počisti obvestila:"
+
+#: prefs.js:246
 msgid "RSS sources"
 msgstr "RSS Viri"
 
-#: prefs.js:244
+#: prefs.js:275
 msgid "Re-check all RSS sources"
 msgstr "Ponovno preveri vse RSS vire"
 
-#: prefs.js:290
+#: prefs.js:321
 msgid "URL"
 msgstr "URL"
 
-#: prefs.js:302
+#: prefs.js:333
 msgid "Status"
 msgstr "Status"
 
-#: prefs.js:484
+#: prefs.js:515
 msgid "Invalid URL"
 msgstr "Neveljaven URL"
 
-#: prefs.js:493
+#: prefs.js:524
 msgid "Checking"
 msgstr "Preverjam"
 
-#: prefs.js:516
+#: prefs.js:547
 msgid "EXCEPTION"
 msgstr "NAPAKA"
 
-#: prefs.js:523
+#: prefs.js:554
 msgid "RSS parsing error"
 msgstr "RSS napaka"
 
-#: prefs.js:527
+#: prefs.js:558
 msgid "OK"
 msgstr "OK"
 
-#: prefs.js:712
+#: prefs.js:744
 msgid "New RSS Feed source"
 msgstr "Nov RSS vir"

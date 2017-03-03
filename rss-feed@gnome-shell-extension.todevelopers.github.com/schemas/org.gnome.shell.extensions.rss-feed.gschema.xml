@@ -32,6 +32,16 @@
 		    <summary>Show notifications</summary>
 		    <description>Show notifications when new RSS items are found.</description>
 		</key>
+		<key type="b" name="enable-notifications-locked">
+		    <default>false</default>
+		    <summary>Lock screen notifications</summary>
+		    <description>Show notifications when screen locked.</description>
+		</key>
+		<key type="b" name="notifications-cleanup">
+		    <default>true</default>
+		    <summary>Clean notifications on disable</summary>
+		    <description>Clean notifications on plugin disabled.</description>
+		</key>
 		<key type="b" name="enable-anim">
 		    <default>true</default>
 		    <summary>Enable animations</summary>
