@@ -700,8 +700,7 @@ const RssFeed = new Lang.Class(
 			menu.setOrnament(PopupMenu.Ornament.DOT);
 
 			/* trigger notification, if requested */
-			if (this._enableNotifications && 
-				!(!this._notifOnLockScreen && Misc.isScreenLocked()))
+			if (this._enableNotifications )
 			{
 				let itemTitle = Encoder.htmlDecode(item.Title);
 
@@ -760,6 +759,10 @@ const RssFeed = new Lang.Class(
 				icon_name: NOTIFICATION_ICON
 			});
 		};
+
+		/* When enabled, always show details */
+		Source.policy.detailsInLockScreen =
+			Source.policy.showInLockScreen = this._notifOnLockScreen;
 
 		Main.messageTray.add(Source);
 
