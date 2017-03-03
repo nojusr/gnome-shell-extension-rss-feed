@@ -59,8 +59,13 @@
 		</key>
 		<key type="b" name="reset-feeds">
 		    <default>false</default>
-		    <summary>Reset feedss</summary>
+		    <summary>Reset feeds</summary>
 		    <description>Reset feeds on next reload</description>
+		</key>
+		<key type="b" name="menu-buttons-align-top">
+		    <default>false</default>
+		    <summary>Top-align menu buttons</summary>
+		    <description>Top-align menu buttonsd</description>
 		</key>
     </schema>
 </schemalist>

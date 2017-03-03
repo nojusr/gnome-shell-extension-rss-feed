@@ -70,6 +70,7 @@ const ENABLE_ANIMATIONS_KEY = 'enable-anim';
 const PRESERVE_ON_LOCK_KEY = 'preserve-on-lock';
 const MAX_NOTIFICATIONS_KEY = 'notification-limit';
 const ENABLE_DESC_KEY = 'enable-descriptions';
+const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top'
 
 const NOTIFICATION_ICON = 'application-rss+xml';
 
@@ -136,7 +137,42 @@ const RssFeed = new Lang.Class(
 		button.add_child(this._iconLabel);
 
 		this.actor.add_actor(button);
+		
+		this.menu.actor.add_style_class_name('rss-menu');
+		
+		this.menu.connect('open-state-changed', Lang.bind(this, function(self, open)
+		{
+			if (open && this._lastOpen)
+				this._lastOpen.open();
+		}));
 
+		let separator = new PopupMenu.PopupSeparatorMenuItem();
+		
+		let mbAlignTop = Settings.get_boolean(MB_ALIGN_TOP_KEY);
+
+		if ( mbAlignTop )
+		{
+			this._createMainPanelButtons();	
+			this.menu.addMenuItem(separator);
+		}
+
+		this._pMaxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
+
+		this._feedsSection = new ExtensionGui.RssPopupMenuSection(
+			this._generatePopupMenuCSS(this._pMaxMenuHeight)
+		);
+
+		this.menu.addMenuItem(this._feedsSection);
+		
+		if ( !mbAlignTop )
+		{
+			this.menu.addMenuItem(separator);
+			this._createMainPanelButtons();	
+		}
+	},
+	
+	_createMainPanelButtons: function()
+	{
 		let systemMenu = Main.panel.statusArea.aggregateMenu._system;
 
 		// buttons
@@ -183,28 +219,7 @@ const RssFeed = new Lang.Class(
 		settingsBtn.connect('clicked', Lang.bind(this, this._onSettingsBtnClicked));
 
 		this.menu.addMenuItem(this._buttonMenu);
-
-		this.menu.connect('open-state-changed', Lang.bind(this, function(self, open)
-		{
-			if (open && this._lastOpen)
-				this._lastOpen.open();
-		}));
-
-		this.menu.actor.add_style_class_name('rss-menu');
-
-		let separator = new PopupMenu.PopupSeparatorMenuItem();
-		this.menu.addMenuItem(separator);
-
-		this._pMaxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
-
-		this._feedsSection = new ExtensionGui.RssPopupMenuSection(
-			this._generatePopupMenuCSS(this._pMaxMenuHeight)
-		);
-
-		//this._feedsSection.box.style_class = 'rss-feeds-list';
-
-		this.menu.addMenuItem(this._feedsSection);
-
+		
 	},
 
 	/*

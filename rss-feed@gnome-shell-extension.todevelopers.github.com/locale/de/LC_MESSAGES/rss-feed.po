@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RSS Feed GNOME Shell Extension\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-02 22:59+0100\n"
+"POT-Creation-Date: 2017-03-03 01:18+0100\n"
 "PO-Revision-Date: 2015-06-18 11:03-0300\n"
 "Last-Translator: Jonatan Zeidler <jonatan_zeidler@gmx.de>\n"
 "Language-Team: German <jonatan_zeidler@gmx.de>\n"
@@ -19,122 +19,126 @@ msgstr ""
 "X-Generator: Poedit 1.7.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: extension.js:156
+#: extension.js:192
 msgid "Reload Plugin"
 msgstr "Das Plugin neu laden"
 
-#: extension.js:176
+#: extension.js:212
 msgid "Reload RSS Feeds"
 msgstr "RSS-Quellen abrufen"
 
-#: extension.js:177
+#: extension.js:213
 msgid "RSS Feed Settings"
 msgstr "Einstellungen der RSS-Quellen"
 
-#: extension.js:689
+#: extension.js:704
 msgid "UPDATE"
 msgstr "NEUFASSUNG"
 
-#: extension.js:690
+#: extension.js:705
 msgid "Source"
 msgstr "Quelle"
 
-#: extension.js:691
+#: extension.js:706
 msgid "Author"
 msgstr "Autor"
 
-#: extension.js:717
+#: extension.js:732
 msgid "Last update"
 msgstr "Zuletzt aktualisiert"
 
-#: extension.js:769
+#: extension.js:784
 msgid "Open URL"
 msgstr "Öffne URL"
 
-#: extension.js:775
+#: extension.js:790
 msgid "Copy URL"
 msgstr "Kopieren URL"
 
-#: prefs.js:134
+#: prefs.js:117
 msgid "Update interval (min):"
 msgstr "Aktualisierungsintervall (Min):"
 
-#: prefs.js:154
-msgid "Preserve when screen off:"
-msgstr "Erhalten wenn Bildschirm aus:"
-
-#: prefs.js:179
+#: prefs.js:118
 msgid "Poll delay (ms):"
 msgstr "Abfrageverzögerung (ms):"
 
-#: prefs.js:218
+#: prefs.js:119
+msgid "Preserve when screen off:"
+msgstr "Erhalten wenn Bildschirm aus:"
+
+#: prefs.js:146
 msgid "Reactivate extension"
 msgstr "Verlängerung reaktivieren"
 
-#: prefs.js:230
+#: prefs.js:148
 msgid "Debug mode:"
 msgstr "Debug-Modus:"
 
-#: prefs.js:279
+#: prefs.js:185
 msgid "Max menu height (px):"
 msgstr "Max. Menühöhe (px):"
 
-#: prefs.js:300
+#: prefs.js:186
 msgid "Max items per source:"
 msgstr "Max. Artikel pro Quelle:"
 
-#: prefs.js:321
+#: prefs.js:187
 msgid "Enable animations:"
 msgstr "Animationen aktivieren:"
 
-#: prefs.js:347
+#: prefs.js:188
+msgid "Top-align buttons:"
+msgstr ""
+
+#: prefs.js:189
 msgid "Show descriptions:"
 msgstr "Beschreibungen anzeigen:"
 
-#: prefs.js:391
+#: prefs.js:199
 msgid "Show notifications:"
 msgstr "Zeige Benachrichtigungen:"
 
-#: prefs.js:418
+#: prefs.js:200
 msgid "Max notifications:"
 msgstr "Maximale Benachrichtigung:"
 
-#: prefs.js:448
+#: prefs.js:215
 msgid "RSS sources"
 msgstr "RSS Quellen"
 
-#: prefs.js:477
+#: prefs.js:244
 msgid "Re-check all RSS sources"
 msgstr "Überprüfe alle RSS-Quellen"
 
-#: prefs.js:523
+#: prefs.js:290
 msgid "URL"
 msgstr "URL"
 
-#: prefs.js:535
+#: prefs.js:302
 msgid "Status"
 msgstr "Status"
 
-#: prefs.js:717
+#: prefs.js:484
 msgid "Invalid URL"
 msgstr "Ungültige URL"
 
-#: prefs.js:726
+#: prefs.js:493
 msgid "Checking"
 msgstr "Überprüfung"
 
-#: prefs.js:749
+#: prefs.js:516
 msgid "EXCEPTION"
 msgstr "JS Fehler"
 
-#: prefs.js:756
+#: prefs.js:523
 msgid "RSS parsing error"
 msgstr "RSS Fehler"
 
-#: prefs.js:760
+#: prefs.js:527
 msgid "OK"
 msgstr "OK"
 
-#: prefs.js:877
+#: prefs.js:712
 msgid "New RSS Feed source"
 msgstr "Neue RSS-Quelle"
