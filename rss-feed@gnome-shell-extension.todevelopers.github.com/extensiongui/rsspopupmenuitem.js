@@ -71,10 +71,7 @@ RssPopupMenuItem = new Lang.Class(
 		this.connect('activate', Lang.bind(this, function()
 		{
 			Log.Debug("Opening browser with link " + this._link);
-			/*
-			this.setOrnament(PopupMenu.Ornament.NONE);
-			Util.trySpawnCommandLine(this._browser + ' ' + this._link);   
-			*/
+
 			Misc.processLinkOpen(this._link, this._cacheObj);
 
 			/* trash the notification, if it exists */

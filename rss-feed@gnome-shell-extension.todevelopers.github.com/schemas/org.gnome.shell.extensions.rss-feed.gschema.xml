@@ -52,6 +52,11 @@
 		    <summary>Preserve when screen off</summary>
 		    <description>Do not disable the extension when screen is deactivated or locked.</description>
 		</key>
+		<key type="b" name="detect-updates">
+		    <default>true</default>
+		    <summary>Detect updates</summary>
+		    <description>Detect updates.</description>
+		</key>
 		<key type="b" name="enable-descriptions">
 		    <default>false</default>
 		    <summary>Show descriptions</summary>

@@ -72,7 +72,8 @@ const MAX_NOTIFICATIONS_KEY = 'notification-limit';
 const ENABLE_DESC_KEY = 'enable-descriptions';
 const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top';
 const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
-const CLEANUP_NOTIFICATIONS = 'notifications-cleanup'
+const CLEANUP_NOTIFICATIONS = 'notifications-cleanup';
+const DETECT_UPDATES_KEY = 'detect-updates';
 
 const NOTIFICATION_ICON = 'application-rss+xml';
 
@@ -285,7 +286,7 @@ const RssFeed = new Lang.Class(
 		this._maxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
 		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS_KEY);
 		this._notifLimit = Settings.get_int(MAX_NOTIFICATIONS_KEY);
-		//this._showDesc = Settings.get_boolean(ENABLE_DESC_KEY);
+		this._detectUpdates = Settings.get_boolean(DETECT_UPDATES_KEY);
 		this._notifOnLockScreen = Settings.get_boolean(NOTIFICATIONS_ON_LOCKSCREEN);
 
 		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
@@ -572,8 +573,9 @@ const RssFeed = new Lang.Class(
 
 				if (cacheItemURL == item.HttpLink)
 				{
-					if (cacheObj.Item.PublishDate != item.PublishDate ||
-						cacheObj.Item.UpdateTime != item.UpdateTime)
+					if ( this._detectUpdates && 
+						(cacheObj.Item.PublishDate != item.PublishDate ||
+						cacheObj.Item.UpdateTime != item.UpdateTime))
 					{
 						item._update = true;
 					}

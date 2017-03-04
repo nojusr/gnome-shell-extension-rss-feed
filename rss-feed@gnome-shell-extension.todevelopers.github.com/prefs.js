@@ -61,7 +61,8 @@ const ENABLE_DESC_KEY = 'enable-descriptions';
 const ENABLE_DEBUG_KEY = 'enable-debug';
 const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top'
 const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
-const CLEANUP_NOTIFICATIONS = 'notifications-cleanup'
+const CLEANUP_NOTIFICATIONS = 'notifications-cleanup';
+const DETECT_UPDATES_KEY = 'detect-updates';
 
 const Log = Me.imports.logger;
 
@@ -117,6 +118,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				this._addSpinButton(general_box, UPDATE_INTERVAL_KEY, _("Update interval (min):"), MAX_UPDATE_INTERVAL);
 				this._addSpinButton(general_box, POLL_DELAY_KEY, _("Poll delay (ms):"), MAX_POLL_DELAY);
 				this._addSwitch(general_box, PRESERVE_ON_LOCK_KEY, _("Preserve when screen off:"));
+				this._addSwitch(general_box, DETECT_UPDATES_KEY, _("Detect updates:"));
 
 				let debug_box = new Gtk.Box(
 				{
