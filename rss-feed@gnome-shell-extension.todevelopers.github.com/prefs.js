@@ -318,6 +318,8 @@ const RssFeedSettingsWidget = new GObject.Class(
 		column_url.pack_start(cell_url, true);
 		column_url.add_attribute(cell_url, "text", COLUMN_ID);
 
+		column_url.set_fixed_width(420);
+		column_url.set_resizable(true);
 		column_url.set_title(_("URL"));
 
 		this._actor.append_column(column_url);
@@ -330,6 +332,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		});
 		column_status.pack_start(cell_status, false);
 		column_status.add_attribute(cell_status, "text", COLUMN_ID_STATUS);
+
 		column_status.set_title(_("Status"));
 
 		this._actor.append_column(column_status);
@@ -513,7 +516,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		if (!request)
 		{
 			this._store.set_value(iter, COLUMN_ID_STATUS, _("Invalid URL"));
-			return;
+			return null;
 		}
 
 		if (cacheObj.p)
@@ -677,8 +680,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 		dialog.connect("response", Lang.bind(this, function(w, response_id)
 		{
-
-			if (response_id > -1)
+			if (response_id == 1)
 			{ // button OK
 				onOkButton(response_id);
 			}
@@ -751,6 +753,11 @@ const RssFeedSettingsWidget = new GObject.Class(
 			// update tree view
 			let iter = this._store.append();
 			this._store.set_value(iter, COLUMN_ID, text);
+
+			// select and scroll to added entry
+			let path = this._store.get_path(iter);
+			this._actor.get_selection().select_iter(iter);
+			this._actor.scroll_to_cell(path, null, false, 0 , 0);
 		}));
 	},
 
