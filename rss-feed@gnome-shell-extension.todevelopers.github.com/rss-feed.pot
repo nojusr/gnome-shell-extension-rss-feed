@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-03 03:21+0100\n"
+"POT-Creation-Date: 2017-03-05 05:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,134 +17,146 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: extension.js:194
+#: extension.js:200
 msgid "Reload Plugin"
 msgstr ""
 
-#: extension.js:214
+#: extension.js:220
 msgid "Reload RSS Feeds"
 msgstr ""
 
-#: extension.js:215
+#: extension.js:221
 msgid "RSS Feed Settings"
 msgstr ""
 
-#: extension.js:709
+#: extension.js:728
 msgid "UPDATE"
 msgstr ""
 
-#: extension.js:710
+#: extension.js:729
 msgid "Source"
 msgstr ""
 
-#: extension.js:711
+#: extension.js:730
 msgid "Author"
 msgstr ""
 
-#: extension.js:737
+#: extension.js:756
 msgid "Last update"
 msgstr ""
 
-#: extension.js:789
+#: extension.js:812
 msgid "Open URL"
 msgstr ""
 
-#: extension.js:795
+#: extension.js:818
 msgid "Copy URL"
 msgstr ""
 
-#: prefs.js:117
+#: prefs.js:124
 msgid "Update interval (min):"
 msgstr ""
 
-#: prefs.js:118
+#: prefs.js:125
 msgid "Poll delay (ms):"
 msgstr ""
 
-#: prefs.js:119
+#: prefs.js:126
 msgid "Preserve when screen off:"
 msgstr ""
 
-#: prefs.js:146
+#: prefs.js:127
+msgid "Detect updates:"
+msgstr ""
+
+#: prefs.js:154
 msgid "Reactivate extension"
 msgstr ""
 
-#: prefs.js:148
+#: prefs.js:156
 msgid "Debug mode:"
 msgstr ""
 
-#: prefs.js:184
+#: prefs.js:192
 msgid "Max menu height (px):"
 msgstr ""
 
-#: prefs.js:185
+#: prefs.js:193
 msgid "Max items per source:"
 msgstr ""
 
-#: prefs.js:186
+#: prefs.js:194
 msgid "Enable animations:"
 msgstr ""
 
-#: prefs.js:187
+#: prefs.js:195
 msgid "Top-align buttons:"
 msgstr ""
 
-#: prefs.js:188
+#: prefs.js:196
 msgid "Show descriptions:"
 msgstr ""
 
-#: prefs.js:212
+#: prefs.js:220
 msgid "Show notifications:"
 msgstr ""
 
-#: prefs.js:213
+#: prefs.js:221
 msgid "Max notifications:"
 msgstr ""
 
-#: prefs.js:223
+#: prefs.js:231
 msgid "Show on lock screen:"
 msgstr ""
 
-#: prefs.js:224
+#: prefs.js:232
 msgid "Clean up notifications:"
 msgstr ""
 
-#: prefs.js:246
+#: prefs.js:254
 msgid "RSS sources"
 msgstr ""
 
-#: prefs.js:275
+#: prefs.js:283
 msgid "Re-check all RSS sources"
 msgstr ""
 
-#: prefs.js:321
+#: prefs.js:333
 msgid "URL"
 msgstr ""
 
-#: prefs.js:333
+#: prefs.js:347
 msgid "Status"
 msgstr ""
 
-#: prefs.js:515
+#: prefs.js:363
+msgid "No not."
+msgstr ""
+
+#: prefs.js:388
+msgid "No upd."
+msgstr ""
+
+#: prefs.js:602
 msgid "Invalid URL"
 msgstr ""
 
-#: prefs.js:524
+#: prefs.js:611
 msgid "Checking"
 msgstr ""
 
-#: prefs.js:547
+#: prefs.js:634
 msgid "EXCEPTION"
 msgstr ""
 
-#: prefs.js:554
+#: prefs.js:641
 msgid "RSS parsing error"
 msgstr ""
 
-#: prefs.js:558
+#: prefs.js:645
 msgid "OK"
 msgstr ""
 
-#: prefs.js:744
+#: prefs.js:838
 msgid "New RSS Feed source"
 msgstr ""

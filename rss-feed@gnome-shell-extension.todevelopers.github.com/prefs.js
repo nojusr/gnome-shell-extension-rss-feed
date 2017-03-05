@@ -38,10 +38,14 @@ const Gettext = imports.gettext.domain('rss-feed');
 const _ = Gettext.gettext;
 
 const HTTP = Me.imports.http;
+const AssocSettings = Me.imports.gsaa;
 const Parser = Me.imports.parsers.factory;
 
 const COLUMN_ID = 0;
 const COLUMN_ID_STATUS = 1;
+const COLUMN_ID_NOTIF = 2;
+const COLUMN_ID_UPD = 3;
+
 const MAX_UPDATE_INTERVAL = 1440;
 const MAX_SOURCES_LIMIT = 1024;
 const MAX_POLL_DELAY = 9999;
@@ -63,6 +67,7 @@ const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top'
 const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
 const CLEANUP_NOTIFICATIONS = 'notifications-cleanup';
 const DETECT_UPDATES_KEY = 'detect-updates';
+const RSS_FEEDS_SETTINGS_KEY = 'rss-feeds-settings';
 
 const Log = Me.imports.logger;
 
@@ -89,6 +94,8 @@ const RssFeedSettingsWidget = new GObject.Class(
 		this.margin_top = 10;
 		this.margin_bottom = 2;
 
+		this._aSettings = new AssocSettings.GSAA(RSS_FEEDS_SETTINGS_KEY);
+		
 		this._httpSession = new Soup.SessionAsync({
 			timeout: 30
 		});
@@ -98,7 +105,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		this._fCache = new Array();
 
 		if (this.set_size_request)
-			this.set_size_request(600, 600);
+			this.set_size_request(682, 600);
 
 		let upper_box = new Gtk.Box(
 		{
@@ -114,7 +121,6 @@ const RssFeedSettingsWidget = new GObject.Class(
 				hexpand: true
 			});
 			{
-	
 				this._addSpinButton(general_box, UPDATE_INTERVAL_KEY, _("Update interval (min):"), MAX_UPDATE_INTERVAL);
 				this._addSpinButton(general_box, POLL_DELAY_KEY, _("Poll delay (ms):"), MAX_POLL_DELAY);
 				this._addSwitch(general_box, PRESERVE_ON_LOCK_KEY, _("Preserve when screen off:"));
@@ -286,7 +292,8 @@ const RssFeedSettingsWidget = new GObject.Class(
 		scrolledWindow.set_shadow_type(1);
 
 		this._store = new Gtk.ListStore();
-		this._store.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
+		this._store.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING, 
+										GObject.TYPE_BOOLEAN, GObject.TYPE_BOOLEAN]);
 		this._loadStoreFromSettings();
 
 		this._actor = new Gtk.TreeView(
@@ -311,6 +318,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 		this._actor.get_selection().set_mode(Gtk.SelectionMode.SINGLE);
 
+		// URL column
 		let column_url = new Gtk.TreeViewColumn();
 
 		let cell_url = new Gtk.CellRendererText(
@@ -326,6 +334,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 		this._actor.append_column(column_url);
 
+		// status column
 		let column_status = new Gtk.TreeViewColumn();
 
 		let cell_status = new Gtk.CellRendererText(
@@ -334,11 +343,61 @@ const RssFeedSettingsWidget = new GObject.Class(
 		});
 		column_status.pack_start(cell_status, false);
 		column_status.add_attribute(cell_status, "text", COLUMN_ID_STATUS);
-
+		column_status.set_resizable(true);
 		column_status.set_title(_("Status"));
 
 		this._actor.append_column(column_status);
 
+		// mute notifications column
+		let column_notif = new Gtk.TreeViewColumn();
+
+		let cell_notif = new Gtk.CellRendererToggle(
+		{
+			activatable: true,
+			xalign: Gtk.Align.FILL
+		});
+		
+		column_notif.pack_start(cell_notif, false);
+		column_notif.add_attribute(cell_notif, "active", COLUMN_ID_NOTIF);
+		column_notif.set_resizable(true);
+		column_notif.set_title(_("No not."));
+		
+		this._actor.append_column(column_notif);
+		
+		cell_notif.connect('toggled', Lang.bind(this, this._gToggleHandler, COLUMN_ID_NOTIF,
+			Lang.bind(this, function(self, path, iter, state)
+			{
+				let urlValue = this._store.get_value(iter, COLUMN_ID);
+
+				this._aSettings.set(urlValue, "n", state);
+			})
+		));
+		
+		// disable updates column
+		let column_upd = new Gtk.TreeViewColumn();
+
+		let cell_upd = new Gtk.CellRendererToggle(
+		{
+			activatable: true,
+			xalign: Gtk.Align.FILL
+		});
+		
+		column_upd.pack_start(cell_upd, false);
+		column_upd.add_attribute(cell_upd, "active", COLUMN_ID_UPD);
+		column_upd.set_resizable(true);
+		column_upd.set_title(_("No upd."));
+		
+		this._actor.append_column(column_upd);
+		
+		cell_upd.connect('toggled', Lang.bind(this, this._gToggleHandler, COLUMN_ID_UPD,
+			Lang.bind(this, function(self, path, iter, state)
+			{
+				let urlValue = this._store.get_value(iter, COLUMN_ID);
+
+				this._aSettings.set(urlValue, "u", state);
+			})
+		));
+		
 		this._actor.connect('row-activated', Lang.bind(this,
 			function(self, path, column)
 			{
@@ -372,6 +431,10 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 				if (!res)
 					return;
+				
+				let urlValue = this._store.get_value(iter, COLUMN_ID);
+				
+				this._aSettings.rename(urlValue, text);
 
 				this._store.set_value(iter, COLUMN_ID, text);
 			}));
@@ -382,7 +445,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
 
 				if (feeds == null)
-					feeds = new Array()
+					feeds = new Array();
 
 				let index = path.get_indices();
 
@@ -401,7 +464,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
 
 				if (feeds == null)
-					feeds = new Array()
+					feeds = new Array();
 
 				let index = path.get_indices();
 
@@ -409,7 +472,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 					return;
 
 				let urlValue = this._store.get_value(iter, COLUMN_ID);
-
+				
 				// detect URL column changes
 				if (urlValue == feeds[index])
 					return;
@@ -442,9 +505,8 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 				feeds.splice(index, 1);
 				this._fCache.splice(index, 1);
-
+				
 				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
-
 			}));
 
 		scrolledWindow.add(this._actor);
@@ -498,6 +560,26 @@ const RssFeedSettingsWidget = new GObject.Class(
 		box_toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_TOOLBAR);
 
 		this.add(box_toolbar);
+	},
+	
+	_gToggleHandler: function(self, str_path, cid, callback)
+	{
+		let path = Gtk.TreePath.new_from_string(str_path);
+
+		if (!path)
+			return;
+	
+		let [res, iter] = this._store.get_iter(path);
+
+		if (!res)
+			return;
+		
+		let val = !this._store.get_value(iter, cid);
+				
+		this._store.set_value(iter, cid, val);
+		
+		if ( callback )
+			callback(self, path, iter, val);
 	},
 
 	/* 
@@ -566,6 +648,14 @@ const RssFeedSettingsWidget = new GObject.Class(
 		return request;
 	},
 	
+	destroy: function()
+	{
+		if ( this._httpSession )
+			this._httpSession.stop();
+
+		this.parent();
+	},
+
 	_createControlBase: function(text)
 	{
 		let box = new Gtk.Box(
@@ -775,6 +865,9 @@ const RssFeedSettingsWidget = new GObject.Class(
 			// must call before remove
 			let index = model.get_path(iter).get_indices();
 			// update tree view
+
+			this._aSettings.remove(this._store.get_value(iter, COLUMN_ID));
+			
 			this._store.remove(iter);
 		}
 	},
@@ -792,6 +885,17 @@ const RssFeedSettingsWidget = new GObject.Class(
 			{
 				let iter = this._store.append();
 				this._store.set_value(iter, COLUMN_ID, feeds[i]);
+				
+				let vset = this._aSettings.get(feeds[i], "n");
+				
+				if ( vset )
+					this._store.set_value(iter, COLUMN_ID_NOTIF, vset);
+				
+				vset = this._aSettings.get(feeds[i], "u");
+				
+				if ( vset )
+					this._store.set_value(iter, COLUMN_ID_UPD, vset);
+
 				let cacheObj = this._fCache[i] = new Object();
 				cacheObj.v = feeds[i];
 				this._validateItemURL(iter, cacheObj);
@@ -817,7 +921,6 @@ function try_spawn(argv)
 
 	return success;
 }
-
 
 /*
  *	Initialize the settings widget

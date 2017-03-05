@@ -18,6 +18,7 @@
     * Maximum number of shown articles per source
     * Toggle menu animations
     * Set menu button alignment (top/bottom)
+    * Toggle update detection
     * Show article descriptions when selected
   * Notifications:
     * Toggle on/off

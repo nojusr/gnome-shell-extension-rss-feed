@@ -41,6 +41,7 @@ const Convenience = Me.imports.convenience;
 const Parser = Me.imports.parsers.factory;
 const Log = Me.imports.logger;
 const Settings = Convenience.getSettings();
+const AssocSettings = Me.imports.gsaa;
 
 const Gettext = imports.gettext.domain('rss-feed');
 const _ = Gettext.gettext;
@@ -74,6 +75,7 @@ const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top';
 const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
 const CLEANUP_NOTIFICATIONS = 'notifications-cleanup';
 const DETECT_UPDATES_KEY = 'detect-updates';
+const RSS_FEEDS_SETTINGS_KEY = 'rss-feeds-settings';
 
 const NOTIFICATION_ICON = 'application-rss+xml';
 
@@ -104,6 +106,9 @@ const RssFeed = new Lang.Class(
 		// property called 'add-feature', designed as a construct property for
 		// C convenience.
 		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
+
+		this._aSettings = new AssocSettings.GSAA(RSS_FEEDS_SETTINGS_KEY);
+		this._aSettings.set_autoload(false);
 
 		this._startIndex = 0;
 		this._feedsCache = new Array();
@@ -288,6 +293,8 @@ const RssFeed = new Lang.Class(
 		this._notifLimit = Settings.get_int(MAX_NOTIFICATIONS_KEY);
 		this._detectUpdates = Settings.get_boolean(DETECT_UPDATES_KEY);
 		this._notifOnLockScreen = Settings.get_boolean(NOTIFICATIONS_ON_LOCKSCREEN);
+		
+		this._aSettings.load();
 
 		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
 	},
@@ -555,6 +562,16 @@ const RssFeed = new Lang.Class(
 		else
 			subMenu = feedsCache.Menu;
 
+		let gsData = this._aSettings._gsData[sourceURL];
+		let muteNotifications;
+		let disableUpdates;
+
+		if (gsData)
+		{
+			muteNotifications = gsData['n'];
+			disableUpdates = gsData['u'];
+		}
+
 		/* clear any cache items which are no longer 
 		 * required or should be updated
 		 */
@@ -573,7 +590,7 @@ const RssFeed = new Lang.Class(
 
 				if (cacheItemURL == item.HttpLink)
 				{
-					if ( this._detectUpdates && 
+					if ( this._detectUpdates && !disableUpdates && 
 						(cacheObj.Item.PublishDate != item.PublishDate ||
 						cacheObj.Item.UpdateTime != item.UpdateTime))
 					{
@@ -635,6 +652,7 @@ const RssFeed = new Lang.Class(
 
 			// this._lMenu = menu;
 			// if (i < 5 && Math.random() < 0.17332) feedsCache._initialRefresh = true;
+			// if (i < 1 ) feedsCache._initialRefresh = true;
 
 			/* decode description, if present */
 			if (item.Description.length > 0)
@@ -702,12 +720,12 @@ const RssFeed = new Lang.Class(
 			menu.setOrnament(PopupMenu.Ornament.DOT);
 
 			/* trigger notification, if requested */
-			if (this._enableNotifications )
+			if (this._enableNotifications && !muteNotifications )
 			{
-				let itemTitle = Encoder.htmlDecode(item.Title);
+				let itemTitle = item.Title;
 
 				cacheObj.Notification = this._dispatchNotification(
-					item._update ? (_("UPDATE") + ': ' + itemTitle) : itemTitle,
+					item._update ? (_("UPDATE") + ': ' + item.Title) : itemTitle,
 					_("Source") + ': ' + Encoder.htmlDecode(rssParser.Publisher.Title) +
 					(item.Author.length ? ', ' + _("Author") + ': ' + Encoder.htmlDecode(item.Author) : '') + '\n\n' +
 					(cacheObj._itemDescription ? cacheObj._itemDescription : itemTitle),

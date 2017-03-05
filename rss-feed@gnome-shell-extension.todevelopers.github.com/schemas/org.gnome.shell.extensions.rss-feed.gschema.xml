@@ -67,15 +67,15 @@
 		    <summary>RSS feeds</summary>
 		    <description>List of RSS feeds sources.</description>
 		</key>
+		<key type="s" name="rss-feeds-settings">
+		    <default>"{}"</default>
+		    <summary>RSS feeds settings</summary>
+		    <description></description>
+		</key>
 		<key type="b" name="enable-debug">
 		    <default>false</default>
 		    <summary>Enable debug</summary>
 		    <description>Enable extension logs debug messages in Gnome logs provider.</description>
-		</key>
-		<key type="b" name="reset-feeds">
-		    <default>false</default>
-		    <summary>Reset feeds</summary>
-		    <description>Reset feeds on next reload</description>
 		</key>
 		<key type="b" name="menu-buttons-align-top">
 		    <default>false</default>
