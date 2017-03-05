@@ -872,14 +872,14 @@ function enable()
 	}
 
 	rssFeed = new RssFeed();
+
+	/* trigger initial poll */
+	rssFeed._pollFeeds();
+	
+	/* add plugin menu to status area */
 	Main.panel.addToStatusArea('rssFeedMenu', rssFeed, 0, 'right');
-
+	
 	Log.Debug("Extension enabled.");
-
-	try
-	{
-		rssFeed._pollFeeds();
-	} catch (e) {}
 }
 
 function extension_disable()
