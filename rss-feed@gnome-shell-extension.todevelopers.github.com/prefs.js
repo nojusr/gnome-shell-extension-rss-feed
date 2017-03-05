@@ -41,10 +41,10 @@ const HTTP = Me.imports.http;
 const AssocSettings = Me.imports.gsaa;
 const Parser = Me.imports.parsers.factory;
 
-const COLUMN_ID = 0;
-const COLUMN_ID_STATUS = 1;
-const COLUMN_ID_NOTIF = 2;
-const COLUMN_ID_UPD = 3;
+const COLUMN_URL = 0;
+const COLUMN_STATUS = 1;
+const COLUMN_NOTIF = 2;
+const COLUMN_UPD = 3;
 
 const MAX_UPDATE_INTERVAL = 1440;
 const MAX_SOURCES_LIMIT = 1024;
@@ -52,22 +52,7 @@ const MAX_POLL_DELAY = 9999;
 const MAX_HEIGHT = 8192;
 const MAX_NOTIFICATIONS = 100;
 
-const RSS_FEEDS_LIST_KEY = 'rss-feeds-list';
-const UPDATE_INTERVAL_KEY = 'update-interval';
-const ITEMS_VISIBLE_KEY = 'items-visible';
-const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
-const POLL_DELAY_KEY = 'fpoll-timeout';
-const MAX_HEIGHT_KEY = 'max-height';
-const ENABLE_ANIMATIONS_KEY = 'enable-anim';
-const PRESERVE_ON_LOCK_KEY = 'preserve-on-lock';
-const MAX_NOTIFICATIONS_KEY = 'notification-limit';
-const ENABLE_DESC_KEY = 'enable-descriptions';
-const ENABLE_DEBUG_KEY = 'enable-debug';
-const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top'
-const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
-const CLEANUP_NOTIFICATIONS = 'notifications-cleanup';
-const DETECT_UPDATES_KEY = 'detect-updates';
-const RSS_FEEDS_SETTINGS_KEY = 'rss-feeds-settings';
+const GSKeys = Me.imports.gskeys;
 
 const Log = Me.imports.logger;
 
@@ -94,7 +79,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		this.margin_top = 10;
 		this.margin_bottom = 2;
 
-		this._aSettings = new AssocSettings.GSAA(RSS_FEEDS_SETTINGS_KEY);
+		this._aSettings = new AssocSettings.GSAA(GSKeys.RSS_FEEDS_SETTINGS);
 
 		this._httpSession = new Soup.SessionAsync(
 		{
@@ -122,10 +107,10 @@ const RssFeedSettingsWidget = new GObject.Class(
 				hexpand: true
 			});
 			{
-				this._addSpinButton(general_box, UPDATE_INTERVAL_KEY, _("Update interval (min):"), MAX_UPDATE_INTERVAL);
-				this._addSpinButton(general_box, POLL_DELAY_KEY, _("Poll delay (ms):"), MAX_POLL_DELAY);
-				this._addSwitch(general_box, PRESERVE_ON_LOCK_KEY, _("Preserve when screen off:"));
-				this._addSwitch(general_box, DETECT_UPDATES_KEY, _("Detect updates:"));
+				this._addSpinButton(general_box, GSKeys.UPDATE_INTERVAL, _("Update interval (min):"), MAX_UPDATE_INTERVAL);
+				this._addSpinButton(general_box, GSKeys.POLL_DELAY, _("Poll delay (ms):"), MAX_POLL_DELAY);
+				this._addSwitch(general_box, GSKeys.PRESERVE_ON_LOCK, _("Preserve when screen off:"));
+				this._addSwitch(general_box, GSKeys.DETECT_UPDATES, _("Detect updates:"));
 
 				let debug_box = new Gtk.Box(
 				{
@@ -146,7 +131,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 						if (!try_spawn([GSE_TOOL_PATH, '-d', Me.uuid]))
 							return;
 
-						this._rldTimeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, function()
+						this._rldTimeout = Mainloop.timeout_add(100, Lang.bind(this, function()
 						{
 							this._rldTimeout = undefined;
 							try_spawn([GSE_TOOL_PATH, '-e', Me.uuid])
@@ -160,7 +145,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 					let dbg_sw = new Gtk.Switch(
 					{
-						active: Settings.get_boolean(ENABLE_DEBUG_KEY),
+						active: Settings.get_boolean(GSKeys.ENABLE_DEBUG),
 						vexpand: false,
 						margin_top: 2,
 						margin_bottom: 2
@@ -168,7 +153,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 					dbg_sw.connect('notify::active', Lang.bind(this, function(b)
 					{
-						Settings.set_boolean(ENABLE_DEBUG_KEY, b.active);
+						Settings.set_boolean(GSKeys.ENABLE_DEBUG, b.active);
 					}));
 
 					box_dbgsw.add(dbg_sw);
@@ -190,11 +175,11 @@ const RssFeedSettingsWidget = new GObject.Class(
 				hexpand: true
 			});
 			{
-				this._addSpinButton(menu_box, MAX_HEIGHT_KEY, _("Max menu height (px):"), MAX_HEIGHT);
-				this._addSpinButton(menu_box, ITEMS_VISIBLE_KEY, _("Max items per source:"), MAX_SOURCES_LIMIT);
-				this._addSwitch(menu_box, ENABLE_ANIMATIONS_KEY, _("Enable animations:"));
-				this._addSwitch(menu_box, MB_ALIGN_TOP_KEY, _("Top-align buttons:"));
-				this._addSwitch(menu_box, ENABLE_DESC_KEY, _("Show descriptions:"));
+				this._addSpinButton(menu_box, GSKeys.MAX_HEIGHT, _("Max menu height (px):"), MAX_HEIGHT);
+				this._addSpinButton(menu_box, GSKeys.ITEMS_VISIBLE, _("Max items per source:"), MAX_SOURCES_LIMIT);
+				this._addSwitch(menu_box, GSKeys.ENABLE_ANIMATIONS, _("Enable animations:"));
+				this._addSwitch(menu_box, GSKeys.MB_ALIGN_TOP, _("Top-align buttons:"));
+				this._addSwitch(menu_box, GSKeys.ENABLE_DESC, _("Show descriptions:"));
 			}
 
 			upper_box.add(menu_box);
@@ -224,10 +209,10 @@ const RssFeedSettingsWidget = new GObject.Class(
 				hexpand: true
 			});
 			{
-				this._nbSwitch = this._addSwitch(notif_left, ENABLE_NOTIFICATIONS_KEY, _("Show notifications:"),
+				this._nbSwitch = this._addSwitch(notif_left, GSKeys.ENABLE_NOTIFICATIONS, _("Show notifications:"),
 					nbswStFunc
 				);
-				this._nbMax = this._addSpinButton(notif_left, MAX_NOTIFICATIONS_KEY, _("Max notifications:"), MAX_NOTIFICATIONS);
+				this._nbMax = this._addSpinButton(notif_left, GSKeys.MAX_NOTIFICATIONS, _("Max notifications:"), MAX_NOTIFICATIONS);
 			}
 
 			let notif_right = new Gtk.Box(
@@ -237,14 +222,14 @@ const RssFeedSettingsWidget = new GObject.Class(
 				hexpand: true
 			});
 			{
-				this._nbOnLockScreen = this._addSwitch(notif_right, NOTIFICATIONS_ON_LOCKSCREEN, _("Show on lock screen:"));
-				this._nbCleanup = this._addSwitch(notif_right, CLEANUP_NOTIFICATIONS, _("Clean up notifications:"));
+				this._nbOnLockScreen = this._addSwitch(notif_right, GSKeys.NOTIFICATIONS_ON_LOCKSCREEN, _("Show on lock screen:"));
+				this._nbCleanup = this._addSwitch(notif_right, GSKeys.CLEANUP_NOTIFICATIONS, _("Clean up notifications:"));
 			}
 
 			notif_box.add(notif_left);
 			notif_box.add(notif_right);
 
-			nbswStFunc(null, Settings.get_boolean(ENABLE_NOTIFICATIONS_KEY));
+			nbswStFunc(null, Settings.get_boolean(GSKeys.ENABLE_NOTIFICATIONS));
 		}
 
 		this.add(notif_box);
@@ -322,7 +307,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		this._actor.set_search_equal_func(
 			Lang.bind(this, function(model, column, key, iter)
 			{
-				if (model.get_value(iter, COLUMN_ID).match(key))
+				if (model.get_value(iter, COLUMN_URL).match(key))
 					return false;
 				else
 					return true;
@@ -330,89 +315,47 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 		this._actor.get_selection().set_mode(Gtk.SelectionMode.SINGLE);
 
-		// URL column
-		let column_url = new Gtk.TreeViewColumn();
+		let [column_url, cell_url] = this._addSourcesColumn(this._actor, 
+			new Gtk.CellRendererText({editable: true}), COLUMN_URL, _("URL"));
 
-		let cell_url = new Gtk.CellRendererText(
-		{
-			editable: true
-		});
-		column_url.pack_start(cell_url, true);
-		column_url.add_attribute(cell_url, "text", COLUMN_ID);
-
+		column_url.add_attribute(cell_url, "text", COLUMN_URL);
 		column_url.set_fixed_width(420);
-		column_url.set_resizable(true);
-		column_url.set_title(_("URL"));
 
-		this._actor.append_column(column_url);
+		let [column_status, cell_status] = this._addSourcesColumn(this._actor, 
+			new Gtk.CellRendererText(), COLUMN_STATUS, _("Status"));
 
-		// status column
-		let column_status = new Gtk.TreeViewColumn();
+		column_status.add_attribute(cell_status, "text", COLUMN_STATUS);
 
-		let cell_status = new Gtk.CellRendererText(
+		let cellToggleFunc = function(self, path, iter, state, key)
 		{
-			editable: false
-		});
-		column_status.pack_start(cell_status, false);
-		column_status.add_attribute(cell_status, "text", COLUMN_ID_STATUS);
-		column_status.set_resizable(true);
-		column_status.set_title(_("Status"));
+			let urlValue = this._store.get_value(iter, COLUMN_URL);
+			this._aSettings.set(urlValue, key, state);
+		};
 
-		this._actor.append_column(column_status);
+		// disable notifications column
+		let [column_notif, cell_notif] = this._addSourcesColumn(this._actor,
+			new Gtk.CellRendererToggle({activatable:true, xalign: Gtk.Align.FILL}), COLUMN_NOTIF, _("No not."));
 
-		// mute notifications column
-		let column_notif = new Gtk.TreeViewColumn();
+		column_notif.add_attribute(cell_notif, "active", COLUMN_NOTIF);
 
-		let cell_notif = new Gtk.CellRendererToggle(
-		{
-			activatable: true,
-			xalign: Gtk.Align.FILL
-		});
-
-		column_notif.pack_start(cell_notif, false);
-		column_notif.add_attribute(cell_notif, "active", COLUMN_ID_NOTIF);
-		column_notif.set_resizable(true);
-		column_notif.set_title(_("No not."));
-
-		this._actor.append_column(column_notif);
-
-		cell_notif.connect('toggled', Lang.bind(this, this._gToggleHandler, COLUMN_ID_NOTIF,
-			Lang.bind(this, function(self, path, iter, state)
-			{
-				let urlValue = this._store.get_value(iter, COLUMN_ID);
-
-				this._aSettings.set(urlValue, "n", state);
-			})
-		));
+		cell_notif.connect('toggled', Lang.bind(this, this._gToggleHandler, COLUMN_NOTIF,
+			Lang.bind(this, cellToggleFunc, 'n')));
 
 		// disable updates column
-		let column_upd = new Gtk.TreeViewColumn();
+		let [column_upd, cell_upd] = this._addSourcesColumn(this._actor,
+			new Gtk.CellRendererToggle({activatable:true, xalign: Gtk.Align.FILL}), COLUMN_NOTIF, _("No upd."));
 
-		let cell_upd = new Gtk.CellRendererToggle(
-		{
-			activatable: true,
-			xalign: Gtk.Align.FILL
-		});
+		column_upd.add_attribute(cell_upd, "active", COLUMN_UPD);
 
-		column_upd.pack_start(cell_upd, false);
-		column_upd.add_attribute(cell_upd, "active", COLUMN_ID_UPD);
-		column_upd.set_resizable(true);
-		column_upd.set_title(_("No upd."));
-
-		this._actor.append_column(column_upd);
-
-		cell_upd.connect('toggled', Lang.bind(this, this._gToggleHandler, COLUMN_ID_UPD,
-			Lang.bind(this, function(self, path, iter, state)
-			{
-				let urlValue = this._store.get_value(iter, COLUMN_ID);
-
-				this._aSettings.set(urlValue, "u", state);
-			})
-		));
+		cell_upd.connect('toggled', Lang.bind(this, this._gToggleHandler, COLUMN_UPD,
+			Lang.bind(this, cellToggleFunc, 'u')));
 
 		this._actor.connect('row-activated', Lang.bind(this,
 			function(self, path, column)
 			{
+				if ( column != column_status )
+					return;
+
 				let [res, iter] = this._store.get_iter(path);
 
 				if (!res)
@@ -423,9 +366,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				if (index > this._fCache)
 					return;
 
-				let cacheObj = this._fCache[index];
-
-				this._validateItemURL(iter, cacheObj);
+				this._validateItemURL(iter, this._fCache[index]);
 			}));
 
 		cell_url.connect('edited', Lang.bind(this,
@@ -444,17 +385,17 @@ const RssFeedSettingsWidget = new GObject.Class(
 				if (!res)
 					return;
 
-				let urlValue = this._store.get_value(iter, COLUMN_ID);
+				let urlValue = this._store.get_value(iter, COLUMN_URL);
 
 				this._aSettings.rename(urlValue, text);
 
-				this._store.set_value(iter, COLUMN_ID, text);
+				this._store.set_value(iter, COLUMN_URL, text);
 			}));
 
 		this._store.connect('row-inserted', Lang.bind(this,
 			function(tree, path, iter)
 			{
-				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+				let feeds = Settings.get_strv(GSKeys.RSS_FEEDS_LIST);
 
 				if (feeds == null)
 					feeds = new Array();
@@ -467,13 +408,13 @@ const RssFeedSettingsWidget = new GObject.Class(
 				feeds.splice(index, 0, ""); // placeholder
 				this._fCache.splice(index, 0, new Object());
 
-				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+				Settings.set_strv(GSKeys.RSS_FEEDS_LIST, feeds);
 			}));
 
 		this._store.connect('row-changed', Lang.bind(this,
 			function(tree, path, iter)
 			{
-				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+				let feeds = Settings.get_strv(GSKeys.RSS_FEEDS_LIST);
 
 				if (feeds == null)
 					feeds = new Array();
@@ -483,7 +424,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				if (index >= feeds.length)
 					return;
 
-				let urlValue = this._store.get_value(iter, COLUMN_ID);
+				let urlValue = this._store.get_value(iter, COLUMN_URL);
 
 				// detect URL column changes
 				if (urlValue == feeds[index])
@@ -494,7 +435,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				let cacheObj = this._fCache[index];
 				cacheObj.v = urlValue;
 
-				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+				Settings.set_strv(GSKeys.RSS_FEEDS_LIST, feeds);
 
 				this._validateItemURL(iter, cacheObj);
 			}));
@@ -502,7 +443,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 		this._store.connect('row-deleted', Lang.bind(this,
 			function(tree, path)
 			{
-				let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+				let feeds = Settings.get_strv(GSKeys.RSS_FEEDS_LIST);
 				if (feeds == null)
 					feeds = new Array();
 
@@ -518,7 +459,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 				feeds.splice(index, 1);
 				this._fCache.splice(index, 1);
 
-				Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+				Settings.set_strv(GSKeys.RSS_FEEDS_LIST, feeds);
 			}));
 
 		scrolledWindow.add(this._actor);
@@ -600,7 +541,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 	 */
 	_validateItemURL: function(iter, cacheObj)
 	{
-		let url = this._store.get_value(iter, COLUMN_ID);
+		let url = this._store.get_value(iter, COLUMN_URL);
 
 		let params = HTTP.getParametersAsJson(url);
 
@@ -611,7 +552,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 		if (!request)
 		{
-			this._store.set_value(iter, COLUMN_ID_STATUS, _("Invalid URL"));
+			this._store.set_value(iter, COLUMN_STATUS, _("Invalid URL"));
 			return null;
 		}
 
@@ -620,7 +561,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 		cacheObj.p = request;
 
-		this._store.set_value(iter, COLUMN_ID_STATUS, _("Checking") + "..");
+		this._store.set_value(iter, COLUMN_STATUS, _("Checking") + "..");
 
 		this._httpSession.queue_message(request, Lang.bind(this,
 			function(session, message)
@@ -632,7 +573,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 				if (!((message.status_code) >= 200 && (message.status_code) < 300))
 				{
-					this._store.set_value(iter, COLUMN_ID_STATUS,
+					this._store.set_value(iter, COLUMN_STATUS,
 						Soup.Status.get_phrase(message.status_code));
 					return;
 				}
@@ -644,18 +585,18 @@ const RssFeedSettingsWidget = new GObject.Class(
 				}
 				catch (e)
 				{
-					this._store.set_value(iter, COLUMN_ID_STATUS, _("EXCEPTION"));
+					this._store.set_value(iter, COLUMN_STATUS, _("EXCEPTION"));
 					Log.Error(e);
 					return;
 				}
 
 				if (parser == null)
 				{
-					this._store.set_value(iter, COLUMN_ID_STATUS, _("RSS parsing error"));
+					this._store.set_value(iter, COLUMN_STATUS, _("RSS parsing error"));
 					return;
 				}
 
-				this._store.set_value(iter, COLUMN_ID_STATUS, _("OK") + " - " + parser._type);
+				this._store.set_value(iter, COLUMN_STATUS, _("OK") + " - " + parser._type);
 			}));
 
 		return request;
@@ -686,6 +627,20 @@ const RssFeedSettingsWidget = new GObject.Class(
 		box.pack_start(label, true, true, 0);
 
 		return box;
+	},
+	
+	_addSourcesColumn: function(parent, cell, params, title)
+	{
+		let column = new Gtk.TreeViewColumn();
+
+		column.pack_start(cell, true);
+		
+		column.set_resizable(true);
+		column.set_title(title);
+
+		parent.append_column(column);
+		
+		return [column, cell];
 	},
 
 	_addSwitch: function(parent, key, text, callback)
@@ -825,21 +780,21 @@ const RssFeedSettingsWidget = new GObject.Class(
 		let index = model.get_path(iter).get_indices();
 		let index_step = model.get_path(iter_step).get_indices();
 
-		let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+		let feeds = Settings.get_strv(GSKeys.RSS_FEEDS_LIST);
 
 		if (feeds == null)
 			feeds = new Array();
 
 		if (index < feeds.length && index_step < feeds.length)
 		{
-			feeds[index] = model.get_value(iter, COLUMN_ID);
-			feeds[index_step] = model.get_value(iter_step, COLUMN_ID);
+			feeds[index] = model.get_value(iter, COLUMN_URL);
+			feeds[index_step] = model.get_value(iter_step, COLUMN_URL);
 
 			let it = this._fCache[index];
 			this._fCache[index] = this._fCache[index_step];
 			this._fCache[index_step] = it;
 
-			Settings.set_strv(RSS_FEEDS_LIST_KEY, feeds);
+			Settings.set_strv(GSKeys.RSS_FEEDS_LIST, feeds);
 		}
 	},
 
@@ -858,7 +813,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 
 			// update tree view
 			let iter = this._store.append();
-			this._store.set_value(iter, COLUMN_ID, text);
+			this._store.set_value(iter, COLUMN_URL, text);
 
 			// select and scroll to added entry
 			let path = this._store.get_path(iter);
@@ -880,7 +835,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 			let index = model.get_path(iter).get_indices();
 			// update tree view
 
-			this._aSettings.remove(this._store.get_value(iter, COLUMN_ID));
+			this._aSettings.remove(this._store.get_value(iter, COLUMN_URL));
 
 			this._store.remove(iter);
 		}
@@ -891,24 +846,24 @@ const RssFeedSettingsWidget = new GObject.Class(
 	 */
 	_loadStoreFromSettings: function()
 	{
-		let feeds = Settings.get_strv(RSS_FEEDS_LIST_KEY);
+		let feeds = Settings.get_strv(GSKeys.RSS_FEEDS_LIST);
 
 		if (feeds)
 		{
 			for (let i = 0; i < feeds.length; i++)
 			{
 				let iter = this._store.append();
-				this._store.set_value(iter, COLUMN_ID, feeds[i]);
+				this._store.set_value(iter, COLUMN_URL, feeds[i]);
 
 				let vset = this._aSettings.get(feeds[i], "n");
 
 				if (vset)
-					this._store.set_value(iter, COLUMN_ID_NOTIF, vset);
+					this._store.set_value(iter, COLUMN_NOTIF, vset);
 
 				vset = this._aSettings.get(feeds[i], "u");
 
 				if (vset)
-					this._store.set_value(iter, COLUMN_ID_UPD, vset);
+					this._store.set_value(iter, COLUMN_UPD, vset);
 
 				let cacheObj = this._fCache[i] = new Object();
 				cacheObj.v = feeds[i];

@@ -60,22 +60,7 @@ const ExtensionGui = {
 	RssPopupMenuSection: Me.imports.extensiongui.rsspopupmenusection.RssPopupMenuSection
 };
 
-const RSS_FEEDS_LIST_KEY = 'rss-feeds-list';
-const UPDATE_INTERVAL_KEY = 'update-interval';
-const ITEMS_VISIBLE_KEY = 'items-visible';
-const DEBUG_ENABLED_KEY = 'enable-debug';
-const ENABLE_NOTIFICATIONS_KEY = 'enable-notifications';
-const POLL_DELAY_KEY = 'fpoll-timeout';
-const MAX_HEIGHT_KEY = 'max-height';
-const ENABLE_ANIMATIONS_KEY = 'enable-anim';
-const PRESERVE_ON_LOCK_KEY = 'preserve-on-lock';
-const MAX_NOTIFICATIONS_KEY = 'notification-limit';
-const ENABLE_DESC_KEY = 'enable-descriptions';
-const MB_ALIGN_TOP_KEY = 'menu-buttons-align-top';
-const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
-const CLEANUP_NOTIFICATIONS = 'notifications-cleanup';
-const DETECT_UPDATES_KEY = 'detect-updates';
-const RSS_FEEDS_SETTINGS_KEY = 'rss-feeds-settings';
+const GSKeys = Me.imports.gskeys;
 
 const NOTIFICATION_ICON = 'application-rss+xml';
 
@@ -107,7 +92,7 @@ const RssFeed = new Lang.Class(
 		// C convenience.
 		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
 
-		this._aSettings = new AssocSettings.GSAA(RSS_FEEDS_SETTINGS_KEY);
+		this._aSettings = new AssocSettings.GSAA(GSKeys.RSS_FEEDS_SETTINGS);
 		this._aSettings.set_autoload(false);
 
 		this._startIndex = 0;
@@ -156,7 +141,7 @@ const RssFeed = new Lang.Class(
 
 		let separator = new PopupMenu.PopupSeparatorMenuItem();
 		
-		let mbAlignTop = Settings.get_boolean(MB_ALIGN_TOP_KEY);
+		let mbAlignTop = Settings.get_boolean(GSKeys.MB_ALIGN_TOP);
 
 		if ( mbAlignTop )
 		{
@@ -164,7 +149,7 @@ const RssFeed = new Lang.Class(
 			this.menu.addMenuItem(separator);
 		}
 
-		this._pMaxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
+		this._pMaxMenuHeight = Settings.get_int(GSKeys.MAX_HEIGHT);
 
 		this._feedsSection = new ExtensionGui.RssPopupMenuSection(
 			this._generatePopupMenuCSS(this._pMaxMenuHeight)
@@ -195,7 +180,7 @@ const RssFeed = new Lang.Class(
 			style_class: 'rss-status-label'
 		});
 
-		if (Settings.get_boolean(DEBUG_ENABLED_KEY))
+		if (Settings.get_boolean(GSKeys.ENABLE_DEBUG))
 		{
 			let reloadPluginBtn = systemMenu._createActionButton('system-shutdown-symbolic', _("Reload Plugin"));
 			this._buttonMenu.actor.add_actor(reloadPluginBtn);
@@ -254,7 +239,7 @@ const RssFeed = new Lang.Class(
 		for (let t in this._feedTimers)
 			Mainloop.source_remove(t);
 		
-		if (Settings.get_boolean(CLEANUP_NOTIFICATIONS))
+		if (Settings.get_boolean(GSKeys.CLEANUP_NOTIFICATIONS))
 		{
 			let notifCache = this._notifCache;
 	
@@ -283,20 +268,20 @@ const RssFeed = new Lang.Class(
 	 */
 	_getSettings: function()
 	{
-		this._updateInterval = Settings.get_int(UPDATE_INTERVAL_KEY);
-		this._itemsVisible = Settings.get_int(ITEMS_VISIBLE_KEY);
-		this._rssFeedsSources = Settings.get_strv(RSS_FEEDS_LIST_KEY);
-		this._rssPollDelay = Settings.get_int(POLL_DELAY_KEY);
-		this._enableNotifications = Settings.get_boolean(ENABLE_NOTIFICATIONS_KEY);
-		this._maxMenuHeight = Settings.get_int(MAX_HEIGHT_KEY);
-		this._feedsSection._animate = Settings.get_boolean(ENABLE_ANIMATIONS_KEY);
-		this._notifLimit = Settings.get_int(MAX_NOTIFICATIONS_KEY);
-		this._detectUpdates = Settings.get_boolean(DETECT_UPDATES_KEY);
-		this._notifOnLockScreen = Settings.get_boolean(NOTIFICATIONS_ON_LOCKSCREEN);
+		this._updateInterval = Settings.get_int(GSKeys.UPDATE_INTERVAL);
+		this._itemsVisible = Settings.get_int(GSKeys.ITEMS_VISIBLE);
+		this._rssFeedsSources = Settings.get_strv(GSKeys.RSS_FEEDS_LIST);
+		this._rssPollDelay = Settings.get_int(GSKeys.POLL_DELAY);
+		this._enableNotifications = Settings.get_boolean(GSKeys.ENABLE_NOTIFICATIONS);
+		this._maxMenuHeight = Settings.get_int(GSKeys.MAX_HEIGHT);
+		this._feedsSection._animate = Settings.get_boolean(GSKeys.ENABLE_ANIMATIONS);
+		this._notifLimit = Settings.get_int(GSKeys.MAX_NOTIFICATIONS);
+		this._detectUpdates = Settings.get_boolean(GSKeys.DETECT_UPDATES);
+		this._notifOnLockScreen = Settings.get_boolean(GSKeys.NOTIFICATIONS_ON_LOCKSCREEN);
 		
 		this._aSettings.load();
 
-		_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
+		_preserveOnLock = Settings.get_boolean(GSKeys.PRESERVE_ON_LOCK);
 	},
 
 	/*
@@ -681,7 +666,7 @@ const RssFeed = new Lang.Class(
 					 */
 					menu.connect('active-changed', Lang.bind(this, function(self, over)
 					{
-						if (!Settings.get_boolean(ENABLE_DESC_KEY))
+						if (!Settings.get_boolean(GSKeys.ENABLE_DESC))
 							return;
 
 						let label_actor = self.actor.label_actor;
@@ -869,8 +854,8 @@ function init()
 	Convenience.initTranslations("rss-feed");
 
 	// hack for dconf
-	Settings.set_boolean(DEBUG_ENABLED_KEY,
-		Settings.get_boolean(DEBUG_ENABLED_KEY));
+	Settings.set_boolean(GSKeys.ENABLE_DEBUG,
+		Settings.get_boolean(GSKeys.ENABLE_DEBUG));
 
 	Log.Debug("Extension initialized.");
 }
@@ -916,7 +901,7 @@ function extension_disable()
  */
 function disable()
 {
-	_preserveOnLock = Settings.get_boolean(PRESERVE_ON_LOCK_KEY);
+	_preserveOnLock = Settings.get_boolean(GSKeys.PRESERVE_ON_LOCK);
 
 	if (_preserveOnLock &&
 		Misc.isScreenLocked())
