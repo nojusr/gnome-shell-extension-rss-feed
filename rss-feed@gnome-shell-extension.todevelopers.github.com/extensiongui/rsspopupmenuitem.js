@@ -29,6 +29,10 @@ const
 PopupMenu = imports.ui.popupMenu;
 const
 Util = imports.misc.util;
+const
+Clutter = imports.gi.Clutter;
+const
+St = imports.gi.St;
 
 const
 Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -68,11 +72,20 @@ RssPopupMenuItem = new Lang.Class(
 
 		this._link = item.HttpLink;
 
-		this.connect('activate', Lang.bind(this, function()
+		this.connect('activate', Lang.bind(this, function(self, event)
 		{
-			Log.Debug("Opening browser with link " + this._link);
-
-			Misc.processLinkOpen(this._link, this._cacheObj);
+			/* right mouse click copies link to clipboard */
+			if (event.type() == Clutter.EventType.BUTTON_RELEASE &&
+				event.get_button() == Clutter.BUTTON_SECONDARY)
+			{
+				Log.Debug("Copied link to clipboard: " + this._link);
+				St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, this._link);
+			}
+			else
+			{
+				Log.Debug("Opening browser with link: " + this._link);
+				Misc.processLinkOpen(this._link, this._cacheObj);
+			}
 
 			/* trash the notification, if it exists */
 			if (this._cacheObj.Notification)
