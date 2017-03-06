@@ -61,7 +61,6 @@ RssPopupMenuItem = new Lang.Class(
 	 */
 	_init : function(item)
 	{
-
 		let
 		title = "  " + item.Title;
 
@@ -75,8 +74,8 @@ RssPopupMenuItem = new Lang.Class(
 		this.connect('activate', Lang.bind(this, function(self, event)
 		{
 			/* right mouse click copies link to clipboard */
-			if (event.type() == Clutter.EventType.BUTTON_RELEASE &&
-				event.get_button() == Clutter.BUTTON_SECONDARY)
+			if (event.type() == Clutter.EventType.BUTTON_RELEASE
+				&& event.get_button() == Clutter.BUTTON_SECONDARY)
 			{
 				Log.Debug("Copied link to clipboard: " + this._link);
 				St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, this._link);
@@ -84,16 +83,17 @@ RssPopupMenuItem = new Lang.Class(
 			else
 			{
 				Log.Debug("Opening browser with link: " + this._link);
-				Misc.processLinkOpen(this._link, this._cacheObj);
-			}
 
-			/* trash the notification, if it exists */
-			if (this._cacheObj.Notification)
-			{
-				this._cacheObj.Notification.destroy();
-				this._cacheObj.Notification = undefined;
+				if (Misc.processLinkOpen(this._link, this._cacheObj))
+				{
+					/* trash the notification, if it exists */
+					if (this._cacheObj.Notification)
+					{
+						this._cacheObj.Notification.destroy();
+						this._cacheObj.Notification = undefined;
+					}
+				}
 			}
-
 		}));
 	}
 

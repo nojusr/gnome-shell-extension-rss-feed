@@ -51,7 +51,7 @@ function getDefaultBrowser()
 function processLinkOpen(url, cacheObj)
 {
 	if (isScreenLocked())
-		return;
+		return false;
 
 	Util.trySpawnCommandLine(getDefaultBrowser() + ' ' + url);
 
@@ -92,6 +92,8 @@ function processLinkOpen(url, cacheObj)
 			}
 		}
 	}
+	
+	return true;
 }
 
 function clampTitle(title)
