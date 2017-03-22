@@ -82,5 +82,10 @@
 		    <summary>Top-align menu buttons</summary>
 		    <description>Top-align menu buttonsd</description>
 		</key>
+		<key type="b" name="http-keep-alive">
+		    <default>true</default>
+		    <summary>HTTP Keep-Alive</summary>
+		    <description>Set Keep-Alive in HTTP request headers</description>
+		</key>
     </schema>
 </schemalist>

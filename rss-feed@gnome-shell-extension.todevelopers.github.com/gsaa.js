@@ -35,8 +35,6 @@ GSAA = new Lang.Class(
 {
 	Name : 'GSAA',
 
-	_gsData : new Object(),
-
 	_init : function(key)
 	{
 		if (!key)
@@ -46,6 +44,11 @@ GSAA = new Lang.Class(
 		this._gsData = new Object();
 
 		this.load();
+	},
+
+	destroy : function()
+	{
+		delete this._gsData;
 	},
 
 	load : function()

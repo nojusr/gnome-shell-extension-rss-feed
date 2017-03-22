@@ -14,3 +14,4 @@ const NOTIFICATIONS_ON_LOCKSCREEN = 'enable-notifications-locked';
 const CLEANUP_NOTIFICATIONS = 'notifications-cleanup';
 const DETECT_UPDATES = 'detect-updates';
 const RSS_FEEDS_SETTINGS = 'rss-feeds-settings';
+const HTTP_KEEPALIVE = 'http-keep-alive';

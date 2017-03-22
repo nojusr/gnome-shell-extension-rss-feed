@@ -577,6 +577,7 @@ const RssFeedSettingsWidget = new GObject.Class(
 						Soup.Status.get_phrase(message.status_code));
 					return;
 				}
+
 				let parser;
 
 				try
@@ -585,14 +586,14 @@ const RssFeedSettingsWidget = new GObject.Class(
 				}
 				catch (e)
 				{
-					this._store.set_value(iter, COLUMN_STATUS, _("EXCEPTION"));
+					this._store.set_value(iter, COLUMN_STATUS, e.message);
 					Log.Error(e);
 					return;
 				}
 
 				if (parser == null)
 				{
-					this._store.set_value(iter, COLUMN_STATUS, _("RSS parsing error"));
+					this._store.set_value(iter, COLUMN_STATUS, _("Unable to parse"));
 					return;
 				}
 
@@ -600,14 +601,6 @@ const RssFeedSettingsWidget = new GObject.Class(
 			}));
 
 		return request;
-	},
-
-	destroy: function()
-	{
-		if (this._httpSession)
-			this._httpSession.stop();
-
-		this.parent();
 	},
 
 	_createControlBase: function(text)

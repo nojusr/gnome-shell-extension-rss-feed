@@ -247,6 +247,8 @@ const RssFeed = new Lang.Class(
 				notifCache.shift().destroy();
 		}
 
+		this._aSettings.destroy();
+
 		this.parent();
 	},
 
@@ -278,7 +280,8 @@ const RssFeed = new Lang.Class(
 		this._notifLimit = Settings.get_int(GSKeys.MAX_NOTIFICATIONS);
 		this._detectUpdates = Settings.get_boolean(GSKeys.DETECT_UPDATES);
 		this._notifOnLockScreen = Settings.get_boolean(GSKeys.NOTIFICATIONS_ON_LOCKSCREEN);
-		
+		this._http_keepalive = Settings.get_boolean(GSKeys.HTTP_KEEPALIVE);
+
 		this._aSettings.load();
 
 		_preserveOnLock = Settings.get_boolean(GSKeys.PRESERVE_ON_LOCK);
@@ -321,16 +324,16 @@ const RssFeed = new Lang.Class(
 
 	_purgeSource: function(key)
 	{
-		let feedsCache = this._feedsCache[key];
+		let feedCache = this._feedsCache[key];
 
-		if (!feedsCache)
+		if (!feedCache)
 			return;
 
-		this._totalUnreadCount -= feedsCache.UnreadCount;
+		this._totalUnreadCount -= feedCache.UnreadCount;
 		this._updateUnreadCountLabel(this._totalUnreadCount);
 
-		if (feedsCache.Menu)
-			feedsCache.Menu.destroy();
+		if (feedCache.Menu)
+			feedCache.Menu.destroy();
 
 		delete this._feedsCache[key];
 		this._feedsCache[key] = undefined;
@@ -392,26 +395,24 @@ const RssFeed = new Lang.Class(
 			this._pItemsVisible = this._itemsVisible;
 
 			/* cleanup after removed sources */
-			if (this._feedsCache)
+
+			for (var key in this._feedsCache)
 			{
-				for (var key in this._feedsCache)
+				let h = false;
+
+				for (let j = 0; j < this._rssFeedsSources.length; j++)
 				{
-					let h = false;
+					let url = this._rssFeedsSources[j];
 
-					for (let j = 0; j < this._rssFeedsSources.length; j++)
+					if (key == url)
 					{
-						let url = this._rssFeedsSources[j];
-
-						if (key == url)
-						{
-							h = true;
-							break;
-						}
+						h = true;
+						break;
 					}
-
-					if (!h)
-						this._purgeSource(key);
 				}
+
+				if (!h)
+					this._purgeSource(key);
 			}
 
 			for (let i = 0; i < this._rssFeedsSources.length; i++)
@@ -465,6 +466,9 @@ const RssFeed = new Lang.Class(
 			return;
 		}
 
+		if ( !this._http_keepalive )
+			request.request_headers.replace("Connection", "close");
+
 		this._httpSession.queue_message(request, Lang.bind(this, function(httpSession, message)
 		{
 			let status_phrase = Soup.Status.get_phrase(message.status_code);
@@ -504,26 +508,26 @@ const RssFeed = new Lang.Class(
 		if (!nItems)
 			return;
 
-		let feedsCache;
+		let feedCache;
 
 		if (!this._feedsCache[sourceURL])
 		{
 			// initialize the publisher cache array
-			feedsCache = this._feedsCache[sourceURL] = new Object();
-			feedsCache.Items = new Array();
-			feedsCache.UnreadCount = 0;
-			feedsCache.pUnreadCount = 0;
-			feedsCache.parentClass = this;
+			feedCache = this._feedsCache[sourceURL] = new Object();
+			feedCache.Items = new Array();
+			feedCache.UnreadCount = 0;
+			feedCache.pUnreadCount = 0;
+			feedCache.parentClass = this;
 		}
 		else
-			feedsCache = this._feedsCache[sourceURL];
+			feedCache = this._feedsCache[sourceURL];
 
-		let itemCache = feedsCache.Items;
+		let itemCache = feedCache.Items;
 
 		let subMenu;
 
 		// create publisher submenu
-		if (!feedsCache.Menu)
+		if (!feedCache.Menu)
 		{
 			subMenu = new ExtensionGui.RssPopupSubMenuMenuItem(rssParser.Publisher, nItems);
 			this._feedsSection.addMenuItem(subMenu);
@@ -542,10 +546,10 @@ const RssFeed = new Lang.Class(
 					this._lastOpen = undefined;
 			}));
 
-			feedsCache.Menu = subMenu;
+			feedCache.Menu = subMenu;
 		}
 		else
-			subMenu = feedsCache.Menu;
+			subMenu = feedCache.Menu;
 
 		let gsData = this._aSettings._gsData[sourceURL];
 		let muteNotifications;
@@ -557,8 +561,8 @@ const RssFeed = new Lang.Class(
 			disableUpdates = gsData['u'];
 		}
 
-		/* clear any cache items which are no longer 
-		 * required or should be updated
+		/* 
+		 * Cleanup article list of this source
 		 */
 		let i = itemCache.length;
 
@@ -567,7 +571,7 @@ const RssFeed = new Lang.Class(
 			let cacheItemURL = itemCache[i];
 			let cacheObj = itemCache[cacheItemURL];
 			let j = nItems;
-			let h = false;
+			let h;
 
 			while (j--)
 			{
@@ -582,7 +586,11 @@ const RssFeed = new Lang.Class(
 						item._update = true;
 					}
 					else
+					{
+						rssParser.Items.splice(j, 1);
+						nItems--;
 						h = true;
+					}
 
 					break;
 				}
@@ -594,7 +602,7 @@ const RssFeed = new Lang.Class(
 				if (cacheObj.Unread)
 				{
 					cacheObj.Unread = null;
-					feedsCache.UnreadCount--;
+					feedCache.UnreadCount--;
 					this._totalUnreadCount--;
 				}
 
@@ -604,6 +612,8 @@ const RssFeed = new Lang.Class(
 			}
 		}
 
+		/* Insert articles into the list  */
+
 		let i = nItems;
 
 		while (i--)
@@ -611,7 +621,6 @@ const RssFeed = new Lang.Class(
 			let item = rssParser.Items[i];
 			let itemURL = item.HttpLink;
 
-			/* we've already processed this item, move on.. */
 			if (itemCache[itemURL])
 				continue;
 
@@ -628,7 +637,7 @@ const RssFeed = new Lang.Class(
 			let cacheObj = new Object();
 			cacheObj.Menu = menu;
 			cacheObj.Item = item;
-			cacheObj.parent = feedsCache;
+			cacheObj.parent = feedCache;
 			cacheObj.lText = menu.label.get_text();
 			itemCache[itemURL] = cacheObj;
 			itemCache.push(itemURL);
@@ -636,8 +645,8 @@ const RssFeed = new Lang.Class(
 			menu._cacheObj = cacheObj;
 
 			// this._lMenu = menu;
-			// if (i < 5 && Math.random() < 0.17332) feedsCache._initialRefresh = true;
-			// if (i < 1 ) feedsCache._initialRefresh = true;
+			// if (i < 5 && Math.random() < 0.17332) feedCache._initialRefresh = true;
+			// if (i < 1 ) feedCache._initialRefresh = true;
 
 			/* decode description, if present */
 			if (item.Description.length > 0)
@@ -693,11 +702,11 @@ const RssFeed = new Lang.Class(
 			}
 
 			/* do not notify or flag if this is the first query */
-			if (!feedsCache._initialRefresh)
+			if (!feedCache._initialRefresh)
 				continue;
 
 			/* increment unread counts and flag item as unread */
-			feedsCache.UnreadCount++;
+			feedCache.UnreadCount++;
 			this._totalUnreadCount++;
 			cacheObj.Unread = true;
 
@@ -718,18 +727,18 @@ const RssFeed = new Lang.Class(
 			}
 		}
 
-		if (!feedsCache._initialRefresh)
-			feedsCache._initialRefresh = true;
+		if (!feedCache._initialRefresh)
+			feedCache._initialRefresh = true;
 		else
 		{
-			if (feedsCache.UnreadCount)
+			if (feedCache.UnreadCount)
 			{
-				if (feedsCache.UnreadCount != feedsCache.pUnreadCount)
+				if (feedCache.UnreadCount != feedCache.pUnreadCount)
 					subMenu.label.set_text(
 						Misc.clampTitle(subMenu._olabeltext +
-							' (' + feedsCache.UnreadCount + ')'));
+							' (' + feedCache.UnreadCount + ')'));
 
-				feedsCache.pUnreadCount = feedsCache.UnreadCount;
+				feedCache.pUnreadCount = feedCache.UnreadCount;
 
 				subMenu.setOrnament(PopupMenu.Ornament.DOT);
 
@@ -740,14 +749,6 @@ const RssFeed = new Lang.Class(
 		// update last download time
 		this._lastUpdateTime.set_text(_("Last update") + ': ' + new Date().toLocaleTimeString());
 
-	},
-
-	_removeExcessNotifications: function()
-	{
-		let notifCache = this._notifCache;
-
-		while (notifCache.length > this._notifLimit)
-			notifCache.shift().destroy();
 	},
 
 	_dispatchNotification: function(title, message, url, cacheObj)
@@ -832,7 +833,8 @@ const RssFeed = new Lang.Class(
 		notifCache.push(notification);
 
 		/* remove excess notifications */
-		this._removeExcessNotifications();
+		while (notifCache.length > this._notifLimit)
+			notifCache.shift().destroy();
 
 		Source.notify(notification);
 
@@ -856,6 +858,9 @@ function init()
 	// hack for dconf
 	Settings.set_boolean(GSKeys.ENABLE_DEBUG,
 		Settings.get_boolean(GSKeys.ENABLE_DEBUG));
+	
+	Settings.set_boolean(GSKeys.HTTP_KEEPALIVE, 
+		Settings.get_boolean(GSKeys.HTTP_KEEPALIVE));
 
 	Log.Debug("Extension initialized.");
 }
