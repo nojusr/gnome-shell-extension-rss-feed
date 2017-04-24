@@ -614,7 +614,7 @@ const RssFeed = new Lang.Class(
 
 		/* Insert articles into the list  */
 
-		let i = nItems;
+		i = nItems;
 
 		while (i--)
 		{
