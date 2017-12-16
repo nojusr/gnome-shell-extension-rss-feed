@@ -34,5 +34,5 @@ Clone or download zip from https://github.com/nixnodes/gnome-shell-extension-rss
 ## Screenshots
 
 ![](http://i.imgur.com/JUUwRU2.png)
-![](http://i.imgur.com/QMzeBDC.png)
+![](https://i.imgur.com/NPsPt3C.png)
 ![](http://i.imgur.com/ZunKk5b.png)
