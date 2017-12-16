@@ -54,10 +54,11 @@ const Clutter = imports.gi.Clutter;
 const Encoder = Me.imports.encoder.getInstance();
 const HTTP = Me.imports.http;
 
-const ExtensionGui = {
-	RssPopupMenuItem: Me.imports.extensiongui.rsspopupmenuitem.RssPopupMenuItem,
-	RssPopupSubMenuMenuItem: Me.imports.extensiongui.rsspopupsubmenumenuitem.RssPopupSubMenuMenuItem,
-	RssPopupMenuSection: Me.imports.extensiongui.rsspopupmenusection.RssPopupMenuSection
+const ExtensionGui =
+{
+	RssPopupMenuItem : Me.imports.extensiongui.rsspopupmenuitem.RssPopupMenuItem,
+	RssPopupSubMenuMenuItem : Me.imports.extensiongui.rsspopupsubmenumenuitem.RssPopupSubMenuMenuItem,
+	RssPopupMenuSection : Me.imports.extensiongui.rsspopupmenusection.RssPopupMenuSection
 };
 
 const GSKeys = Me.imports.gskeys;
@@ -67,22 +68,23 @@ const NOTIFICATION_ICON = 'application-rss+xml';
 let _preserveOnLock = false;
 
 /*
- * Main RSS Feed extension class
+ * Main RSS Feed 2 extension class
  */
 const RssFeed = new Lang.Class(
 {
-	Name: 'RssFeed',
-	Extends: PanelMenu.Button,
+	Name : 'RssFeed2',
+	Extends : PanelMenu.Button,
 
 	/*
 	 * Initialize instance of RssFeed class
 	 */
-	_init: function()
+	_init : function()
 	{
-		this.parent(0.0, "RSS Feed");
+		this.parent(0.0, "RSS Feed 2");
 
-		this._httpSession = new Soup.SessionAsync({
-			timeout: 60
+		this._httpSession = new Soup.SessionAsync(
+		{
+			timeout : 60
 		});
 
 		// Lours974 Vitry David
@@ -90,7 +92,8 @@ const RssFeed = new Lang.Class(
 		// is required because of another libsoup quirk, where there's a gobject
 		// property called 'add-feature', designed as a construct property for
 		// C convenience.
-		Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
+		Soup.Session.prototype.add_feature.call(this._httpSession,
+			new Soup.ProxyResolverDefault());
 
 		this._aSettings = new AssocSettings.GSAA(GSKeys.RSS_FEEDS_SETTINGS);
 		this._aSettings.set_autoload(false);
@@ -108,31 +111,31 @@ const RssFeed = new Lang.Class(
 		// top panel button
 		let button = new St.BoxLayout(
 		{
-			vertical: false,
-			style_class: 'panel-status-menu-box'
+			vertical : false,
+			style_class : 'panel-status-menu-box'
 		});
 
 		this._iconLabel = new St.Label(
 		{
-			text: '',
-			y_expand: true,
-			y_align: Clutter.ActorAlign.START,
-			style_class: 'rss-icon-label'
+			text : '',
+			y_expand : true,
+			y_align : Clutter.ActorAlign.START,
+			style_class : 'rss-icon-label'
 		});
 
 		let icon = new St.Icon(
 		{
-			icon_name: 'application-rss+xml-symbolic',
-			style_class: 'system-status-icon'
+			icon_name : 'application-rss+xml-symbolic',
+			style_class : 'system-status-icon'
 		});
 
 		button.add_child(icon);
 		button.add_child(this._iconLabel);
 
 		this.actor.add_actor(button);
-		
+
 		this.menu.actor.add_style_class_name('rss-menu');
-		
+
 		this.menu.connect('open-state-changed', Lang.bind(this, function(self, open)
 		{
 			if (open && this._lastOpen)
@@ -140,49 +143,48 @@ const RssFeed = new Lang.Class(
 		}));
 
 		let separator = new PopupMenu.PopupSeparatorMenuItem();
-		
+
 		let mbAlignTop = Settings.get_boolean(GSKeys.MB_ALIGN_TOP);
 
-		if ( mbAlignTop )
+		if (mbAlignTop)
 		{
-			this._createMainPanelButtons();	
+			this._createMainPanelButtons();
 			this.menu.addMenuItem(separator);
 		}
 
 		this._pMaxMenuHeight = Settings.get_int(GSKeys.MAX_HEIGHT);
 
-		this._feedsSection = new ExtensionGui.RssPopupMenuSection(
-			this._generatePopupMenuCSS(this._pMaxMenuHeight)
-		);
+		this._feedsSection = new ExtensionGui.RssPopupMenuSection(this
+			._generatePopupMenuCSS(this._pMaxMenuHeight));
 
 		this.menu.addMenuItem(this._feedsSection);
-		
-		if ( !mbAlignTop )
+
+		if (!mbAlignTop)
 		{
 			this.menu.addMenuItem(separator);
-			this._createMainPanelButtons();	
+			this._createMainPanelButtons();
 		}
 	},
-	
-	_createMainPanelButtons: function()
+
+	_createMainPanelButtons : function()
 	{
 		let systemMenu = Main.panel.statusArea.aggregateMenu._system;
 
-		// buttons
 		this._buttonMenu = new PopupMenu.PopupBaseMenuItem(
 		{
-			reactive: false
+			reactive : false
 		});
 
 		this._lastUpdateTime = new St.Label(
 		{
-			text: "",
-			style_class: 'rss-status-label'
+			text : "",
+			style_class : 'rss-status-label'
 		});
 
 		if (Settings.get_boolean(GSKeys.ENABLE_DEBUG))
 		{
-			let reloadPluginBtn = systemMenu._createActionButton('system-shutdown-symbolic', _("Reload Plugin"));
+			let reloadPluginBtn = systemMenu._createActionButton('system-shutdown-symbolic',
+				_("Reload Plugin"));
 			this._buttonMenu.actor.add_actor(reloadPluginBtn);
 			reloadPluginBtn.connect('clicked', Lang.bind(this, function()
 			{
@@ -202,8 +204,10 @@ const RssFeed = new Lang.Class(
 
 		this._lastUpdateTime.set_y_align(Clutter.ActorAlign.CENTER);
 
-		let reloadBtn = systemMenu._createActionButton('view-refresh-symbolic', _("Reload RSS Feeds"));
-		let settingsBtn = systemMenu._createActionButton('emblem-system-symbolic', _("RSS Feed Settings"));
+		let reloadBtn = systemMenu._createActionButton('view-refresh-symbolic',
+			_("Reload RSS Feeds"));
+		let settingsBtn = systemMenu._createActionButton('emblem-system-symbolic',
+			_("RSS Feed Settings"));
 
 		this._buttonMenu.actor.add_actor(reloadBtn);
 		this._buttonMenu.actor.add_actor(settingsBtn);
@@ -212,13 +216,13 @@ const RssFeed = new Lang.Class(
 		settingsBtn.connect('clicked', Lang.bind(this, this._onSettingsBtnClicked));
 
 		this.menu.addMenuItem(this._buttonMenu);
-		
+
 	},
 
 	/*
-	 * Frees resources of extension
+	 * Free resources
 	 */
-	destroy: function()
+	destroy : function()
 	{
 		this._isDiscarded = true;
 
@@ -236,13 +240,13 @@ const RssFeed = new Lang.Class(
 		if (this._settingsCWId)
 			Mainloop.source_remove(this._settingsCWId);
 
-		for (let t in this._feedTimers)
+		for ( let t in this._feedTimers)
 			Mainloop.source_remove(t);
-		
+
 		if (Settings.get_boolean(GSKeys.CLEANUP_NOTIFICATIONS))
 		{
 			let notifCache = this._notifCache;
-	
+
 			while (notifCache.length > 0)
 				notifCache.shift().destroy();
 		}
@@ -252,7 +256,7 @@ const RssFeed = new Lang.Class(
 		this.parent();
 	},
 
-	_updateUnreadCountLabel: function(count)
+	_updateUnreadCountLabel : function(count)
 	{
 		var text = !count ? '' : count.toString();
 
@@ -260,7 +264,7 @@ const RssFeed = new Lang.Class(
 			this._iconLabel.set_text(text);
 	},
 
-	_generatePopupMenuCSS: function(value)
+	_generatePopupMenuCSS : function(value)
 	{
 		return "max-height: " + value + "px;";
 	},
@@ -268,7 +272,7 @@ const RssFeed = new Lang.Class(
 	/*
 	 * Get variables from GSettings
 	 */
-	_getSettings: function()
+	_getSettings : function()
 	{
 		this._updateInterval = Settings.get_int(GSKeys.UPDATE_INTERVAL);
 		this._itemsVisible = Settings.get_int(GSKeys.ITEMS_VISIBLE);
@@ -290,7 +294,7 @@ const RssFeed = new Lang.Class(
 	/*
 	 * On settings button clicked callback
 	 */
-	_onSettingsBtnClicked: function()
+	_onSettingsBtnClicked : function()
 	{
 		if (Misc.isScreenLocked())
 			return;
@@ -298,9 +302,12 @@ const RssFeed = new Lang.Class(
 		var success, pid;
 		try
 		{
-			[success, pid] = GLib.spawn_async(null, ["gnome-shell-extension-prefs", Me.uuid], null,
-				GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-				null);
+			[
+				success, pid
+			] = GLib.spawn_async(null,
+			[
+				"gnome-shell-extension-prefs", Me.uuid
+			], null, GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD, null);
 		}
 		catch (err)
 		{
@@ -312,17 +319,16 @@ const RssFeed = new Lang.Class(
 
 		this.menu.close();
 
-		this._settingsCWId = GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this, function(pid, status)
-		{
-			this._settingsCWId = undefined;
-
-			GLib.spawn_close_pid(pid);
-
-			this._pollFeeds();
-		}));
+		this._settingsCWId = GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this,
+			function(pid, status)
+			{
+				this._settingsCWId = undefined;
+				GLib.spawn_close_pid(pid);
+				this._pollFeeds();
+			}));
 	},
 
-	_purgeSource: function(key)
+	_purgeSource : function(key)
 	{
 		let feedCache = this._feedsCache[key];
 
@@ -339,7 +345,7 @@ const RssFeed = new Lang.Class(
 		this._feedsCache[key] = undefined;
 	},
 
-	_restartExtension: function()
+	_restartExtension : function()
 	{
 		if (!this._reloadTimer)
 		{
@@ -354,13 +360,12 @@ const RssFeed = new Lang.Class(
 	/*
 	 * Scheduled reload of RSS feeds from sources set in settings
 	 */
-	_pollFeeds: function()
+	_pollFeeds : function()
 	{
 		this._getSettings();
 
 		if (this._maxMenuHeight != this._pMaxMenuHeight)
-			this._feedsSection.actor.set_style(
-				this._generatePopupMenuCSS(this._maxMenuHeight));
+			this._feedsSection.actor.set_style(this._generatePopupMenuCSS(this._maxMenuHeight));
 
 		this._pMaxMenuHeight = this._maxMenuHeight;
 
@@ -368,7 +373,7 @@ const RssFeed = new Lang.Class(
 
 		if (this._feedTimers.length)
 		{
-			for (let t in this._feedTimers)
+			for ( let t in this._feedTimers)
 				Mainloop.source_remove(t);
 
 			this._feedTimers = new Array();
@@ -381,8 +386,7 @@ const RssFeed = new Lang.Class(
 		if (this._rssFeedsSources)
 		{
 			/* clear feed list if necessary */
-			if ((this._pItemsVisible &&
-					this._itemsVisible > this._pItemsVisible))
+			if ((this._pItemsVisible && this._itemsVisible > this._pItemsVisible))
 			{
 				this._feedsSection.removeAll();
 				delete this._feedsCache;
@@ -396,7 +400,7 @@ const RssFeed = new Lang.Class(
 
 			/* cleanup after removed sources */
 
-			for (var key in this._feedsCache)
+			for ( var key in this._feedsCache)
 			{
 				let h = false;
 
@@ -426,13 +430,16 @@ const RssFeed = new Lang.Class(
 				let jsonObj = HTTP.getParametersAsJson(url);
 
 				let l2o = url.indexOf('?');
-				if (l2o != -1) url = url.substr(0, l2o);
+				if (l2o != -1)
+					url = url.substr(0, l2o);
 
-				let sourceID = Mainloop.timeout_add(i * this._rssPollDelay, Lang.bind(this, function()
-				{
-					this._httpGetRequestAsync(url, JSON.parse(jsonObj), sourceURL, Lang.bind(this, this._onDownload));
-					delete this._feedTimers[sourceID];
-				}))
+				let sourceID = Mainloop.timeout_add(i * this._rssPollDelay, Lang.bind(this,
+					function()
+					{
+						this._httpGetRequestAsync(url, JSON.parse(jsonObj), sourceURL, Lang
+							.bind(this, this._onDownload));
+						delete this._feedTimers[sourceID];
+					}))
 
 				this._feedTimers[sourceID] = true;
 			}
@@ -442,11 +449,12 @@ const RssFeed = new Lang.Class(
 		if (this._updateInterval > 0)
 		{
 			Log.Debug("Next scheduled reload after " + this._updateInterval * 60 + " seconds");
-			this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60, Lang.bind(this, function()
-			{
-				this._timeout = undefined;
-				this._pollFeeds();
-			}));
+			this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60, Lang.bind(
+				this, function()
+				{
+					this._timeout = undefined;
+					this._pollFeeds();
+				}));
 		}
 	},
 
@@ -456,7 +464,7 @@ const RssFeed = new Lang.Class(
 	 * sourceURL - original URL used as cache key
 	 * HTTP GET request response
 	 */
-	_httpGetRequestAsync: function(url, params, sourceURL, callback)
+	_httpGetRequestAsync : function(url, params, sourceURL, callback)
 	{
 		let request = Soup.form_request_new_from_hash('GET', url, params);
 
@@ -466,21 +474,23 @@ const RssFeed = new Lang.Class(
 			return;
 		}
 
-		if ( !this._http_keepalive )
+		if (!this._http_keepalive)
 			request.request_headers.replace("Connection", "close");
 
 		this._httpSession.queue_message(request, Lang.bind(this, function(httpSession, message)
 		{
 			let status_phrase = Soup.Status.get_phrase(message.status_code);
 
-			if ( !((message.status_code) >= 200 && (message.status_code) < 300) )
+			if (!((message.status_code) >= 200 && (message.status_code) < 300))
 			{
-				Log.Debug("HTTP GET " + sourceURL + ": " + message.status_code + " " + status_phrase);
+				Log.Debug("HTTP GET " + sourceURL + ": " + message.status_code + " "
+					+ status_phrase);
 				return;
 			}
 
-			Log.Debug("HTTP GET " + sourceURL + ": " + message.status_code + " " + status_phrase +
-				" Content-Type: " + message.response_headers.get_one("Content-Type"));
+			Log.Debug("HTTP GET " + sourceURL + ": " + message.status_code + " "
+				+ status_phrase + " Content-Type: "
+				+ message.response_headers.get_one("Content-Type"));
 
 			if (message.response_body.data)
 				callback(message.response_body.data, sourceURL);
@@ -491,7 +501,7 @@ const RssFeed = new Lang.Class(
 	 * On HTTP request response download callback responseData - response data
 	 * sourceURL - original URL used as cache key
 	 */
-	_onDownload: function(responseData, sourceURL)
+	_onDownload : function(responseData, sourceURL)
 	{
 		let rssParser = Parser.createRssParser(responseData);
 
@@ -503,7 +513,8 @@ const RssFeed = new Lang.Class(
 
 		rssParser.parse();
 
-		let nItems = rssParser.Items.length > this._itemsVisible ? this._itemsVisible : rssParser.Items.length;
+		let nItems = rssParser.Items.length > this._itemsVisible ? this._itemsVisible
+			: rssParser.Items.length;
 
 		if (!nItems)
 			return;
@@ -512,7 +523,7 @@ const RssFeed = new Lang.Class(
 
 		if (!this._feedsCache[sourceURL])
 		{
-			// initialize the publisher cache array
+			// initialize the publisher cache
 			feedCache = this._feedsCache[sourceURL] = new Object();
 			feedCache.Items = new Array();
 			feedCache.UnreadCount = 0;
@@ -579,9 +590,9 @@ const RssFeed = new Lang.Class(
 
 				if (cacheItemURL == item.HttpLink)
 				{
-					if ( this._detectUpdates && !disableUpdates && 
-						(cacheObj.Item.PublishDate != item.PublishDate ||
-						cacheObj.Item.UpdateTime != item.UpdateTime))
+					if (this._detectUpdates
+						&& !disableUpdates
+						&& (cacheObj.Item.PublishDate != item.PublishDate || cacheObj.Item.UpdateTime != item.UpdateTime))
 					{
 						item._update = true;
 					}
@@ -625,13 +636,11 @@ const RssFeed = new Lang.Class(
 				continue;
 
 			/* remove HTML tags */
-			item.Title = Encoder.htmlDecode(item.Title)
-							.replace(/<.*?>/g, "").trim();
+			item.Title = Encoder.htmlDecode(item.Title).replace(/<.*?>/g, "").trim();
 
 			/* create the menu item in publisher submenu */
 			let menu = new ExtensionGui.RssPopupMenuItem(item);
 			subMenu.menu.addMenuItem(menu, 0);
-			//menu.label.set_style('max-width: 700px;');
 
 			/* enter it into cache */
 			let cacheObj = new Object();
@@ -644,16 +653,11 @@ const RssFeed = new Lang.Class(
 
 			menu._cacheObj = cacheObj;
 
-			// this._lMenu = menu;
-			// if (i < 5 && Math.random() < 0.17332) feedCache._initialRefresh = true;
-			// if (i < 1 ) feedCache._initialRefresh = true;
-
 			/* decode description, if present */
 			if (item.Description.length > 0)
 			{
-				let itemDescription = Encoder.htmlDecode(item.Description)
-					.replace("<![CDATA[", "").replace("]]>", "")
-					.replace(/<.*?>/g, "").trim();
+				let itemDescription = Encoder.htmlDecode(item.Description).replace("<![CDATA[",
+					"").replace("]]>", "").replace(/<.*?>/g, "").trim();
 
 				if (itemDescription.length > 0)
 				{
@@ -684,11 +688,8 @@ const RssFeed = new Lang.Class(
 						{
 							label_actor._originalHeight = label_actor.get_height();
 
-							label_actor.set_text(
-								self._cacheObj.lText + "\n  " +
-								this._miStPadding + "\n" +
-								self._cacheObj._bItemDescription
-							);
+							label_actor.set_text(self._cacheObj.lText + "\n  "
+								+ this._miStPadding + "\n" + self._cacheObj._bItemDescription);
 
 							label_actor.set_height(120);
 						}
@@ -714,15 +715,17 @@ const RssFeed = new Lang.Class(
 			menu.setOrnament(PopupMenu.Ornament.DOT);
 
 			/* trigger notification, if requested */
-			if (this._enableNotifications && !muteNotifications )
+			if (this._enableNotifications && !muteNotifications)
 			{
 				let itemTitle = item.Title;
 
-				cacheObj.Notification = this._dispatchNotification(
-					item._update ? (_("UPDATE") + ': ' + item.Title) : itemTitle,
-					_("Source") + ': ' + Encoder.htmlDecode(rssParser.Publisher.Title) +
-					(item.Author.length ? ', ' + _("Author") + ': ' + Encoder.htmlDecode(item.Author) : '') + '\n\n' +
-					(cacheObj._itemDescription ? cacheObj._itemDescription : itemTitle),
+				cacheObj.Notification = this._dispatchNotification(item._update ? (_("UPDATE")
+					+ ': ' + item.Title) : itemTitle, _("Source")
+					+ ': '
+					+ Encoder.htmlDecode(rssParser.Publisher.Title)
+					+ (item.Author.length ? ', ' + _("Author") + ': '
+						+ Encoder.htmlDecode(item.Author) : '') + '\n\n'
+					+ (cacheObj._itemDescription ? cacheObj._itemDescription : itemTitle),
 					itemURL, cacheObj);
 			}
 		}
@@ -734,9 +737,8 @@ const RssFeed = new Lang.Class(
 			if (feedCache.UnreadCount)
 			{
 				if (feedCache.UnreadCount != feedCache.pUnreadCount)
-					subMenu.label.set_text(
-						Misc.clampTitle(subMenu._olabeltext +
-							' (' + feedCache.UnreadCount + ')'));
+					subMenu.label.set_text(Misc.clampTitle(subMenu._olabeltext + ' ('
+						+ feedCache.UnreadCount + ')'));
 
 				feedCache.pUnreadCount = feedCache.UnreadCount;
 
@@ -747,11 +749,12 @@ const RssFeed = new Lang.Class(
 		}
 
 		// update last download time
-		this._lastUpdateTime.set_text(_("Last update") + ': ' + new Date().toLocaleTimeString());
+		this._lastUpdateTime
+			.set_text(_("Last update") + ': ' + new Date().toLocaleTimeString());
 
 	},
 
-	_dispatchNotification: function(title, message, url, cacheObj)
+	_dispatchNotification : function(title, message, url, cacheObj)
 	{
 		/*
 		 * Since per-source notification limit cannot be set, we create a new
@@ -762,13 +765,12 @@ const RssFeed = new Lang.Class(
 		{
 			return new St.Icon(
 			{
-				icon_name: NOTIFICATION_ICON
+				icon_name : NOTIFICATION_ICON
 			});
 		};
 
 		/* When enabled, always show details */
-		Source.policy.detailsInLockScreen =
-			Source.policy.showInLockScreen = this._notifOnLockScreen;
+		Source.policy.detailsInLockScreen = Source.policy.showInLockScreen = this._notifOnLockScreen;
 
 		Main.messageTray.add(Source);
 
@@ -803,7 +805,8 @@ const RssFeed = new Lang.Class(
 
 			notification.addAction(_('Copy URL'), function()
 			{
-				St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, notification._itemURL);
+				St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD,
+					notification._itemURL);
 
 				/* don't destroy notification, just hide the banner */
 				if (Main.messageTray._banner)
@@ -856,11 +859,9 @@ function init()
 	Convenience.initTranslations("rss-feed2");
 
 	// hack for dconf
-	Settings.set_boolean(GSKeys.ENABLE_DEBUG,
-		Settings.get_boolean(GSKeys.ENABLE_DEBUG));
-	
-	Settings.set_boolean(GSKeys.HTTP_KEEPALIVE, 
-		Settings.get_boolean(GSKeys.HTTP_KEEPALIVE));
+	Settings.set_boolean(GSKeys.ENABLE_DEBUG, Settings.get_boolean(GSKeys.ENABLE_DEBUG));
+
+	Settings.set_boolean(GSKeys.HTTP_KEEPALIVE, Settings.get_boolean(GSKeys.HTTP_KEEPALIVE));
 
 	Log.Debug("Extension initialized.");
 }
@@ -880,10 +881,10 @@ function enable()
 
 	/* trigger initial poll */
 	rssFeed._pollFeeds();
-	
+
 	/* add plugin menu to status area */
-	Main.panel.addToStatusArea('rssFeedMenu', rssFeed, 0, 'right');
-	
+	Main.panel.addToStatusArea('rssFeed2Menu', rssFeed, 0, 'right');
+
 	Log.Debug("Extension enabled.");
 }
 
@@ -908,8 +909,7 @@ function disable()
 {
 	_preserveOnLock = Settings.get_boolean(GSKeys.PRESERVE_ON_LOCK);
 
-	if (_preserveOnLock &&
-		Misc.isScreenLocked())
+	if (_preserveOnLock && Misc.isScreenLocked())
 	{
 		Log.Debug("Not disabling extension while screen inactive.");
 		return;

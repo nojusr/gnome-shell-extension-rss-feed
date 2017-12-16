@@ -63,8 +63,8 @@ const GSE_TOOL_PATH = 'gnome-shell-extension-tool';
  */
 const RssFeedSettingsWidget = new GObject.Class(
 {
-	Name: 'RssFeed.Prefs.RssFeedSettingsWidget',
-	GTypeName: 'RssFeedSettingsWidget',
+	Name: 'RssFeed2.Prefs.RssFeed2SettingsWidget',
+	GTypeName: 'RssFeed2SettingsWidget',
 	Extends: Gtk.Box,
 
 	/*
@@ -708,7 +708,6 @@ const RssFeedSettingsWidget = new GObject.Class(
 		{
 			text: text
 		});
-		//this._entry.margin_top = 12;
 		this._entry.margin_bottom = 12;
 		this._entry.width_chars = 40;
 
@@ -722,20 +721,19 @@ const RssFeedSettingsWidget = new GObject.Class(
 		}));
 
 		dialog.add_button(Gtk.STOCK_CANCEL, 0);
-		this._okButton = dialog.add_button(Gtk.STOCK_OK, 1); // default
+		this._okButton = dialog.add_button(Gtk.STOCK_OK, 1); 
 		this._okButton.set_can_default(true);
 		this._okButton.sensitive = false;
 		dialog.set_default(this._okButton);
 		this._entry.activates_default = true;
 
 		let dialog_area = dialog.get_content_area();
-		//dialog_area.pack_start(label, 0, 0, 0);
 		dialog_area.pack_start(this._entry, 0, 0, 0);
 
 		dialog.connect("response", Lang.bind(this, function(w, response_id)
 		{
 			if (response_id == 1)
-			{ // button OK
+			{
 				onOkButton(response_id);
 			}
 
