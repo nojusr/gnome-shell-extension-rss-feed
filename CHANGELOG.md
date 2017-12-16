@@ -1,12 +1,12 @@
 ## Changelog
 
-### v2.0-beta (03.03.2017)
+### v2.0 (03.03.2017)
 
 *Major rework*
 
-* Replaced incoming data handling and menu update procedures (large performance boost)
+* Reworked incoming data handling and menu update procedures (large performance boost)
 * Various bugfixes and increased fault tolerance
-* Replaced RSS source 'paging' system with a scrollable menu (maximum menu height may be set)
+* Replaced RSS source 'paging' system with a scrollable menu (maximum menu height can be set)
 * Added new article notification system
 * Mark unread articles in menu, show unread count in status area
 * Complete rework of the settings widget, added source verification
@@ -34,6 +34,7 @@
   * **`Note that certain features require plugin restart to take effect`**
 * Added plugin restart button (shown only in debug mode) - this reinitializes the plugin so gnome-shell does not have to be restarted after editing the source
 * Fixed REXML HTML attribute parsing bug
+* Right click on article copies URL to clipboard
 
 ### v1.2 (24.05.2015)
 

@@ -1,0 +1,18 @@
+{
+	"shell-version": [
+		"3.12",
+		"3.14",
+		"3.16",
+		"3.18",
+		"3.20",
+		"3.22",
+		"3.24",
+		"3.26"
+	],
+	"uuid": "rss-feed2@nixnodes.net",
+	"settings-schema": "org.gnome.shell.extensions.rss-feed2",
+	"name": "RSS Feed 2",
+	"description": "RSS feed reader for GNOME Shell (fork)",
+	"url": "https://github.com/nixnodes/gnome-shell-extension-rss-feed",
+	"version": 2
+}

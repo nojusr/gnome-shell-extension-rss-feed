@@ -43,7 +43,7 @@ const Log = Me.imports.logger;
 const Settings = Convenience.getSettings();
 const AssocSettings = Me.imports.gsaa;
 
-const Gettext = imports.gettext.domain('rss-feed');
+const Gettext = imports.gettext.domain('rss-feed2');
 const _ = Gettext.gettext;
 
 const MessageTray = imports.ui.messageTray;
@@ -176,7 +176,7 @@ const RssFeed = new Lang.Class(
 
 		this._lastUpdateTime = new St.Label(
 		{
-			text: "Initializing..",
+			text: "",
 			style_class: 'rss-status-label'
 		});
 
@@ -853,7 +853,7 @@ let rssFeed;
  */
 function init()
 {
-	Convenience.initTranslations("rss-feed");
+	Convenience.initTranslations("rss-feed2");
 
 	// hack for dconf
 	Settings.set_boolean(GSKeys.ENABLE_DEBUG,

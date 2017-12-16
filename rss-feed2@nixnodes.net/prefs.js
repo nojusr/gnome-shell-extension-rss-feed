@@ -34,7 +34,7 @@ const Settings = Convenience.getSettings();
 
 const Mainloop = imports.mainloop;
 
-const Gettext = imports.gettext.domain('rss-feed');
+const Gettext = imports.gettext.domain('rss-feed2');
 const _ = Gettext.gettext;
 
 const HTTP = Me.imports.http;
@@ -889,7 +889,7 @@ function try_spawn(argv)
  */
 function init()
 {
-	Convenience.initTranslations("rss-feed");
+	Convenience.initTranslations("rss-feed2");
 }
 
 /*
