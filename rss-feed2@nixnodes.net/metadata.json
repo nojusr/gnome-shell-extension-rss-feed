@@ -12,7 +12,7 @@
 	"uuid": "rss-feed2@nixnodes.net",
 	"settings-schema": "org.gnome.shell.extensions.rss-feed2",
 	"name": "RSS Feed 2",
-	"description": "RSS feed reader for GNOME Shell (fork)",
+	"description": "RSS feed reader v2.0 for GNOME Shell",
 	"url": "https://github.com/nixnodes/gnome-shell-extension-rss-feed",
 	"version": 2
 }

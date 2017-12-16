@@ -1,6 +1,6 @@
-# RSS Feed GNOME Shell extension
+# RSS Feed GNOME Shell extension v2
 
-*Forked from https://github.com/maweki/gnome-shell-extension-rss-feed
+Forked from https://github.com/maweki/gnome-shell-extension-rss-feed
 
 Simple RSS Feed reader extension for GNOME Shell.
 
