@@ -42,9 +42,10 @@ const AssocSettings = Me.imports.gsaa;
 const Parser = Me.imports.parsers.factory;
 
 const COLUMN_URL = 0;
-const COLUMN_STATUS = 1;
-const COLUMN_NOTIF = 2;
-const COLUMN_UPD = 3;
+const COLUMN_TITLE = 1;
+const COLUMN_STATUS = 2;
+const COLUMN_NOTIF = 3;
+const COLUMN_UPD = 4;
 
 const MAX_UPDATE_INTERVAL = 1440;
 const MAX_SOURCES_LIMIT = 1024;
@@ -288,8 +289,12 @@ const RssFeedSettingsWidget = new GObject.Class(
 		scrolledWindow.set_shadow_type(1);
 
 		this._store = new Gtk.ListStore();
-		this._store.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING,
-			GObject.TYPE_BOOLEAN, GObject.TYPE_BOOLEAN
+		this._store.set_column_types([
+			GObject.TYPE_STRING, 
+			GObject.TYPE_STRING,
+			GObject.TYPE_STRING,
+			GObject.TYPE_BOOLEAN, 
+			GObject.TYPE_BOOLEAN
 		]);
 		this._loadStoreFromSettings();
 
@@ -314,38 +319,52 @@ const RssFeedSettingsWidget = new GObject.Class(
 			}));
 
 		this._actor.get_selection().set_mode(Gtk.SelectionMode.SINGLE);
-
-		let [column_url, cell_url] = this._addSourcesColumn(this._actor, 
-			new Gtk.CellRendererText({editable: true}), COLUMN_URL, _("URL"));
-
-		column_url.add_attribute(cell_url, "text", COLUMN_URL);
-		column_url.set_fixed_width(420);
-
-		let [column_status, cell_status] = this._addSourcesColumn(this._actor, 
-			new Gtk.CellRendererText(), COLUMN_STATUS, _("Status"));
-
-		column_status.add_attribute(cell_status, "text", COLUMN_STATUS);
-
 		let cellToggleFunc = function(self, path, iter, state, key)
 		{
 			let urlValue = this._store.get_value(iter, COLUMN_URL);
 			this._aSettings.set(urlValue, key, state);
 		};
+		
+		// URL column
+		let [column_url, cell_url] = this._addSourcesColumn(this._actor, 
+			new Gtk.CellRendererText({editable: true}), COLUMN_URL, _("URL"));
+
+		column_url.add_attribute(cell_url, "text", COLUMN_URL);
+		column_url.set_fixed_width(320);
+		column_url.set_expand(true);
+		column_url.set_sizing(Gtk.TreeViewColumnSizing.GROW_ONLY);
+
+		// title column
+		let [column_title, cell_title] = this._addSourcesColumn(this._actor,
+			new Gtk.CellRendererText(), COLUMN_TITLE, _("Title"));
+		
+		column_title.add_attribute(cell_title, "text", COLUMN_TITLE);
+		column_title.set_expand(true);
+		column_title.set_sizing(Gtk.TreeViewColumnSizing.GROW_ONLY);
+		
+		// status column		
+		let [column_status, cell_status] = this._addSourcesColumn(this._actor, 
+			new Gtk.CellRendererText(), COLUMN_STATUS, _("Status"));
+
+		column_status.add_attribute(cell_status, "text", COLUMN_STATUS);
+		column_status.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE);
 
 		// disable notifications column
 		let [column_notif, cell_notif] = this._addSourcesColumn(this._actor,
-			new Gtk.CellRendererToggle({activatable:true, xalign: Gtk.Align.FILL}), COLUMN_NOTIF, _("No not."));
+			new Gtk.CellRendererToggle({activatable:true, xalign: Gtk.Align.CENTER}), COLUMN_NOTIF, _("No not."));
 
 		column_notif.add_attribute(cell_notif, "active", COLUMN_NOTIF);
+		column_notif.set_fixed_width(60);
 
 		cell_notif.connect('toggled', Lang.bind(this, this._gToggleHandler, COLUMN_NOTIF,
 			Lang.bind(this, cellToggleFunc, 'n')));
 
 		// disable updates column
 		let [column_upd, cell_upd] = this._addSourcesColumn(this._actor,
-			new Gtk.CellRendererToggle({activatable:true, xalign: Gtk.Align.FILL}), COLUMN_NOTIF, _("No upd."));
+			new Gtk.CellRendererToggle({activatable:true, xalign: Gtk.Align.CENTER}), COLUMN_UPD, _("No upd."));
 
 		column_upd.add_attribute(cell_upd, "active", COLUMN_UPD);
+		column_upd.set_fixed_width(60);
 
 		cell_upd.connect('toggled', Lang.bind(this, this._gToggleHandler, COLUMN_UPD,
 			Lang.bind(this, cellToggleFunc, 'u')));
@@ -541,6 +560,8 @@ const RssFeedSettingsWidget = new GObject.Class(
 	 */
 	_validateItemURL: function(iter, cacheObj)
 	{
+		this._store.set_value(iter, COLUMN_TITLE, "");
+		
 		let url = this._store.get_value(iter, COLUMN_URL);
 
 		let params = HTTP.getParametersAsJson(url);
@@ -596,8 +617,10 @@ const RssFeedSettingsWidget = new GObject.Class(
 					this._store.set_value(iter, COLUMN_STATUS, _("Unable to parse"));
 					return;
 				}
+				parser.parse();
 
-				this._store.set_value(iter, COLUMN_STATUS, _("OK") + " - " + parser._type);
+				this._store.set_value(iter, COLUMN_STATUS, _("OK") + " (" + parser._type + ")");
+				this._store.set_value(iter, COLUMN_TITLE, parser.Publisher.Title);
 			}));
 
 		return request;
