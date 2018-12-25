@@ -8,9 +8,10 @@ You can add URL links of your RSS sources in Settings tab. Also you can adjust r
 
 #### Supported formats:
 
-* RSS 1.0 (RDF) format
-* RSS 2.0 format
-* Atom format
+* RSS 1.0 (RDF)
+* RSS 2.0
+* Atom
+* Feedburner
 
 ## Future plans
 
