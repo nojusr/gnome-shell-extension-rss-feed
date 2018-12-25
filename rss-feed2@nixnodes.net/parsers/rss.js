@@ -31,7 +31,7 @@ const GLib = imports.gi.GLib;
 /*
  * RSS 2.0 parser class
  */
-const RssParser = new Lang.Class({
+var RssParser = new Lang.Class({
 
     Name: 'RssParser',
     Extends: Base.BaseParser,
@@ -103,7 +103,14 @@ const RssParser = new Lang.Class({
             }
             else if (itemElements[i].name == 'author') {
                 item.Author = itemElements[i].text;
+            } 
+            else if (itemElements[i].name == 'guid') {
+                item.ID = itemElements[i].text;
             }
+        }
+        
+        if (!this._postprocessItem(item)) {
+        	return;
         }
 
         this.Items.push(item);

@@ -23,16 +23,14 @@
 
 const
 Lang = imports.lang;
-
 const
 Me = imports.misc.extensionUtils.getCurrentExtension();
-//const Log = Me.imports.logger;
 
 /*
  *  Base 'abstract' class for RSS parser. Every format inherits from this class
  *  and must implements all empty methods
  */
-const
+var
 BaseParser = new Lang.Class(
 {
 
@@ -70,7 +68,8 @@ BaseParser = new Lang.Class(
 			Author : '',
 			Contributor : '',
 			PublishDate : '',
-			UpdateTime : ''
+			UpdateTime : '',
+			ID: ''
 		};
 	},
 
@@ -112,5 +111,18 @@ BaseParser = new Lang.Class(
 	_parseItem : function(itemElements)
 	{
 		// child classes implements this 'abstract' function
-	}
+	},
+	
+	_postprocessItem : function(item)
+	{
+		if ( !item.ID ) {
+			if ( !item.HttpLink ) {
+				return 0;
+			} else {
+				item.ID = item.HttpLink;
+			}
+		}
+		
+		return 1;
+	},
 });

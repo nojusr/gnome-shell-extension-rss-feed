@@ -30,7 +30,7 @@ const Log = Me.imports.logger;
 /*
  *  Atom 1.0 format parser class
  */
-const AtomParser = new Lang.Class({
+var AtomParser = new Lang.Class({
 
     Name: 'AtomParser',
     Extends: Base.BaseParser,
@@ -106,6 +106,13 @@ const AtomParser = new Lang.Class({
             else if (itemElements[i].name == 'author') {
                 item.Author = itemElements[i].childElements[0].text;
             }
+            else if (itemElements[i].name == 'id') {
+                item.ID = itemElements[i].text;
+            }
+        }
+        
+        if (!this._postprocessItem(item)) {
+        	return;
         }
 
         this.Items.push(item);

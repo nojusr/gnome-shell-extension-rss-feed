@@ -30,7 +30,7 @@ const Log = Me.imports.logger;
 /*
  *  special class for Feedburner RSS feed
  */
-const FeedburnerParser = new Lang.Class({
+var FeedburnerParser = new Lang.Class({
 
     Name: 'FeedburnerParser',
     Extends: Base.BaseParser,
@@ -103,6 +103,13 @@ const FeedburnerParser = new Lang.Class({
             else if (itemElements[i].name == 'author') {
                 item.Author = itemElements[i].text;
             }
+            else if (itemElements[i].name == 'guid') {
+                item.ID = itemElements[i].text;
+            }
+        }
+        
+        if (!this._postprocessItem(item)) {
+        	return;
         }
 
         this.Items.push(item);

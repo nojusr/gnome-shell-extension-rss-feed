@@ -579,8 +579,8 @@ const RssFeed = new Lang.Class(
 
 		while (i--)
 		{
-			let cacheItemURL = itemCache[i];
-			let cacheObj = itemCache[cacheItemURL];
+			let cacheID = itemCache[i];
+			let cacheObj = itemCache[cacheID];
 			let j = nItems;
 			let h;
 
@@ -588,7 +588,7 @@ const RssFeed = new Lang.Class(
 			{
 				let item = rssParser.Items[j];
 
-				if (cacheItemURL == item.HttpLink)
+				if (cacheID == item.ID)
 				{
 					if (this._detectUpdates
 						&& !disableUpdates
@@ -617,8 +617,8 @@ const RssFeed = new Lang.Class(
 					this._totalUnreadCount--;
 				}
 
-				delete itemCache[cacheItemURL];
-				itemCache[cacheItemURL] = undefined;
+				delete itemCache[cacheID];
+				itemCache[cacheID] = undefined;
 				itemCache.splice(i, 1);
 			}
 		}
@@ -631,8 +631,9 @@ const RssFeed = new Lang.Class(
 		{
 			let item = rssParser.Items[i];
 			let itemURL = item.HttpLink;
+			let itemID = item.ID;
 
-			if (itemCache[itemURL])
+			if (itemCache[itemID])
 				continue;
 
 			/* remove HTML tags */
@@ -648,8 +649,8 @@ const RssFeed = new Lang.Class(
 			cacheObj.Item = item;
 			cacheObj.parent = feedCache;
 			cacheObj.lText = menu.label.get_text();
-			itemCache[itemURL] = cacheObj;
-			itemCache.push(itemURL);
+			itemCache[itemID] = cacheObj;
+			itemCache.push(itemID);
 
 			menu._cacheObj = cacheObj;
 
