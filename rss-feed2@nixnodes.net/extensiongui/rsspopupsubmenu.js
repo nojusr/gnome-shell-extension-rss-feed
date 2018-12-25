@@ -31,7 +31,7 @@ Me = imports.misc.extensionUtils.getCurrentExtension();
 const
 Log = Me.imports.logger;
 
-const
+var
 RssPopupSubMenu = new Lang.Class(
 {
 	Name : 'RssPopupSubMenu',

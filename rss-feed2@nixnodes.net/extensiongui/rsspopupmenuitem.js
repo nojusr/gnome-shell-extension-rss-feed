@@ -49,7 +49,7 @@ Main = imports.ui.main;
  *  RssPopupMenuItem class that extends PopupMenuItem to provide RSS feed specific functionality
  *  After click on this popum menu item, default browser is opened with RSS article
  */
-const
+var
 RssPopupMenuItem = new Lang.Class(
 {
 	Name : 'RssPopupMenuItem',

@@ -39,7 +39,7 @@ RssPopupSubMenu = Me.imports.extensiongui.rsspopupsubmenu.RssPopupSubMenu;
 /*
  *  RssPopupSubMenuMenuItem class that extends PopupSubMenuMenuItem. Holds RSS feed articles
  */
-const
+var
 RssPopupSubMenuMenuItem = new Lang.Class(
 {
 	Name : 'RssPopupSubMenuMenuItem',

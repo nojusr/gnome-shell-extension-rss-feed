@@ -36,7 +36,7 @@ St = imports.gi.St;
 const
 Gtk = imports.gi.Gtk;
 
-const
+var
 RssPopupMenuSection = new Lang.Class(
 {
 	Name : 'RssPopupMenuSection',

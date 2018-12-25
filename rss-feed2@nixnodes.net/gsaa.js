@@ -30,10 +30,11 @@ Convenience = Me.imports.convenience;
 const
 Settings = Convenience.getSettings();
 
-const
+var
 GSAA = new Lang.Class(
 {
 	Name : 'GSAA',
+	autoload : false,
 
 	_init : function(key)
 	{
