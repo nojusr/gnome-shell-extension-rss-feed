@@ -20,8 +20,6 @@
  */
 
 const
-Lang = imports.lang;
-const
 PopupMenu = imports.ui.popupMenu;
 const
 Gtk = imports.gi.Gtk;
@@ -32,27 +30,25 @@ const
 Log = Me.imports.logger;
 
 var
-RssPopupSubMenu = new Lang.Class(
+RssPopupSubMenu = class _RssPopupSubMenu extends PopupMenu.PopupSubMenu
 {
-	Name : 'RssPopupSubMenu',
-	Extends : PopupMenu.PopupSubMenu,
 
-	_init : function(sourceActor, sourceArrow)
+	constructor(sourceActor, sourceArrow)
 	{
-		this.parent(sourceActor, sourceArrow);
+		super(sourceActor, sourceArrow);
 
 		/* pass any 'scoll-event' to the parent */
-		this.actor.connect('scroll-event', Lang.bind(this, function(actor, event)
+		this.actor.connect('scroll-event', (actor, event) =>
 		{
 			let
 			scrollBar = this._parent.actor.get_vscroll_bar();
 			if (scrollBar)
 				scrollBar.emit('scroll-event', event);
-		}));
+		});
 
-	},
+	}
 
-	open : function(animate)
+	open (animate)
 	{
 		/*
 		let
@@ -61,17 +57,17 @@ RssPopupSubMenu = new Lang.Class(
 		this._parent.actor.vscrollbar_policy = (needsScrollbar ? Gtk.PolicyType.AUTOMATIC
 			: Gtk.PolicyType.NEVER);
 		 */
-		this.parent(this._parent._animate);
-	},
+		super.open(this._parent._animate);
+	}
 
-	close : function(animate)
+	close (animate)
 	{
-		this.parent(this._parent._animate);
-	},
+		super.close(this._parent._animate);
+	}
 
-	_needsScrollbar : function(o)
+	_needsScrollbar(o)
 	{
 		return false;
 	}
 
-});
+};

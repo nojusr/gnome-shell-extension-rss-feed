@@ -21,8 +21,6 @@
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Lang = imports.lang;
-
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Base = Me.imports.parsers.base;
 const Log = Me.imports.logger;
@@ -31,34 +29,33 @@ const GLib = imports.gi.GLib;
 /*
  * RSS 2.0 parser class
  */
-var RssParser = new Lang.Class({
-
-    Name: 'RssParser',
-    Extends: Base.BaseParser,
+var RssParser = class _RssParser extends Base.BaseParser
+{
 
     /*
 	 * Initialize the instance of RssParser class root - root element of feed
 	 * file
 	 */
-    _init: function(root) {
-        this.parent(root);
+	constructor(root) 
+	{
+        super(root);
         this._type = "RSS 2.0";
         Log.Debug("RSS 2.0 parser");
-    },
+    }
 
     /*
 	 * Parse feed file
 	 */
-    parse: function() {
+    parse() {
 
         // root = rss -> channel
         this._parsePublisher(this._root.childElements[0].childElements);
-    },
+    }
 
     /*
 	 * Parse publisher
 	 */
-    _parsePublisher: function(childElements) {
+    _parsePublisher(childElements) {
 
         for (let i = 0; i < childElements.length; i++) {
 
@@ -78,12 +75,12 @@ var RssParser = new Lang.Class({
                 this._parseItem(childElements[i].childElements);
             }
         }
-    },
+    }
 
     /*
 	 * Parse item
 	 */
-    _parseItem: function(itemElements) {
+    _parseItem(itemElements) {
 
         let item = this._initItem();
 
@@ -115,4 +112,4 @@ var RssParser = new Lang.Class({
 
         this.Items.push(item);
     }
-});
+};

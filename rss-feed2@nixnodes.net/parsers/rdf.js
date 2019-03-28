@@ -21,8 +21,6 @@
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Lang = imports.lang;
-
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Base = Me.imports.parsers.base;
 const Log = Me.imports.logger;
@@ -30,25 +28,23 @@ const Log = Me.imports.logger;
 /*
  *  RDF (RSS 1.0) parser class
  */
-var RdfParser = new Lang.Class({
-
-    Name: 'RdfParser',
-    Extends: Base.BaseParser,
+var RdfParser = class _RdfParser extends Base.BaseParser
+{
 
     /*
      *  Initialize the instance of RdfParser class
      *  root - root element of feed file
      */
-    _init: function(root) {
-        this.parent(root);
+	constructor(root) {
+        super(root);
         this._type = "RDF (RSS 1.0)";
         Log.Debug("RDF (RSS 1.0) parser");
-    },
+    }
 
     /*
      *  Parse feed file
      */
-    parse: function() {
+    parse() {
 
         for (let i = 0; i < this._root.childElements.length; i++) {
 
@@ -59,12 +55,12 @@ var RdfParser = new Lang.Class({
                 this._parseItem(this._root.childElements[i].childElements);
             }
         }
-    },
+    }
 
     /*
      *  Parse publisher
      */
-    _parsePublisher: function(childElements) {
+    _parsePublisher(childElements) {
 
         for (let i = 0; i < childElements.length; i++) {
 
@@ -81,12 +77,12 @@ var RdfParser = new Lang.Class({
                 this.Publisher.PublishDate = childElements[i].text;
             }
         }
-    },
+    }
 
     /*
      *  Parse item
      */
-    _parseItem: function(itemElements) {
+    _parseItem(itemElements) {
 
         let item = this._initItem();
 
@@ -118,4 +114,4 @@ var RdfParser = new Lang.Class({
 
         this.Items.push(item);
     }
-});
+};

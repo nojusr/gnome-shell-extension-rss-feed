@@ -19,7 +19,6 @@
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Lang = imports.lang;
 
 
 function getParametersAsJson(url) 

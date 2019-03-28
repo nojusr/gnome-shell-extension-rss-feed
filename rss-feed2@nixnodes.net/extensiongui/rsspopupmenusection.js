@@ -22,8 +22,6 @@
  */
 
 const
-Lang = imports.lang;
-const
 PopupMenu = imports.ui.popupMenu;
 
 const
@@ -37,14 +35,11 @@ const
 Gtk = imports.gi.Gtk;
 
 var
-RssPopupMenuSection = new Lang.Class(
+RssPopupMenuSection = class _RssPopupMenuSection extends PopupMenu.PopupMenuSection
 {
-	Name : 'RssPopupMenuSection',
-	Extends : PopupMenu.PopupMenuSection,
-
-	_init : function(sv_style)
+	constructor(sv_style)
 	{
-		this.parent();
+		super();
 
 		this.actor = new St.ScrollView(
 		{
@@ -59,9 +54,9 @@ RssPopupMenuSection = new Lang.Class(
 
 		this.actor.add_style_pseudo_class('scrolled');
 
-	},
+	}
 
-	_needsScrollbar : function(child)
+	_needsScrollbar (child)
 	{
 		let
 		topMenu = this;
@@ -74,6 +69,6 @@ RssPopupMenuSection = new Lang.Class(
 		topMaxHeight = topThemeNode.get_max_height();
 
 		return topNaturalHeight + topNaturalHeight2 > topMaxHeight;
-	},
+	}
 
-});
+};

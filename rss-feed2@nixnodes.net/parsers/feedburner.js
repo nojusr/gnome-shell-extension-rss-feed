@@ -21,8 +21,6 @@
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Lang = imports.lang;
-
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Base = Me.imports.parsers.base;
 const Log = Me.imports.logger;
@@ -30,34 +28,32 @@ const Log = Me.imports.logger;
 /*
  *  special class for Feedburner RSS feed
  */
-var FeedburnerParser = new Lang.Class({
-
-    Name: 'FeedburnerParser',
-    Extends: Base.BaseParser,
+var FeedburnerParser = class _FeedburnerParser extends Base.BaseParser
+{
 
     /*
      *  Initialize the instance of FeedburnerParser class
      *  root - root element of feed file
      */
-    _init: function(root) {
-        this.parent(root);
+	constructor(root) {
+        super(root);
         this._type = "Feedburner";
         Log.Debug("Feedburner parser");
-    },
+    }
 
     /*
      *  Parse feed file
      */
-    parse: function() {
+    parse() {
 
         // root = rss -> channel
         this._parsePublisher(this._root.childElements[0].childElements);
-    },
+    }
 
     /*
      *  Parse publisher
      */
-    _parsePublisher: function(childElements) {
+    _parsePublisher(childElements) {
 
         for (let i = 0; i < childElements.length; i++) {
 
@@ -77,12 +73,12 @@ var FeedburnerParser = new Lang.Class({
                 this._parseItem(childElements[i].childElements);
             }
         }
-    },
+    }
 
     /*
      *  Parse item
      */
-    _parseItem: function(itemElements) {
+    _parseItem(itemElements) {
 
         let item = this._initItem();
 
@@ -114,4 +110,4 @@ var FeedburnerParser = new Lang.Class({
 
         this.Items.push(item);
     }
-});
+};

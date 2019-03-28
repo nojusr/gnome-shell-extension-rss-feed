@@ -22,8 +22,6 @@
  */
 
 const
-Lang = imports.lang;
-const
 Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /*
@@ -31,16 +29,14 @@ Me = imports.misc.extensionUtils.getCurrentExtension();
  *  and must implements all empty methods
  */
 var
-BaseParser = new Lang.Class(
+BaseParser = class _BaseParser
 {
-
-	Name : 'BaseParser',
 
 	/*
 	 *  Initialize the instance of BaseParser class
 	 *  root - root element of feed file
 	 */
-	_init : function(root)
+	constructor(root)
 	{
 
 		this._root = root;
@@ -54,12 +50,12 @@ BaseParser = new Lang.Class(
 		};
 
 		this.Items = [];
-	},
+	}
 
 	/*
 	 *  Initialize RSS article item object
 	 */
-	_initItem : function()
+	_initItem ()
 	{
 		return {
 			Title : '',
@@ -71,13 +67,13 @@ BaseParser = new Lang.Class(
 			UpdateTime : '',
 			ID: ''
 		};
-	},
+	}
 
 	/*
 	 *  Clears publisher and items
 	 */
 
-	clear : function()
+	clear ()
 	{
 
 		while (this.Items.length > 0)
@@ -87,33 +83,33 @@ BaseParser = new Lang.Class(
 		this.Publisher.Description = '';
 		this.Publisher.PublishDate = '';
 		this.Publisher.UpdateTime = '';
-	},
+	}
 
 	/*
 	 *  Abstract function to Parse feed file
 	 */
-	parse : function()
+	parse ()
 	{
 		// child classes implements this 'abstract' function
-	},
+	}
 
 	/*
 	 *  Abstract function to Parse publisher
 	 */
-	_parsePublisher : function(childElements)
+	_parsePublisher(childElements)
 	{
 		// child classes implements this 'abstract' function
-	},
+	}
 
 	/*
 	 *  Abstract function to Parse item
 	 */
-	_parseItem : function(itemElements)
+	_parseItem (itemElements)
 	{
 		// child classes implements this 'abstract' function
-	},
+	}
 	
-	_postprocessItem : function(item)
+	_postprocessItem (item)
 	{
 		if ( !item.ID ) {
 			if ( !item.HttpLink ) {
@@ -124,5 +120,5 @@ BaseParser = new Lang.Class(
 		}
 		
 		return 1;
-	},
-});
+	}
+};

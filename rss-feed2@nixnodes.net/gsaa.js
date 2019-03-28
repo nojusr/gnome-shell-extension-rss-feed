@@ -20,9 +20,6 @@
  */
 
 const
-Lang = imports.lang;
-
-const
 Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const
@@ -31,13 +28,12 @@ const
 Settings = Convenience.getSettings();
 
 var
-GSAA = new Lang.Class(
+GSAA = class RssFeed_GSAA
 {
-	Name : 'GSAA',
-	autoload : false,
-
-	_init : function(key)
+	constructor(key)
 	{
+		this.autoload = false;
+		
 		if (!key)
 			throw "GSAA._init: missing key";
 
@@ -45,14 +41,14 @@ GSAA = new Lang.Class(
 		this._gsData = new Object();
 
 		this.load();
-	},
+	}
 
-	destroy : function()
+	destroy ()
 	{
 		delete this._gsData;
-	},
+	}
 
-	load : function()
+	load ()
 	{
 		let
 		data = Settings.get_string(this._gsKey);
@@ -63,9 +59,9 @@ GSAA = new Lang.Class(
 		this._gsData = JSON.parse(data);
 
 		return true;
-	},
+	}
 
-	dump : function()
+	dump()
 	{
 		if (!this._gsData)
 			return false;
@@ -76,9 +72,9 @@ GSAA = new Lang.Class(
 		Settings.set_string(this._gsKey, data);
 
 		return true;
-	},
+	}
 
-	get : function(key, subkey)
+	get(key, subkey)
 	{
 		if (this.autoload != false)
 			this.load();
@@ -90,9 +86,9 @@ GSAA = new Lang.Class(
 			return undefined;
 
 		return data[subkey];
-	},
+	}
 
-	set : function(key, subkey, value)
+	set (key, subkey, value)
 	{
 		this.load();
 
@@ -105,9 +101,9 @@ GSAA = new Lang.Class(
 		data[subkey] = value;
 
 		this.dump();
-	},
+	}
 
-	remove : function(key)
+	remove (key)
 	{
 		this.load();
 
@@ -117,9 +113,9 @@ GSAA = new Lang.Class(
 		this._gsData[key] = undefined;
 
 		this.dump();
-	},
+	}
 
-	rename : function(from, to)
+	rename (from, to)
 	{
 		this.load();
 
@@ -135,10 +131,10 @@ GSAA = new Lang.Class(
 		this.dump();
 
 		return true;
-	},
+	}
 
-	set_autoload : function(sw)
+	set_autoload (sw)
 	{
 		this.autoload = sw;
 	}
-});
+}

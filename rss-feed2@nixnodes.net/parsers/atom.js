@@ -21,8 +21,6 @@
  * along with gnome-shell-extension-rss-feed.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Lang = imports.lang;
-
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Base = Me.imports.parsers.base;
 const Log = Me.imports.logger;
@@ -30,34 +28,31 @@ const Log = Me.imports.logger;
 /*
  *  Atom 1.0 format parser class
  */
-var AtomParser = new Lang.Class({
-
-    Name: 'AtomParser',
-    Extends: Base.BaseParser,
-
+var AtomParser = class _AtomParser extends Base.BaseParser
+{
     /*
      *  Initialize the instance of AtomParser class
      *  root - root element of feed file
      */
-    _init: function(root) {
-        this.parent(root);
+	constructor(root) {
+        super(root);
         this._type = "Atom 1.0";
         Log.Debug("Atom 1.0 parser");
-    },
+    }
 
     /*
      *  Parse feed file
      */
-    parse: function() {
+    parse() {
 
         // root = feed
         this._parsePublisher(this._root.childElements);
-    },
+    }
 
     /*
      *  Parse publisher
      */
-    _parsePublisher: function(childElements) {
+    _parsePublisher(childElements) {
 
         for (let i = 0; i < childElements.length; i++) {
 
@@ -77,12 +72,12 @@ var AtomParser = new Lang.Class({
                 this._parseItem(childElements[i].childElements);
             }
         }
-    },
-
+    }
+    
     /*
      *  Parse item
      */
-    _parseItem: function(itemElements) {
+    _parseItem(itemElements) {
 
         let item = this._initItem();
 
@@ -117,4 +112,4 @@ var AtomParser = new Lang.Class({
 
         this.Items.push(item);
     }
-});
+};

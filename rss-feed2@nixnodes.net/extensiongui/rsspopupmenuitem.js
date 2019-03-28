@@ -24,8 +24,6 @@
 const
 Gio = imports.gi.Gio;
 const
-Lang = imports.lang;
-const
 PopupMenu = imports.ui.popupMenu;
 const
 Util = imports.misc.util;
@@ -50,28 +48,26 @@ Main = imports.ui.main;
  *  After click on this popum menu item, default browser is opened with RSS article
  */
 var
-RssPopupMenuItem = new Lang.Class(
+RssPopupMenuItem = class _RssPopupMenuItem extends PopupMenu.PopupMenuItem
 {
-	Name : 'RssPopupMenuItem',
-	Extends : PopupMenu.PopupMenuItem,
 
 	/*
 	 *  Initialize instance of RssPopupMenuItem class
 	 *  item - RSS feed item
 	 */
-	_init : function(item)
+	constructor(item)
 	{
 		let
 		title = "  " + item.Title;
+		super(title);
 
 		if (title.length > 100)
 			title = title.substr(0, 100) + "...";
 
-		this.parent(title);
 
 		this._link = item.HttpLink;
 
-		this.connect('activate', Lang.bind(this, function(self, event)
+		this.connect('activate', (self, event) =>
 		{
 			/* right mouse click copies link to clipboard */
 			if (event.type() == Clutter.EventType.BUTTON_RELEASE
@@ -94,7 +90,7 @@ RssPopupMenuItem = new Lang.Class(
 					}
 				}
 			}
-		}));
+		});
 	}
 
-});
+};
