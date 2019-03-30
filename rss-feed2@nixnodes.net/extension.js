@@ -501,6 +501,7 @@ const RssFeed2 = GObject.registerClass(
 		 */
 		_onDownload (responseData, sourceURL)
 		{
+			
 			let rssParser = Parser.createRssParser(responseData);
 
 			if (rssParser == null)
@@ -530,9 +531,8 @@ const RssFeed2 = GObject.registerClass(
 			}
 			else
 				feedCache = this._feedsCache[sourceURL];
-
+			
 			let itemCache = feedCache.Items;
-
 			let subMenu;
 
 			// create publisher submenu
@@ -767,59 +767,63 @@ const RssFeed2 = GObject.registerClass(
 					icon_name : NOTIFICATION_ICON
 				});
 			};
-
-			/* When enabled, always show details */
-			Source.policy.detailsInLockScreen = Source.policy.showInLockScreen = this._notifOnLockScreen;
+			
+			let sourcePolicy = Source.policy;
+			
+			/* 
+			 * Configure source policy, implicitly show details if lockscreen
+			 * notifications are enabled 
+			 */
+			sourcePolicy._detailsInLockScreen =
+				sourcePolicy._showInLockScreen = this._notifOnLockScreen;
 
 			Main.messageTray.add(Source);
 
-			let notification = new MessageTray.Notification(Source, title, message);
-
+			let notification = new MessageTray.Notification(Source, title, message);			
+			notification.setPrivacyScope(MessageTray.PrivacyScope.SYSTEM);
+			
 			let notifCache = this._notifCache;
-
-			if (url.length > 0)
+			
+			/* remove notifications with same ID */
+			let i = notifCache.length;
+			while (i--)
 			{
-				/* remove notifications with same URL */
-				let i = notifCache.length;
-
-				while (i--)
+				let nCacheObj = notifCache[i];
+				if (nCacheObj._cacheObj.Item.ID == cacheObj.Item.ID)
 				{
-					let nCacheObj = notifCache[i];
-					if (nCacheObj._itemURL == url)
-					{
-						nCacheObj.destroy();
-						notifCache.splice(i, 1);
-						break;
-					}
+					nCacheObj.destroy();
+					notifCache.splice(i, 1);
+					break;
 				}
-
-				notification._itemURL = url;
-				notification._cacheObj = cacheObj;
-
-				notification.addAction(_('Open URL'), function() 
-				{
-					Misc.processLinkOpen(notification._itemURL, notification._cacheObj);
-					notification.destroy();
-				});
-
-				notification.addAction(_('Copy URL'), function()
-				{
-					St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD,
-						notification._itemURL);
-
-					/* don't destroy notification, just hide the banner */
-					if (Main.messageTray._banner)
-						Main.messageTray._banner.emit('done-displaying');
-				});
-
-				notification.connect('activated', function(self)
-				{
-					Misc.processLinkOpen(self._itemURL, self._cacheObj);
-					self.destroy();
-				});
-
-				notification.setResident(true);
 			}
+
+			notification._itemURL = url;
+			notification._cacheObj = cacheObj;
+
+			notification.addAction(_('Open URL'), function() 
+			{
+				Misc.processLinkOpen(notification._itemURL, notification._cacheObj);
+				notification.destroy();
+			});
+
+			notification.addAction(_('Copy URL'), function()
+			{
+				St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD,
+					notification._itemURL);
+
+				/* don't destroy notification, just hide the banner */
+				if (Main.messageTray._banner)
+					Main.messageTray._banner.emit('done-displaying');
+			});
+
+			notification.connect('activated', function(self)
+			{
+				Misc.processLinkOpen(self._itemURL, self._cacheObj);
+				self.destroy();
+			});
+
+			notification.setResident(true);
+			
 
 			/*
 			 * Destroy the source after notification is gone
