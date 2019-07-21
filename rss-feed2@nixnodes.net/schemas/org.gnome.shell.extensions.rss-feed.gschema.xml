@@ -87,5 +87,10 @@
 		    <summary>HTTP Keep-Alive</summary>
 		    <description>Set Keep-Alive in HTTP request headers</description>
 		</key>
+		<key type="b" name="set-seen-when-open">
+		    <default>false</default>
+		    <summary>Set feed as seen when opened.</summary>
+		    <description>Set all RSS feeds as seen whenever the user opens them.</description>
+		</key>		
     </schema>
 </schemalist>

@@ -283,6 +283,7 @@ const RssFeed2 = GObject.registerClass(
 			this._detectUpdates = Settings.get_boolean(GSKeys.DETECT_UPDATES);
 			this._notifOnLockScreen = Settings.get_boolean(GSKeys.NOTIFICATIONS_ON_LOCKSCREEN);
 			this._http_keepalive = Settings.get_boolean(GSKeys.HTTP_KEEPALIVE);
+			this._setSeenOnOpen = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_OPEN);
 
 			this._aSettings.load();
 
