@@ -136,10 +136,22 @@ const RssFeed2 = GObject.registerClass(
 
 			this.menu.actor.add_style_class_name('rss-menu');
 
+			let seenOnOpen = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_OPEN);
+
 			this.menu.connect('open-state-changed', (self, open) =>
 			{
+				Log.Debug("opening")
+				if (seenOnOpen)
+				{
+					Log.Debug("Setting totalUnreadCount")
+					this._totalUnreadCount = 0;
+					Log.Debug("Updating UnreadCountLabel to 0")
+					this._updateUnreadCountLabel(0);
+				}
 				if (open && this._lastOpen)
+				{
 					this._lastOpen.open();
+				}
 			});
 
 			let separator = new PopupMenu.PopupSeparatorMenuItem();
@@ -505,6 +517,8 @@ const RssFeed2 = GObject.registerClass(
 			
 			let rssParser = Parser.createRssParser(responseData);
 
+			let setSeenOnOpen = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_OPEN);
+
 			if (rssParser == null)
 			{
 				this._purgeSource(sourceURL);
@@ -709,10 +723,16 @@ const RssFeed2 = GObject.registerClass(
 				/* increment unread counts and flag item as unread */
 				feedCache.UnreadCount++;
 				this._totalUnreadCount++;
-				cacheObj.Unread = true;
 
-				/* decorate menu item, indicating it unread */
-				menu.setOrnament(PopupMenu.Ornament.DOT);
+
+				/* set post as unread and draw dots, if requested */
+				if (!setSeenOnOpen)
+				{
+					cacheObj.Unread = true;
+
+					/* decorate menu item, indicating it unread */
+					menu.setOrnament(PopupMenu.Ornament.DOT);
+				}
 
 				/* trigger notification, if requested */
 				if (this._enableNotifications && !muteNotifications)
