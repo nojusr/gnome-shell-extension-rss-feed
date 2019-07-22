@@ -154,6 +154,9 @@ const RssFeed2 = GObject.registerClass(
 					this._totalUnreadCount = 0;
 					Log.Debug("Updating UnreadCountLabel to 0")
 					this._updateUnreadCountLabel(0);
+					Log.Debug("Set all feeds as seen")
+					this._setAllFeedsAsSeen();
+					
 				}
 			});
 
@@ -267,6 +270,36 @@ const RssFeed2 = GObject.registerClass(
 			this._aSettings.destroy();
 
 			super.destroy();
+		}
+
+
+
+		_setAllFeedsAsSeen()
+		{
+			for (let i = 0; i < this._rssFeedsSources.length; i++)
+			{
+				let url = this._rssFeedsSources[i];
+				
+				//Log.Debug(this._feedsCache[url]);
+				//Log.Debug(Object.keys(this._feedsCache[url]));
+				
+				let feedCache = this._feedsCache[url];
+				
+				if (!feedCache)
+					continue;
+
+				feedCache.UnreadCount = 0;
+				feedCache.pUnreadCount = 0;
+				
+				//Log.Debug(feedCache.Menu);
+				//Log.Debug(Object.keys(feedCache.Menu._triangleBin));
+
+				feedCache.Menu.setOrnament(PopupMenu.Ornament.NONE);
+				
+				this._feedsCache[url] = feedCache;
+			}
+			
+			return;
 		}
 
 		_updateUnreadCountLabel(count)

@@ -78,7 +78,7 @@ RssPopupMenuItem = class _RssPopupMenuItem extends PopupMenu.PopupMenuItem
 			}
 			else
 			{
-				Log.Debug("Opening browser with link: " + this._link);
+				Log.Debug("Opening browser with link TEST: " + this._link);
 
 				if (Misc.processLinkOpen(this._link, this._cacheObj))
 				{
