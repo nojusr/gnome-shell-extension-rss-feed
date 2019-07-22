@@ -136,21 +136,24 @@ const RssFeed2 = GObject.registerClass(
 
 			this.menu.actor.add_style_class_name('rss-menu');
 
-			let seenOnOpen = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_OPEN);
+			let seenOnClose = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_CLOSED);
 
 			this.menu.connect('open-state-changed', (self, open) =>
 			{
-				Log.Debug("opening")
-				if (seenOnOpen)
+				Log.Debug(open)
+				if (open && this._lastOpen)
 				{
+					Log.Debug("opening")
+					this._lastOpen.open();
+				}
+				
+				if (open == false && seenOnClose == true)
+				{
+					Log.Debug("closing")
 					Log.Debug("Setting totalUnreadCount")
 					this._totalUnreadCount = 0;
 					Log.Debug("Updating UnreadCountLabel to 0")
 					this._updateUnreadCountLabel(0);
-				}
-				if (open && this._lastOpen)
-				{
-					this._lastOpen.open();
 				}
 			});
 
@@ -295,7 +298,7 @@ const RssFeed2 = GObject.registerClass(
 			this._detectUpdates = Settings.get_boolean(GSKeys.DETECT_UPDATES);
 			this._notifOnLockScreen = Settings.get_boolean(GSKeys.NOTIFICATIONS_ON_LOCKSCREEN);
 			this._http_keepalive = Settings.get_boolean(GSKeys.HTTP_KEEPALIVE);
-			this._setSeenOnOpen = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_OPEN);
+			this._setSeenOnClose = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_CLOSED);
 
 			this._aSettings.load();
 
@@ -517,7 +520,7 @@ const RssFeed2 = GObject.registerClass(
 			
 			let rssParser = Parser.createRssParser(responseData);
 
-			let setSeenOnOpen = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_OPEN);
+			let setSeenOnClose = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_CLOSED);
 
 			if (rssParser == null)
 			{
@@ -724,15 +727,9 @@ const RssFeed2 = GObject.registerClass(
 				feedCache.UnreadCount++;
 				this._totalUnreadCount++;
 
+				cacheObj.Unread = true
+				menu.setOrnament(PopupMenu.Ornament.DOT);
 
-				/* set post as unread and draw dots, if requested */
-				if (!setSeenOnOpen)
-				{
-					cacheObj.Unread = true;
-
-					/* decorate menu item, indicating it unread */
-					menu.setOrnament(PopupMenu.Ornament.DOT);
-				}
 
 				/* trigger notification, if requested */
 				if (this._enableNotifications && !muteNotifications)
@@ -763,7 +760,8 @@ const RssFeed2 = GObject.registerClass(
 					feedCache.pUnreadCount = feedCache.UnreadCount;
 
 					subMenu.setOrnament(PopupMenu.Ornament.DOT);
-
+					
+					
 					this._updateUnreadCountLabel(this._totalUnreadCount);
 				}
 			}

@@ -184,7 +184,7 @@ const RssFeedSettingsWidget = GObject.registerClass(
 					this._addSwitch(menu_box, GSKeys.ENABLE_ANIMATIONS, _("Enable animations:"));
 					this._addSwitch(menu_box, GSKeys.MB_ALIGN_TOP, _("Top-align buttons:"));
 					this._addSwitch(menu_box, GSKeys.ENABLE_DESC, _("Show descriptions:"));
-					this._addSwitch(menu_box, GSKeys.SET_SEEN_WHEN_OPEN, _("Set every feed as seen when opened:"));
+					this._addSwitch(menu_box, GSKeys.SET_SEEN_WHEN_CLOSED, _("Set every feed as seen when closed:"));
 				}
 
 				upper_box.add(menu_box);
