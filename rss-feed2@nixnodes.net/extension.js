@@ -79,9 +79,9 @@ const RssFeed2 = GObject.registerClass(
 		 * Initialize instance of RssFeed class
 		 */
 		_init()
-		{		
+		{
 			super._init(0.0, "RSS Feed 2");
-			
+
 			this._httpSession = new Soup.SessionAsync(
 			{
 				timeout : 60
@@ -146,17 +146,13 @@ const RssFeed2 = GObject.registerClass(
 					Log.Debug("opening")
 					this._lastOpen.open();
 				}
-				
+
 				if (open == false && seenOnClose == true)
 				{
-					Log.Debug("closing")
-					Log.Debug("Setting totalUnreadCount")
 					this._totalUnreadCount = 0;
-					Log.Debug("Updating UnreadCountLabel to 0")
 					this._updateUnreadCountLabel(0);
-					Log.Debug("Set all feeds as seen")
 					this._setAllFeedsAsSeen();
-					
+
 				}
 			});
 
@@ -279,48 +275,27 @@ const RssFeed2 = GObject.registerClass(
 			for (let i = 0; i < this._rssFeedsSources.length; i++)
 			{
 				let url = this._rssFeedsSources[i];
-				
-				//Log.Debug(this._feedsCache[url]);
-				//Log.Debug(Object.keys(this._feedsCache[url]));
-				
+
 				let feedCache = this._feedsCache[url];
-				
+
 				if (!feedCache)
 					continue;
 
 				feedCache.UnreadCount = 0;
 				feedCache.pUnreadCount = 0;
-				
-				
-				//Log.Debug(feedCache.Menu);
-				//Log.Debug(Object.keys(feedCache.Menu));
-				//Log.Debug(feedCache.Menu.menu);
 
-				//Log.Debug(Object.getOwnPropertyNames(feedCache.Menu.menu));
-				
-				//let tobj = feedCache.Items[feedCache.Items[0]].Menu;
-				
-				//let tobj = PopupMenu.Ornament;
-				
-				//Log.Debug(tobj);
-				//Log.Debug(Object.getOwnPropertyNames(tobj));
-				
-				
 				for (let j = 0; j < feedCache.Items.length; j++)
 				{
 					let link = feedCache.Items[j];
-					//Log.Debug(feedCache.Items[j]);
-					//Log.Debug(feedCache.Items[link]);
 					feedCache.Items[link].Menu.setOrnament(PopupMenu.Ornament.NONE);
-					
+
 				}
 
 				feedCache.Menu.setOrnament(PopupMenu.Ornament.NONE);
-				
-				
+
 				this._feedsCache[url] = feedCache;
 			}
-			
+
 			return;
 		}
 
@@ -388,7 +363,7 @@ const RssFeed2 = GObject.registerClass(
 
 			this.menu.close();
 
-			this._settingsCWId = GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, 
+			this._settingsCWId = GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid,
 				(pid, status) =>
 				{
 					this._settingsCWId = undefined;
@@ -502,10 +477,10 @@ const RssFeed2 = GObject.registerClass(
 					if (l2o != -1)
 						url = url.substr(0, l2o);
 
-					let sourceID = Mainloop.timeout_add(i * this._rssPollDelay, 
+					let sourceID = Mainloop.timeout_add(i * this._rssPollDelay,
 						() =>
 						{
-							this._httpGetRequestAsync(url, JSON.parse(jsonObj), sourceURL, 
+							this._httpGetRequestAsync(url, JSON.parse(jsonObj), sourceURL,
 								this._onDownload.bind(this));
 							delete this._feedTimers[sourceID];
 						});
@@ -518,7 +493,7 @@ const RssFeed2 = GObject.registerClass(
 			if (this._updateInterval > 0)
 			{
 				Log.Debug("Next scheduled reload after " + this._updateInterval * 60 + " seconds");
-				this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60, 
+				this._timeout = Mainloop.timeout_add_seconds(this._updateInterval * 60,
 					() =>
 					{
 						this._timeout = undefined;
@@ -546,7 +521,7 @@ const RssFeed2 = GObject.registerClass(
 			if (!this._http_keepalive)
 				request.request_headers.replace("Connection", "close");
 
-			this._httpSession.queue_message(request, function(httpSession, message) 
+			this._httpSession.queue_message(request, function(httpSession, message)
 			{
 				let status_phrase = Soup.Status.get_phrase(message.status_code);
 
@@ -572,7 +547,7 @@ const RssFeed2 = GObject.registerClass(
 		 */
 		_onDownload (responseData, sourceURL)
 		{
-			
+
 			let rssParser = Parser.createRssParser(responseData);
 
 
@@ -604,7 +579,7 @@ const RssFeed2 = GObject.registerClass(
 			}
 			else
 				feedCache = this._feedsCache[sourceURL];
-			
+
 			let itemCache = feedCache.Items;
 			let subMenu;
 
@@ -643,7 +618,7 @@ const RssFeed2 = GObject.registerClass(
 				disableUpdates = gsData['u'];
 			}
 
-			/* 
+			/*
 			 * Cleanup article list of this source
 			 */
 			let i = itemCache.length;
@@ -742,8 +717,8 @@ const RssFeed2 = GObject.registerClass(
 
 						cacheObj._itemDescription = itemDescription;
 
-						/* 
-						 *  show description inside the article label, when selected 
+						/*
+						 *  show description inside the article label, when selected
 						 *
 						 *  FIXME:
 						 *  This is not an ideal solution, it should be replaced with
@@ -815,8 +790,8 @@ const RssFeed2 = GObject.registerClass(
 					feedCache.pUnreadCount = feedCache.UnreadCount;
 
 					subMenu.setOrnament(PopupMenu.Ornament.DOT);
-					
-					
+
+
 					this._updateUnreadCountLabel(this._totalUnreadCount);
 				}
 			}
@@ -841,23 +816,23 @@ const RssFeed2 = GObject.registerClass(
 					icon_name : NOTIFICATION_ICON
 				});
 			};
-			
+
 			let sourcePolicy = Source.policy;
-			
-			/* 
+
+			/*
 			 * Configure source policy, implicitly show details if lockscreen
-			 * notifications are enabled 
+			 * notifications are enabled
 			 */
 			sourcePolicy._detailsInLockScreen =
 				sourcePolicy._showInLockScreen = this._notifOnLockScreen;
 
 			Main.messageTray.add(Source);
 
-			let notification = new MessageTray.Notification(Source, title, message);			
+			let notification = new MessageTray.Notification(Source, title, message);
 			notification.setPrivacyScope(MessageTray.PrivacyScope.SYSTEM);
-			
+
 			let notifCache = this._notifCache;
-			
+
 			/* remove notifications with same ID */
 			let i = notifCache.length;
 			while (i--)
@@ -874,7 +849,7 @@ const RssFeed2 = GObject.registerClass(
 			notification._itemURL = url;
 			notification._cacheObj = cacheObj;
 
-			notification.addAction(_('Open URL'), function() 
+			notification.addAction(_('Open URL'), function()
 			{
 				Misc.processLinkOpen(notification._itemURL, notification._cacheObj);
 				notification.destroy();
@@ -897,7 +872,7 @@ const RssFeed2 = GObject.registerClass(
 			});
 
 			notification.setResident(true);
-			
+
 
 			/*
 			 * Destroy the source after notification is gone
