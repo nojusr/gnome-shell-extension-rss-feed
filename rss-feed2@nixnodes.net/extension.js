@@ -291,10 +291,32 @@ const RssFeed2 = GObject.registerClass(
 				feedCache.UnreadCount = 0;
 				feedCache.pUnreadCount = 0;
 				
+				
 				//Log.Debug(feedCache.Menu);
-				//Log.Debug(Object.keys(feedCache.Menu._triangleBin));
+				//Log.Debug(Object.keys(feedCache.Menu));
+				//Log.Debug(feedCache.Menu.menu);
+
+				//Log.Debug(Object.getOwnPropertyNames(feedCache.Menu.menu));
+				
+				//let tobj = feedCache.Items[feedCache.Items[0]].Menu;
+				
+				//let tobj = PopupMenu.Ornament;
+				
+				//Log.Debug(tobj);
+				//Log.Debug(Object.getOwnPropertyNames(tobj));
+				
+				
+				for (let j = 0; j < feedCache.Items.length; j++)
+				{
+					let link = feedCache.Items[j];
+					//Log.Debug(feedCache.Items[j]);
+					//Log.Debug(feedCache.Items[link]);
+					feedCache.Items[link].Menu.setOrnament(PopupMenu.Ornament.NONE);
+					
+				}
 
 				feedCache.Menu.setOrnament(PopupMenu.Ornament.NONE);
+				
 				
 				this._feedsCache[url] = feedCache;
 			}
@@ -553,7 +575,7 @@ const RssFeed2 = GObject.registerClass(
 			
 			let rssParser = Parser.createRssParser(responseData);
 
-			let setSeenOnClose = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_CLOSED);
+
 
 			if (rssParser == null)
 			{
