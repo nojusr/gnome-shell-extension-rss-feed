@@ -136,10 +136,22 @@ const RssFeed = new Lang.Class(
 
 		this.menu.actor.add_style_class_name('rss-menu');
 
+		let seenOnClose = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_CLOSED);
+
 		this.menu.connect('open-state-changed', Lang.bind(this, function(self, open)
 		{
 			if (open && this._lastOpen)
+			{
 				this._lastOpen.open();
+			}
+			
+			if (!open && seenOnClose)
+			{
+				this._totalUnreadCount = 0;
+				this._updateUnreadCountLabel(0);
+				this._setAllFeedsAsSeen();
+			}
+			
 		}));
 
 		let separator = new PopupMenu.PopupSeparatorMenuItem();
@@ -256,6 +268,37 @@ const RssFeed = new Lang.Class(
 		this.parent();
 	},
 
+
+	_setAllFeedsAsSeen()
+	{
+		for (let i = 0; i < this._rssFeedsSources.length; i++)
+		{
+			let url = this._rssFeedsSources[i];
+
+			let feedCache = this._feedsCache[url];
+
+			if (!feedCache)
+				continue;
+
+			feedCache.UnreadCount = 0;
+			feedCache.pUnreadCount = 0;
+
+			for (let j = 0; j < feedCache.Items.length; j++)
+			{
+				let link = feedCache.Items[j];
+				feedCache.Items[link].Menu.setOrnament(PopupMenu.Ornament.NONE);
+
+			}
+
+			feedCache.Menu.setOrnament(PopupMenu.Ornament.NONE);
+
+			this._feedsCache[url] = feedCache;
+		}
+
+		return;
+	},
+
+
 	_updateUnreadCountLabel : function(count)
 	{
 		var text = !count ? '' : count.toString();
@@ -285,7 +328,8 @@ const RssFeed = new Lang.Class(
 		this._detectUpdates = Settings.get_boolean(GSKeys.DETECT_UPDATES);
 		this._notifOnLockScreen = Settings.get_boolean(GSKeys.NOTIFICATIONS_ON_LOCKSCREEN);
 		this._http_keepalive = Settings.get_boolean(GSKeys.HTTP_KEEPALIVE);
-
+		this._setSeenOnClose = Settings.get_boolean(GSKeys.SET_SEEN_WHEN_CLOSED);
+		
 		this._aSettings.load();
 
 		_preserveOnLock = Settings.get_boolean(GSKeys.PRESERVE_ON_LOCK);
