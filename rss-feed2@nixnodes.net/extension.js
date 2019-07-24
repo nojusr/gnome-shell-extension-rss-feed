@@ -149,6 +149,7 @@ const RssFeed2 = GObject.registerClass(
 				if (open == false && seenOnClose == true)
 				{
 					this._setAllFeedsAsSeen();
+					this._totalUnreadCount = 0;
 					this._updateUnreadCountLabel(0);
 
 				}
@@ -161,6 +162,7 @@ const RssFeed2 = GObject.registerClass(
 			if (mbAlignTop)
 			{
 				this._createMainPanelButtons();
+				
 				this.menu.addMenuItem(separator);
 			}
 
@@ -279,14 +281,18 @@ const RssFeed2 = GObject.registerClass(
 				if (!feedCache)
 					continue;
 
+				feedCache.UnreadCount = 0;
+
 				for (let j = 0; j < feedCache.Items.length; j++)
 				{
 					let link = feedCache.Items[j];
 					feedCache.Items[link].Menu.setOrnament(PopupMenu.Ornament.NONE);
-					
+					//Log.Debug(Object.keys(feedCache.Items[link]));
+					feedCache.Items[link].Unread = null;
 
 				}
-
+				
+				//Log.Debug(Object.keys(feedCache));
 
 				feedCache.Menu.label.text = feedCache.Menu._olabeltext;
 
@@ -755,6 +761,12 @@ const RssFeed2 = GObject.registerClass(
 				/* increment unread counts and flag item as unread */
 				feedCache.UnreadCount++;
 				this._totalUnreadCount++;
+
+
+				//Log.Debug('--------------')
+				//Log.Debug(feedCache.UnreadCount);
+				//Log.Debug(feedCache.pUnreadCount);
+				//Log.Debug(this._totalUnreadCount);
 
 				cacheObj.Unread = true
 				menu.setOrnament(PopupMenu.Ornament.DOT);
