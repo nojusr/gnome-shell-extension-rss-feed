@@ -148,7 +148,8 @@ const RssFeed = new Lang.Class(
 			if (!open && seenOnClose)
 			{
 				this._setAllFeedsAsSeen();
-				this._updateUnreadCountLabel(0);				
+				this._totalUnreadCount = 0;
+				this._updateUnreadCountLabel(0);			
 			}
 			
 		}));
@@ -279,10 +280,13 @@ const RssFeed = new Lang.Class(
 			if (!feedCache)
 				continue;
 
+			feedCache.UnreadCount = 0;
+
 			for (let j = 0; j < feedCache.Items.length; j++)
 			{
 				let link = feedCache.Items[j];
 				feedCache.Items[link].Menu.setOrnament(PopupMenu.Ornament.NONE);
+				feedCache.Items[link].Unread = null;
 
 			}
 
