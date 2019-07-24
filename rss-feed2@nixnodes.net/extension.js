@@ -140,7 +140,6 @@ const RssFeed2 = GObject.registerClass(
 
 			this.menu.connect('open-state-changed', (self, open) =>
 			{
-				Log.Debug(open)
 				if (open && this._lastOpen)
 				{
 					Log.Debug("opening")
@@ -149,9 +148,9 @@ const RssFeed2 = GObject.registerClass(
 
 				if (open == false && seenOnClose == true)
 				{
+					this._setAllFeedsAsSeen();
 					this._totalUnreadCount = 0;
 					this._updateUnreadCountLabel(0);
-					this._setAllFeedsAsSeen();
 
 				}
 			});
@@ -290,6 +289,9 @@ const RssFeed2 = GObject.registerClass(
 					feedCache.Items[link].Menu.setOrnament(PopupMenu.Ornament.NONE);
 
 				}
+
+
+				feedCache.Menu.label.text = feedCache.Menu._olabeltext;
 
 				feedCache.Menu.setOrnament(PopupMenu.Ornament.NONE);
 
