@@ -149,7 +149,6 @@ const RssFeed2 = GObject.registerClass(
 				if (open == false && seenOnClose == true)
 				{
 					this._setAllFeedsAsSeen();
-					this._totalUnreadCount = 0;
 					this._updateUnreadCountLabel(0);
 
 				}
@@ -280,13 +279,11 @@ const RssFeed2 = GObject.registerClass(
 				if (!feedCache)
 					continue;
 
-				feedCache.UnreadCount = 0;
-				feedCache.pUnreadCount = 0;
-
 				for (let j = 0; j < feedCache.Items.length; j++)
 				{
 					let link = feedCache.Items[j];
 					feedCache.Items[link].Menu.setOrnament(PopupMenu.Ornament.NONE);
+					
 
 				}
 
@@ -783,6 +780,7 @@ const RssFeed2 = GObject.registerClass(
 				feedCache._initialRefresh = true;
 			else
 			{
+				
 				if (feedCache.UnreadCount)
 				{
 					if (feedCache.UnreadCount != feedCache.pUnreadCount)
@@ -790,11 +788,12 @@ const RssFeed2 = GObject.registerClass(
 							+ feedCache.UnreadCount + ')'));
 
 					feedCache.pUnreadCount = feedCache.UnreadCount;
-
+					this._updateUnreadCountLabel(this._totalUnreadCount);
+					
 					subMenu.setOrnament(PopupMenu.Ornament.DOT);
 
 
-					this._updateUnreadCountLabel(this._totalUnreadCount);
+				
 				}
 			}
 
