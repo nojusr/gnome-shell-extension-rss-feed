@@ -148,7 +148,6 @@ const RssFeed = new Lang.Class(
 			if (!open && seenOnClose)
 			{
 				this._setAllFeedsAsSeen();
-				this._totalUnreadCount = 0;
 				this._updateUnreadCountLabel(0);				
 			}
 			
@@ -279,9 +278,6 @@ const RssFeed = new Lang.Class(
 
 			if (!feedCache)
 				continue;
-
-			feedCache.UnreadCount = 0;
-			feedCache.pUnreadCount = 0;
 
 			for (let j = 0; j < feedCache.Items.length; j++)
 			{
